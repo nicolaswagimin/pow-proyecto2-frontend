@@ -1,0 +1,43 @@
+<fx-formas [alterna]="modo() === 'registro'" />
+
+<header class="cabecera">
+  <a class="marca" routerLink="/">
+    <span class="marca__logo" aria-hidden="true">
+      <i class="logo logo--triangulo"></i>
+      <i class="logo logo--circulo"></i>
+      <i class="logo logo--cuadrado"></i>
+    </span>
+    {{ nombreApp }}
+  </a>
+  <ui-theme-toggle />
+</header>
+
+<main class="escena">
+  <!-- El titular es decoración de póster: el encabezado real está dentro de la tarjeta. -->
+  <div class="poster" aria-hidden="true">
+    <p class="titular" #titular [style.--retraso-palabra]="cascada() ? '400ms' : '40ms'">
+      @for (palabra of poster().palabras; track palabra + modo(); let i = $index) {
+        <span class="palabra" [style.--i]="i">{{ palabra }}</span>
+      }
+    </p>
+    @for (lema of [poster().lema]; track lema) {
+      <p class="lema">{{ lema }}</p>
+    }
+  </div>
+
+  <section class="tarjeta" #tarjeta (pointermove)="inclinar($event)" (pointerleave)="enderezar()">
+    <div class="inclinacion" #inclinacion>
+      <span class="sombra" #sombra aria-hidden="true"></span>
+      <div class="cara" #cara>
+        <span class="destello" #destello aria-hidden="true"></span>
+        <div class="contenido" [class.cascada-inicial]="cascada()">
+          <ng-content select="[auth-encabezado]" />
+          <ng-content />
+          <ng-content select="[auth-pie]" />
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<fx-confeti />

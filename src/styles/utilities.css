@@ -1,0 +1,37 @@
+/* Utilidades mínimas compartidas. */
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack-gap, var(--space-4));
+}
+
+/*
+ * Entrada en cascada: dentro de un contenedor .cascada-inicial, cada elemento [data-ola]
+ * entra en orden según su style="--i: n". El contenedor quita la clase al terminar, así los
+ * elementos que aparecen después (por ejemplo al cambiar de login a registro) no la repiten.
+ */
+.cascada-inicial [data-ola],
+.entra {
+  animation: entra-cascada var(--duracion-lenta) var(--easing-golpe) both;
+  animation-delay: calc(var(--retraso-base, 0ms) + var(--i, 0) * var(--escalonado));
+}
+
+@keyframes entra-cascada {
+  from {
+    opacity: 0;
+    transform: translateY(-28px);
+  }
+}

@@ -1,13 +1,32 @@
 <!doctype html>
 <html lang="es">
-<head>
-  <meta charset="utf-8">
-  <title>Proyecto 2</title>
-  <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-</head>
-<body>
-  <app-root></app-root>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <title>Proyecto 2</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#eceef2" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#111318" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <!-- Solo los pesos que se usan: Unbounded 600/800 (títulos) y Archivo 400/500/700 (texto). -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700&family=Unbounded:wght@600;800&display=swap"
+    />
+    <script>
+      // Aplica el tema guardado antes de pintar, para que no destelle el tema equivocado.
+      try {
+        var tema = localStorage.getItem('tema');
+        if (tema === 'claro' || tema === 'oscuro') {
+          document.documentElement.dataset.theme = tema === 'oscuro' ? 'dark' : 'light';
+        }
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <app-root></app-root>
+  </body>
 </html>

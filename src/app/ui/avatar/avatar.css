@@ -1,0 +1,96 @@
+:host {
+  --tam: var(--avatar-tamano, 50px);
+  position: relative;
+  display: inline-block;
+  width: var(--tam);
+  height: var(--tam);
+  flex-shrink: 0;
+}
+
+.cuarto {
+  position: absolute;
+  width: 50%;
+  height: 50%;
+}
+
+.cuarto--1 {
+  top: 0;
+  left: 0;
+  border-radius: 100% 0 0 0;
+  background: var(--color-rojo);
+  --desde: translate(-120%, -120%) rotate(-90deg);
+}
+
+.cuarto--2 {
+  top: 0;
+  right: 0;
+  border-radius: 0 100% 0 0;
+  background: var(--color-amarillo);
+  --desde: translate(120%, -120%) rotate(90deg);
+}
+
+.cuarto--3 {
+  bottom: 0;
+  right: 0;
+  border-radius: 0 0 100% 0;
+  background: var(--color-cobalto);
+  --desde: translate(120%, 120%) rotate(-90deg);
+}
+
+.cuarto--4 {
+  bottom: 0;
+  left: 0;
+  border-radius: 0 0 0 100%;
+  background: var(--color-tinta);
+  --desde: translate(-120%, 120%) rotate(90deg);
+}
+
+/* Las iniciales van sobre un disco de superficie para conservar el contraste. */
+.centro {
+  position: absolute;
+  inset: 22%;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-superficie);
+  box-shadow: 0 0 0 2px var(--color-tinta);
+  color: var(--color-texto);
+  font-family: var(--font-display);
+  font-weight: var(--peso-display);
+  font-size: calc(var(--tam) * 0.22);
+  letter-spacing: -0.02em;
+}
+
+:host(.ensamblar) .cuarto {
+  animation: encajar 700ms var(--easing-golpe) both;
+}
+
+:host(.ensamblar) .cuarto--2 {
+  animation-delay: 90ms;
+}
+
+:host(.ensamblar) .cuarto--3 {
+  animation-delay: 180ms;
+}
+
+:host(.ensamblar) .cuarto--4 {
+  animation-delay: 270ms;
+}
+
+:host(.ensamblar) .centro {
+  animation: sellar 500ms var(--easing-golpe) 560ms both;
+}
+
+@keyframes encajar {
+  from {
+    opacity: 0;
+    transform: var(--desde);
+  }
+}
+
+@keyframes sellar {
+  from {
+    opacity: 0;
+    transform: scale(2.2) rotate(-20deg);
+  }
+}

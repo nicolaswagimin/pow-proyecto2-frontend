@@ -1,0 +1,141 @@
+:host {
+  --px: 0;
+  --py: 0;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.forma {
+  position: absolute;
+  width: var(--tam);
+  height: var(--tam);
+  transition: transform 1100ms var(--easing-golpe);
+}
+
+/* Reacomodo: cada forma se desplaza y gira a su segunda posición. */
+:host(.alterna) .forma {
+  transform: translate(var(--dx), var(--dy)) rotate(var(--giro));
+}
+
+.paralaje,
+.cae,
+.flota {
+  position: absolute;
+  inset: 0;
+}
+
+.paralaje {
+  transform: translate(
+    calc(var(--px) * var(--prof) * -36px),
+    calc(var(--py) * var(--prof) * -36px)
+  );
+  transition: transform 500ms var(--easing-salida);
+}
+
+/* Entrada: caen desde arriba y rebotan al aterrizar, una tras otra. */
+.cae {
+  animation: caer 1100ms var(--easing-golpe) both;
+  animation-delay: calc(var(--i) * 70ms);
+}
+
+.flota {
+  animation: flotar calc(7s + var(--i) * 0.7s) var(--easing-suave) infinite alternate;
+  animation-delay: calc(var(--i) * -1.3s);
+}
+
+:host(.pausado) .flota {
+  animation-play-state: paused;
+}
+
+/* Volumen falso: una cara sombreada en diagonal y una sombra dura desplazada. */
+.sombra,
+.cara {
+  position: absolute;
+  inset: 0;
+}
+
+.sombra {
+  background: var(--color-sombra);
+  opacity: 0.85;
+  transform: translate(calc(var(--prof) * 10px), calc(var(--prof) * 10px));
+}
+
+.cara {
+  --c: var(--color-cobalto);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, white 28%, var(--c)) 0%,
+    var(--c) 48%,
+    color-mix(in srgb, black 22%, var(--c)) 100%
+  );
+}
+
+.color--rojo .cara {
+  --c: var(--color-rojo);
+}
+
+.color--amarillo .cara {
+  --c: var(--color-amarillo);
+}
+
+.color--tinta .cara {
+  --c: var(--color-tinta);
+}
+
+.forma--circulo .sombra,
+.forma--circulo .cara {
+  border-radius: 50%;
+}
+
+.forma--triangulo .sombra,
+.forma--triangulo .cara {
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.forma--media-luna .sombra,
+.forma--media-luna .cara {
+  top: 50%;
+  border-radius: 999px 999px 0 0;
+}
+
+.forma--cuarto .sombra,
+.forma--cuarto .cara {
+  border-radius: 100% 0 0 0;
+}
+
+.forma--anillo .sombra,
+.forma--anillo .cara {
+  border-radius: 50%;
+  -webkit-mask: radial-gradient(circle, transparent 52%, #000 53%);
+  mask: radial-gradient(circle, transparent 52%, #000 53%);
+}
+
+.forma--rayas .cara {
+  background: repeating-linear-gradient(90deg, var(--c) 0 12px, transparent 12px 24px);
+}
+
+.forma--rayas .sombra {
+  opacity: 0;
+}
+
+@keyframes caer {
+  0% {
+    opacity: 0;
+    transform: translateY(-110vh) rotate(-40deg);
+  }
+  40% {
+    opacity: 1;
+  }
+}
+
+@keyframes flotar {
+  from {
+    transform: translateY(-8px) rotate(-6deg);
+  }
+  to {
+    transform: translateY(10px) rotate(8deg);
+  }
+}

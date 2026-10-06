@@ -1,0 +1,79 @@
+<app-auth-layout [modo]="modoVisible()">
+  <header auth-encabezado class="encabezado" data-ola style="--i: 0">
+    <h1 #encabezado tabindex="-1">{{ textos().titulo }}</h1>
+    <span class="barra" aria-hidden="true"></span>
+    <p class="subtitulo">{{ textos().subtitulo }}</p>
+  </header>
+
+  @if (sesionExpirada()) {
+    <ui-alert tipo="info" data-ola style="--i: 1"
+      >Tu sesión expiró. Inicia sesión de nuevo.</ui-alert
+    >
+  }
+
+  @if (errorGeneral(); as error) {
+    <ui-alert tipo="error">
+      {{ error.mensaje }}
+      @if (error.accion === 'ir-a-login') {
+        <a routerLink="/login">Inicia sesión</a>
+      }
+    </ui-alert>
+  }
+
+  <form class="formulario" [formGroup]="form" (ngSubmit)="enviar()" novalidate>
+    @if (modoVisible() === 'registro') {
+      <ui-text-field
+        #campoNombre
+        formControlName="nombre"
+        label="Nombre"
+        icono="triangulo"
+        autocomplete="name"
+        [maxlength]="100"
+        [error]="errorDe('nombre')"
+      />
+    }
+
+    <ui-text-field
+      #campoEmail
+      formControlName="email"
+      label="Correo"
+      tipo="email"
+      icono="circulo"
+      autocomplete="email"
+      [error]="errorDe('email')"
+      data-ola
+      style="--i: 2"
+    />
+
+    <ui-password-field
+      formControlName="password"
+      [autocomplete]="modoVisible() === 'registro' ? 'new-password' : 'current-password'"
+      [conMedidor]="modoVisible() === 'registro'"
+      [ayuda]="modoVisible() === 'registro' ? 'Mínimo 8 caracteres.' : null"
+      [error]="errorDe('password')"
+      data-ola
+      style="--i: 3"
+    />
+
+    <div data-ola style="--i: 4">
+      <ui-button
+        tipo="submit"
+        anchoCompleto
+        [cargando]="enviando()"
+        [textoCargando]="textos().cargando"
+      >
+        {{ textos().boton }}
+      </ui-button>
+      @if (servidorLento()) {
+        <p class="lento" role="status">El servidor está despertando; puede tardar unos segundos.</p>
+      }
+    </div>
+  </form>
+
+  <p auth-pie class="cambio" data-ola style="--i: 5">
+    {{ textos().pregunta }}
+    <a [routerLink]="textos().enlace">{{ textos().enlaceTexto }}</a>
+  </p>
+
+  <div class="visually-hidden" aria-live="polite">{{ anuncio() }}</div>
+</app-auth-layout>

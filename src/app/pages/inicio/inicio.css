@@ -1,0 +1,335 @@
+:host {
+  display: block;
+  min-height: 100dvh;
+  background: var(--color-fondo);
+}
+
+/* En la pantalla de trabajo las formas acompañan sin competir con el contenido. */
+fx-formas {
+  opacity: 0.45;
+}
+
+.pagina {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- Barra superior ---------- */
+.barra {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) clamp(var(--space-4), 4vw, var(--space-10));
+  background: var(--color-superficie);
+  border-bottom: var(--borde-grueso) solid var(--color-tinta);
+  animation: bajar var(--duracion-escena) var(--easing-golpe) both;
+}
+
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  color: var(--color-texto);
+  font-family: var(--font-display);
+  font-weight: var(--peso-display);
+  font-size: var(--text-lg);
+  text-decoration: none;
+}
+
+.marca__logo {
+  display: flex;
+  gap: 3px;
+}
+
+.logo {
+  width: 14px;
+  height: 14px;
+}
+
+.logo--triangulo {
+  background: var(--color-rojo);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.logo--circulo {
+  border-radius: 50%;
+  background: var(--color-cobalto);
+}
+
+.logo--cuadrado {
+  background: var(--color-amarillo);
+  box-shadow: inset 0 0 0 2px var(--color-tinta);
+}
+
+.barra__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.perfil {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.perfil__texto {
+  display: grid;
+  line-height: 1.25;
+}
+
+.perfil__nombre {
+  font-weight: var(--peso-fuerte);
+}
+
+.perfil__correo {
+  font-size: var(--text-xs);
+  color: var(--color-texto-suave);
+}
+
+/* ---------- Contenido ---------- */
+.contenido {
+  --retraso-base: 500ms;
+  display: grid;
+  gap: var(--space-8);
+  max-width: 820px;
+  margin: 0 auto;
+  padding: var(--space-10) var(--space-4) var(--space-16);
+}
+
+.bienvenida {
+  display: grid;
+  gap: var(--space-3);
+}
+
+h1 {
+  font-size: var(--text-3xl);
+  letter-spacing: -0.03em;
+}
+
+/* Las letras del saludo caen desde arriba y rebotan, una tras otra. */
+.letra {
+  display: inline-block;
+  animation: letra-cae 700ms var(--easing-golpe) both;
+  animation-delay: calc(700ms + var(--i) * 50ms);
+}
+
+.letra:nth-child(3n + 1) {
+  --giro: -14deg;
+}
+
+.letra:nth-child(3n + 2) {
+  --giro: 10deg;
+}
+
+.bienvenida__texto {
+  color: var(--color-texto-suave);
+  font-size: var(--text-lg);
+}
+
+.panel {
+  --acento: var(--color-cobalto);
+  position: relative;
+  display: grid;
+  gap: var(--space-5);
+  padding: clamp(var(--space-5), 4vw, var(--space-8));
+  border: var(--borde-grueso) solid var(--color-tinta);
+  background: var(--color-superficie);
+  box-shadow: var(--shadow-elevacion-2);
+}
+
+.panel--rojo {
+  --acento: var(--color-rojo);
+}
+
+.panel--amarillo {
+  --acento: var(--color-amarillo);
+}
+
+/* Esquina de color: un triángulo del acento del panel. */
+.panel::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 42px;
+  height: 42px;
+  background: var(--acento);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+
+h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-xl);
+}
+
+.vineta {
+  width: 16px;
+  height: 16px;
+  background: var(--acento);
+  box-shadow: 0 0 0 2px var(--color-tinta);
+}
+
+.panel__cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-right: var(--space-8);
+}
+
+code {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+}
+
+/* ---------- Indicadores ---------- */
+.indicadores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+  padding: 0;
+  list-style: none;
+  font-weight: var(--peso-medio);
+}
+
+.indicadores li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Sin conexión: un triángulo rojo. Conectado: un círculo verde que gira a su lugar. */
+.punto {
+  width: 14px;
+  height: 14px;
+  background: var(--color-error);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  transition:
+    clip-path var(--duracion-lenta) var(--easing-golpe),
+    background-color var(--duracion-lenta);
+}
+
+.ok .punto {
+  background: var(--color-exito);
+  clip-path: circle(50%);
+}
+
+/* ---------- Formularios y lista ---------- */
+.formulario {
+  display: grid;
+  gap: var(--space-4);
+  justify-items: start;
+}
+
+.formulario ui-text-field {
+  justify-self: stretch;
+}
+
+.lista {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0;
+  list-style: none;
+}
+
+.lista__item {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border: var(--borde-grueso) solid var(--color-tinta);
+  border-left: 8px solid var(--color-amarillo);
+  background: var(--color-campo);
+}
+
+.lista__texto {
+  min-width: 0;
+}
+
+.lista__item h3 {
+  font-family: var(--font-texto);
+  font-size: var(--text-base);
+  font-weight: var(--peso-fuerte);
+  overflow-wrap: anywhere;
+}
+
+.lista__item p {
+  overflow-wrap: anywhere;
+}
+
+.lista__item small {
+  color: var(--color-texto-suave);
+}
+
+.item-entra {
+  animation: item-entra var(--duracion-lenta) var(--easing-golpe);
+}
+
+.item-sale {
+  animation: item-sale var(--duracion-media) var(--easing-entrada) forwards;
+}
+
+.vacio {
+  padding: var(--space-4);
+  text-align: center;
+  color: var(--color-texto-suave);
+  border: var(--borde-grueso) dashed var(--color-borde);
+}
+
+.respuesta {
+  padding: var(--space-4) var(--space-5);
+  border: var(--borde-grueso) solid var(--color-tinta);
+  border-left: 8px solid var(--color-cobalto);
+  background: var(--color-campo);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  animation: item-entra var(--duracion-lenta) var(--easing-golpe);
+}
+
+@media (max-width: 640px) {
+  .perfil__texto {
+    display: none;
+  }
+}
+
+@keyframes bajar {
+  from {
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes letra-cae {
+  0% {
+    opacity: 0;
+    transform: translateY(-1.4em) rotate(var(--giro, 0deg));
+  }
+  40% {
+    opacity: 1;
+  }
+}
+
+@keyframes item-entra {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+}
+
+@keyframes item-sale {
+  to {
+    opacity: 0;
+    transform: translateY(30px) rotate(4deg);
+  }
+}

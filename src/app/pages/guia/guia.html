@@ -1,0 +1,123 @@
+<fx-formas [densidad]="0.5" />
+<fx-confeti />
+
+<div class="pagina">
+  <header class="cabecera">
+    <div>
+      <p class="sobre">{{ nombreApp }} · Constructiva</p>
+      <h1>Guía de diseño</h1>
+    </div>
+    <div class="cabecera__acciones">
+      <a routerLink="/login">Ir al acceso</a>
+      <ui-theme-toggle (click)="releerColores()" />
+    </div>
+  </header>
+
+  <section class="seccion" aria-labelledby="g-color">
+    <h2 id="g-color">Color</h2>
+    <p class="nota">
+      Valores del tema actual, leídos de <code>tokens.css</code>. Cambia el tema para ver el otro
+      modo.
+    </p>
+    <ul class="muestras">
+      @for (color of colores(); track color.nombre) {
+        <li>
+          <span class="muestra-color" [style.background]="'var(' + color.nombre + ')'"></span>
+          <code>{{ color.nombre }}</code>
+          <span class="valor">{{ color.valor }}</span>
+        </li>
+      }
+    </ul>
+  </section>
+
+  <section class="seccion" aria-labelledby="g-tipo">
+    <h2 id="g-tipo">Tipografía</h2>
+    <p class="nota">Unbounded 600/800 para títulos · Archivo 400/500/700 para texto.</p>
+    @for (paso of escala; track paso) {
+      <p class="paso" [style.font-size]="'var(' + paso + ')'" [class.display]="$index < 3">
+        <code>{{ paso }}</code> Forma, color y función
+      </p>
+    }
+  </section>
+
+  <section class="seccion" aria-labelledby="g-botones">
+    <h2 id="g-botones">Botones</h2>
+    <div class="fila">
+      <ui-button>Primario</ui-button>
+      <ui-button variante="secundario">Secundario</ui-button>
+      <ui-button variante="fantasma">Fantasma</ui-button>
+      <ui-button variante="peligro">Peligro</ui-button>
+    </div>
+    <div class="fila">
+      <ui-button deshabilitado>Deshabilitado</ui-button>
+      <ui-button [cargando]="true" textoCargando="Cargando…">Cargando</ui-button>
+      <ui-button tamano="compacto"><ui-icon nombre="mas" /> Compacto</ui-button>
+      <ui-button variante="peligro" tamano="compacto" etiqueta="Eliminar"
+        ><ui-icon nombre="papelera"
+      /></ui-button>
+      <ui-button
+        variante="secundario"
+        [cargando]="cargando()"
+        textoCargando="Probando…"
+        (click)="demoCarga()"
+        >Probar carga</ui-button
+      >
+    </div>
+  </section>
+
+  <section class="seccion" aria-labelledby="g-campos">
+    <h2 id="g-campos">Campos</h2>
+    <div class="rejilla">
+      <ui-text-field
+        label="Correo"
+        tipo="email"
+        icono="circulo"
+        [formControl]="vacio"
+        ayuda="Texto de ayuda bajo el campo."
+      />
+      <ui-text-field label="Correo" tipo="email" icono="circulo" [formControl]="conValor" />
+      <ui-text-field
+        label="Correo"
+        tipo="email"
+        icono="circulo"
+        [formControl]="conError"
+        error="Escribe un correo válido, como nombre@dominio.com."
+      />
+      <ui-text-field label="Deshabilitado" icono="triangulo" [formControl]="deshabilitado" />
+      <ui-password-field [formControl]="clave" autocomplete="new-password" conMedidor />
+      <ui-text-field label="Descripción" multilinea opcional [formControl]="vacio" />
+    </div>
+  </section>
+
+  <section class="seccion" aria-labelledby="g-alertas">
+    <h2 id="g-alertas">Alertas</h2>
+    <div class="pila">
+      <ui-alert tipo="error">El correo o la contraseña no coinciden.</ui-alert>
+      <ui-alert tipo="exito">Cuenta creada. Entrando…</ui-alert>
+      <ui-alert tipo="info">Tu sesión expiró. Inicia sesión de nuevo.</ui-alert>
+      <ui-alert tipo="aviso" titulo="Servidor lento"
+        >El servidor está despertando; puede tardar unos segundos.</ui-alert
+      >
+    </div>
+  </section>
+
+  <section class="seccion" aria-labelledby="g-otros">
+    <h2 id="g-otros">Íconos, avatar y efectos</h2>
+    <div class="fila iconos">
+      @for (icono of iconos; track icono) {
+        <span class="icono" [attr.title]="icono"><ui-icon [nombre]="icono" /></span>
+      }
+    </div>
+    <div class="fila">
+      <ui-avatar iniciales="AP" />
+      <ui-avatar iniciales="NB" style="--avatar-tamano: 72px" />
+    </div>
+    <div class="demo" #muestra>
+      <p>Tarjeta de prueba para los efectos de error y éxito.</p>
+      <div class="fila">
+        <ui-button variante="peligro" (click)="demoSacudida()">Probar error</ui-button>
+        <ui-button (click)="demoCelebracion($event)">Probar éxito</ui-button>
+      </div>
+    </div>
+  </section>
+</div>

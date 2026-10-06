@@ -1,0 +1,67 @@
+<div
+  class="campo"
+  [class.campo--con-icono]="icono()"
+  [class.campo--flotante]="flotante()"
+  [class.campo--enfocado]="enfocado()"
+  [class.campo--error]="error()"
+  [class.campo--deshabilitado]="deshabilitado()"
+>
+  @if (icono(); as nombreIcono) {
+    <span class="campo__icono"><ui-icon [nombre]="nombreIcono" /></span>
+  }
+
+  @if (multilinea()) {
+    <textarea
+      #control
+      class="campo__control"
+      rows="3"
+      [id]="id"
+      [value]="valor()"
+      [disabled]="deshabilitado()"
+      [attr.maxlength]="maxlength()"
+      [attr.aria-invalid]="error() ? true : null"
+      [attr.aria-describedby]="describedBy()"
+      (input)="escribir($event)"
+      (focus)="enfocado.set(true)"
+      (blur)="salir()"
+    ></textarea>
+  } @else {
+    <input
+      #control
+      class="campo__control"
+      [id]="id"
+      [type]="tipo()"
+      [value]="valor()"
+      [disabled]="deshabilitado()"
+      [attr.autocomplete]="autocomplete()"
+      [attr.maxlength]="maxlength()"
+      [attr.inputmode]="tipo() === 'email' ? 'email' : null"
+      [attr.aria-invalid]="error() ? true : null"
+      [attr.aria-describedby]="describedBy()"
+      (input)="escribir($event)"
+      (focus)="enfocado.set(true)"
+      (blur)="salir()"
+    />
+  }
+
+  <label class="campo__label" [for]="id">
+    {{ label() }}
+    @if (opcional()) {
+      <span class="campo__opcional">(opcional)</span>
+    }
+  </label>
+
+  <span class="campo__barra" aria-hidden="true"></span>
+</div>
+
+@if (error(); as mensaje) {
+  <!-- El @for con track recrea el párrafo cuando cambia el mensaje, para que vuelva a animarse. -->
+  @for (texto of [mensaje]; track texto) {
+    <p class="campo__mensaje campo__mensaje--error" [id]="id + '-error'">
+      <ui-icon nombre="alerta" />
+      <span>{{ texto }}</span>
+    </p>
+  }
+} @else if (ayuda()) {
+  <p class="campo__mensaje" [id]="id + '-ayuda'">{{ ayuda() }}</p>
+}

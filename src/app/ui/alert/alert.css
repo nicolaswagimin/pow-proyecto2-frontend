@@ -1,0 +1,66 @@
+:host {
+  --alerta-color: var(--color-cobalto);
+  position: relative;
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-3) var(--space-4) var(--space-3) calc(var(--space-4) + 8px);
+  border: var(--borde-grueso) solid var(--color-tinta);
+  background: var(--color-superficie);
+  box-shadow: 4px 4px 0 var(--alerta-color);
+  color: var(--color-texto);
+  font-size: var(--text-sm);
+  overflow: hidden;
+  animation: deslizar-alerta var(--duracion-lenta) var(--easing-golpe) 120ms both;
+}
+
+:host([data-tipo='error']) {
+  --alerta-color: var(--color-error);
+}
+
+:host([data-tipo='exito']) {
+  --alerta-color: var(--color-exito);
+}
+
+:host([data-tipo='aviso']) {
+  --alerta-color: var(--color-aviso);
+}
+
+/* Franja de color a la izquierda: entra primero y el contenido se desliza sobre ella. */
+:host::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 8px;
+  background: var(--alerta-color);
+  transform-origin: top;
+  animation: franja-alerta var(--duracion-media) var(--easing-salida) both;
+}
+
+.icono {
+  display: grid;
+  color: var(--alerta-color);
+  --icono-tamano: 1.3rem;
+}
+
+.cuerpo {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.titulo {
+  font-weight: var(--peso-fuerte);
+}
+
+@keyframes deslizar-alerta {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+}
+
+@keyframes franja-alerta {
+  from {
+    transform: scaleY(0);
+  }
+}

@@ -1,0 +1,63 @@
+.encabezado {
+  display: grid;
+  gap: var(--space-3);
+}
+
+h1 {
+  font-size: var(--text-2xl);
+  letter-spacing: -0.02em;
+}
+
+h1:focus {
+  outline: none;
+}
+
+h1:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 6px;
+}
+
+/* Barra gruesa bajo el título, en los tres colores primarios. */
+.barra {
+  display: block;
+  height: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--color-rojo) 0 33%,
+    var(--color-amarillo) 33% 66%,
+    var(--color-cobalto) 66%
+  );
+  transform-origin: left;
+  animation: trazar-barra 600ms var(--easing-salida) 900ms both;
+}
+
+.subtitulo {
+  color: var(--color-texto-suave);
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.lento {
+  margin-top: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--color-texto-suave);
+}
+
+.cambio {
+  color: var(--color-texto-suave);
+}
+
+.cambio a {
+  display: inline-block;
+  padding: var(--space-2) var(--space-1);
+}
+
+@keyframes trazar-barra {
+  from {
+    transform: scaleX(0);
+  }
+}

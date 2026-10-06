@@ -1,0 +1,203 @@
+/* Estilos compartidos por ui-text-field y ui-password-field. */
+
+:host {
+  display: block;
+  --campo-pad: var(--space-4);
+  --campo-alto: 60px;
+}
+
+.campo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: var(--campo-alto);
+  background: var(--color-campo);
+  border-bottom: var(--borde-grueso) solid var(--color-borde);
+  transition: background-color var(--duracion-media);
+}
+
+.campo--con-icono {
+  --campo-pad: 3rem;
+}
+
+.campo__control {
+  flex: 1;
+  min-width: 0;
+  height: var(--campo-alto);
+  padding: 1.45rem var(--space-4) 0.35rem var(--campo-pad);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  outline: none;
+  font-size: var(--text-base);
+  color: var(--color-texto);
+}
+
+textarea.campo__control {
+  height: auto;
+  min-height: 108px;
+  padding-top: 1.8rem;
+  resize: vertical;
+  line-height: var(--leading-normal);
+}
+
+/* Label: sube y se reduce de golpe, con un pequeño rebote. */
+.campo__label {
+  position: absolute;
+  top: calc(var(--campo-alto) / 2);
+  left: var(--campo-pad);
+  max-width: calc(100% - var(--campo-pad) - var(--space-4));
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--color-texto-suave);
+  font-weight: var(--peso-medio);
+  transform-origin: left center;
+  transform: translateY(-50%);
+  transition:
+    transform var(--duracion-media) var(--easing-golpe),
+    color var(--duracion-media);
+  pointer-events: none;
+}
+
+/* Reglas separadas: si un navegador no entiende :autofill, no invalida las demás. */
+.campo--flotante .campo__label {
+  transform: translateY(calc(-50% - 0.95rem)) scale(0.76);
+  font-weight: var(--peso-fuerte);
+}
+
+.campo:has(.campo__control:autofill) .campo__label {
+  transform: translateY(calc(-50% - 0.95rem)) scale(0.76);
+}
+
+.campo:has(.campo__control:-webkit-autofill) .campo__label {
+  transform: translateY(calc(-50% - 0.95rem)) scale(0.76);
+}
+
+.campo__opcional {
+  font-weight: var(--peso-normal);
+}
+
+/* Ícono geométrico: gira 90° al enfocar. */
+.campo__icono {
+  position: absolute;
+  top: calc(var(--campo-alto) / 2);
+  left: var(--space-4);
+  translate: 0 -50%;
+  display: grid;
+  --icono-tamano: 1.15rem;
+  transition: transform var(--duracion-lenta) var(--easing-golpe);
+  pointer-events: none;
+}
+
+/* Subrayado en bloque: una barra gruesa de color que se dibuja de izquierda a derecha. */
+.campo__barra {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--borde-grueso) * -1);
+  height: 6px;
+  background: var(--color-primario);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--duracion-lenta) var(--easing-salida);
+  pointer-events: none;
+}
+
+/* ---------- Estados ---------- */
+@media (hover: hover) {
+  .campo:not(.campo--enfocado):not(.campo--deshabilitado):hover {
+    background: color-mix(in srgb, var(--color-campo) 80%, var(--color-texto) 6%);
+  }
+}
+
+.campo--enfocado .campo__barra {
+  transform: scaleX(1);
+}
+
+.campo--enfocado .campo__label {
+  color: var(--color-texto);
+}
+
+.campo--enfocado .campo__icono {
+  transform: rotate(90deg) scale(1.15);
+}
+
+.campo--error {
+  border-bottom-color: var(--color-error);
+}
+
+.campo--error .campo__barra {
+  background: var(--color-error);
+  transform: scaleX(1);
+}
+
+.campo--error .campo__label {
+  color: var(--color-error);
+}
+
+.campo--deshabilitado {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.campo--deshabilitado .campo__control {
+  cursor: not-allowed;
+}
+
+/* ---------- Mensajes: entran deslizándose sobre una franja de color ---------- */
+.campo__mensaje {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-texto-suave);
+  --icono-tamano: 1.05rem;
+}
+
+.campo__mensaje ui-icon {
+  margin-top: 0.1rem;
+}
+
+.campo__mensaje--error,
+.campo__mensaje--aviso {
+  padding-left: var(--space-3);
+  font-weight: var(--peso-fuerte);
+  animation: deslizar var(--duracion-lenta) var(--easing-golpe) 80ms both;
+}
+
+.campo__mensaje--error {
+  color: var(--color-error);
+}
+
+.campo__mensaje--aviso {
+  color: var(--color-aviso);
+}
+
+.campo__mensaje--error::before,
+.campo__mensaje--aviso::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: currentColor;
+  transform-origin: top;
+  animation: franja var(--duracion-media) var(--easing-salida) both;
+}
+
+@keyframes deslizar {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+}
+
+@keyframes franja {
+  from {
+    transform: scaleY(0);
+  }
+}

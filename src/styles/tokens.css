@@ -1,0 +1,131 @@
+/*
+ * Tokens de diseño · Dirección "Constructiva" (póster Bauhaus).
+ * Es el único archivo que hay que cambiar para re-tematizar el proyecto (ver docs/brief-diseno.md).
+ * Contraste verificado (WCAG AA) en ambos modos; los valores están anotados junto a cada par.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* ---------- Color · modo claro (papel) ---------- */
+  --color-fondo: #eceef2;
+  --color-superficie: #ffffff;
+  --color-campo: #f4f5f8;
+  --color-texto: #111318; /* 16:1 sobre fondo */
+  --color-texto-suave: #4a4f5c; /* 7:1 sobre fondo */
+  --color-borde: #4a4f5c; /* 7.5:1 sobre campo */
+  --color-tinta: #111318; /* contornos y sombras duras */
+  --color-sombra: #111318;
+  --color-primario: #1d46c9; /* cobalto */
+  --color-primario-contraste: #ffffff; /* 7.6:1 */
+  --color-enlace: #1d46c9; /* 6.5:1 sobre fondo */
+  --color-rojo: #d62b1e; /* 5:1 sobre blanco */
+  --color-cobalto: #1d46c9;
+  --color-amarillo: #ffc21a; /* solo decoración */
+  --color-error: #b3261e; /* 6.5:1 */
+  --color-exito: #1e7b3a; /* 5.3:1 */
+  --color-aviso: #8a5a00; /* 5.9:1 */
+  --color-foco: #d62b1e; /* 4.3:1 sobre fondo */
+
+  /* ---------- Tipografía ---------- */
+  --font-display: 'Unbounded', 'Arial Black', system-ui, sans-serif;
+  --font-texto: 'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: clamp(1.45rem, 1.1rem + 1.4vw, 1.9rem);
+  --text-3xl: clamp(2rem, 1.3rem + 2.8vw, 3.1rem);
+  --text-poster: clamp(2.6rem, 1rem + 7vw, 6.8rem);
+  --peso-normal: 400;
+  --peso-medio: 500;
+  --peso-fuerte: 700;
+  --peso-display: 800;
+  --peso-display-medio: 600;
+  --leading-ajustado: 1;
+  --leading-normal: 1.55;
+
+  /* ---------- Espaciado (escala de 4 px) ---------- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* ---------- Radios: geometría pura, casi sin redondeo ---------- */
+  --radius-control: 2px;
+  --radius-panel: 4px;
+  --radius-pill: 999px;
+  --borde-grueso: 2px;
+
+  /* ---------- Sombras duras (desplazadas, sin desenfoque) ---------- */
+  --sombra-desplazamiento: 10px;
+  --shadow-elevacion-1: 4px 4px 0 var(--color-sombra);
+  --shadow-elevacion-2: 10px 10px 0 var(--color-sombra);
+
+  /* ---------- Movimiento ---------- */
+  --duracion-rapida: 120ms;
+  --duracion-media: 220ms;
+  --duracion-lenta: 420ms;
+  --duracion-escena: 700ms;
+  --escalonado: 80ms;
+  --easing-salida: cubic-bezier(0.16, 1, 0.3, 1);
+  --easing-entrada: cubic-bezier(0.7, 0, 0.84, 0);
+  --easing-resorte: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --easing-golpe: cubic-bezier(0.2, 1.8, 0.45, 0.9);
+  --easing-suave: cubic-bezier(0.45, 0, 0.55, 1);
+}
+
+/* ---------- Color · modo oscuro (tinta) ---------- */
+/* Se repite en dos bloques: uno sigue al sistema y otro lo fija el botón de tema. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --color-fondo: #111318;
+    --color-superficie: #1c1f27;
+    --color-campo: #262a34;
+    --color-texto: #f2f2ee; /* 16.6:1 */
+    --color-texto-suave: #a8adba; /* 7.3:1 sobre superficie */
+    --color-borde: #a8adba; /* 6.4:1 sobre campo */
+    --color-tinta: #f2f2ee;
+    --color-sombra: #000000;
+    --color-primario: #ffd23f; /* amarillo */
+    --color-primario-contraste: #111318; /* 12.9:1 */
+    --color-enlace: #ffd23f; /* 11.4:1 */
+    --color-rojo: #ff6b5c; /* 5.9:1 */
+    --color-cobalto: #8fa6ff; /* 7.1:1 */
+    --color-amarillo: #ffd23f;
+    --color-error: #ff8a80; /* 7.2:1 */
+    --color-exito: #5fd38a;
+    --color-aviso: #ffb547;
+    --color-foco: #8fa6ff; /* 8:1 */
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-fondo: #111318;
+  --color-superficie: #1c1f27;
+  --color-campo: #262a34;
+  --color-texto: #f2f2ee;
+  --color-texto-suave: #a8adba;
+  --color-borde: #a8adba;
+  --color-tinta: #f2f2ee;
+  --color-sombra: #000000;
+  --color-primario: #ffd23f;
+  --color-primario-contraste: #111318;
+  --color-enlace: #ffd23f;
+  --color-rojo: #ff6b5c;
+  --color-cobalto: #8fa6ff;
+  --color-amarillo: #ffd23f;
+  --color-error: #ff8a80;
+  --color-exito: #5fd38a;
+  --color-aviso: #ffb547;
+  --color-foco: #8fa6ff;
+}

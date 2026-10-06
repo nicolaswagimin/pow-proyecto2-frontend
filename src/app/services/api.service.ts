@@ -14,6 +14,7 @@ export interface Item {
   titulo: string;
   descripcion: string;
   creado_en: string;
+  usuario_id: number;
 }
 
 export interface NuevoItem {
@@ -21,6 +22,7 @@ export interface NuevoItem {
   descripcion?: string;
 }
 
+// El token de sesión lo agrega el interceptor (core/auth.interceptor.ts).
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);

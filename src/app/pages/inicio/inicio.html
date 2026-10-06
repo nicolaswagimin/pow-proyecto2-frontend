@@ -1,0 +1,180 @@
+<fx-formas [densidad]="0.6" />
+
+<div class="pagina">
+  <header class="barra">
+    <a class="marca" routerLink="/app">
+      <span class="marca__logo" aria-hidden="true">
+        <i class="logo logo--triangulo"></i>
+        <i class="logo logo--circulo"></i>
+        <i class="logo logo--cuadrado"></i>
+      </span>
+      {{ nombreApp }}
+    </a>
+
+    <div class="barra__acciones">
+      <ui-theme-toggle />
+      <div class="perfil">
+        <!-- Bienvenida: los cuatro cuartos del avatar llegan desde las esquinas y encajan. -->
+        <ui-avatar ensamblar [iniciales]="auth.iniciales()" />
+        <div class="perfil__texto">
+          <span class="perfil__nombre">{{ usuario()?.nombre }}</span>
+          <span class="perfil__correo">{{ usuario()?.email }}</span>
+        </div>
+      </div>
+      <ui-button variante="secundario" tamano="compacto" (click)="salir()">
+        <ui-icon nombre="salir" />
+        Cerrar sesión
+      </ui-button>
+    </div>
+  </header>
+
+  <main class="contenido">
+    <section class="bienvenida">
+      <h1 [attr.aria-label]="'Hola, ' + primerNombre()">
+        <span aria-hidden="true">
+          @for (letra of letrasSaludo(); track $index) {
+            <span class="letra" [style.--i]="$index">{{ letra === ' ' ? ' ' : letra }}</span>
+          }
+        </span>
+      </h1>
+      <p class="bienvenida__texto entra" style="--i: 10">
+        Tus registros y tu asistente de IA, en un solo lugar.
+      </p>
+    </section>
+
+    <!-- 1. Estado de conexión -->
+    <section class="panel panel--rojo entra" style="--i: 11" aria-labelledby="titulo-estado">
+      <div class="panel__cabecera">
+        <h2 id="titulo-estado"><i class="vineta" aria-hidden="true"></i>Estado</h2>
+        <ui-button
+          variante="fantasma"
+          tamano="compacto"
+          [cargando]="cargandoEstado()"
+          textoCargando="Revisando…"
+          (click)="revisarEstado()"
+        >
+          <ui-icon nombre="recargar" />
+          Revisar de nuevo
+        </ui-button>
+      </div>
+
+      <ul class="indicadores">
+        <li [class.ok]="estado()?.ok">
+          <span class="punto" aria-hidden="true"></span>
+          Backend
+          <span class="visually-hidden">{{ estado()?.ok ? 'conectado' : 'sin conexión' }}</span>
+        </li>
+        <li [class.ok]="estado()?.db">
+          <span class="punto" aria-hidden="true"></span>
+          Base de datos
+          <span class="visually-hidden">{{ estado()?.db ? 'conectada' : 'sin conexión' }}</span>
+        </li>
+        <li [class.ok]="estado()?.ia">
+          <span class="punto" aria-hidden="true"></span>
+          IA
+          <span class="visually-hidden">{{ estado()?.ia ? 'configurada' : 'sin configurar' }}</span>
+        </li>
+      </ul>
+
+      @if (!cargandoEstado()) {
+        @if (!estado()) {
+          <ui-alert tipo="error" titulo="No hay conexión con el backend.">
+            Revisa que el backend esté corriendo (<code>npm run dev</code> en la carpeta
+            <code>backend</code>) y que responda en <code>{{ apiUrl }}</code
+            >. En producción, revisa también que <code>FRONTEND_URL</code> del backend incluya la
+            URL de este sitio (CORS).
+          </ui-alert>
+        } @else {
+          @if (!estado()!.db) {
+            <ui-alert tipo="aviso">
+              La base de datos no responde: revisa <code>DATABASE_URL</code> (y <code>DB_SSL</code>)
+              en el <code>.env</code> del backend.
+            </ui-alert>
+          }
+          @if (!estado()!.ia) {
+            <ui-alert tipo="aviso">
+              La IA no está configurada: agrega <code>GEMINI_API_KEY</code> en el
+              <code>.env</code> del backend.
+            </ui-alert>
+          }
+        }
+      }
+    </section>
+
+    <!-- 2. Registros -->
+    <section class="panel panel--amarillo entra" style="--i: 12" aria-labelledby="titulo-registros">
+      <h2 id="titulo-registros"><i class="vineta" aria-hidden="true"></i>Tus registros</h2>
+
+      <form class="formulario" [formGroup]="formItem" (ngSubmit)="crear()">
+        <ui-text-field formControlName="titulo" label="Título" [maxlength]="200" />
+        <ui-text-field formControlName="descripcion" label="Descripción" multilinea opcional />
+        <ui-button
+          tipo="submit"
+          [cargando]="guardando()"
+          textoCargando="Guardando…"
+          [deshabilitado]="formItem.invalid"
+        >
+          <ui-icon nombre="mas" />
+          Crear
+        </ui-button>
+      </form>
+
+      @if (errorItems()) {
+        <ui-alert tipo="error">{{ errorItems() }}</ui-alert>
+      }
+
+      <ul class="lista" aria-live="polite">
+        @for (item of items(); track item.id) {
+          <li class="lista__item" animate.enter="item-entra" animate.leave="item-sale">
+            <div class="lista__texto">
+              <h3>{{ item.titulo }}</h3>
+              @if (item.descripcion) {
+                <p>{{ item.descripcion }}</p>
+              }
+              <small>{{ item.creado_en | date: 'short' }}</small>
+            </div>
+            <ui-button
+              variante="peligro"
+              tamano="compacto"
+              [etiqueta]="'Eliminar ' + item.titulo"
+              (click)="eliminar(item)"
+            >
+              <ui-icon nombre="papelera" />
+            </ui-button>
+          </li>
+        } @empty {
+          @if (!cargandoItems()) {
+            <li class="vacio">
+              Todavía no tienes registros. Crea el primero con el formulario de arriba.
+            </li>
+          }
+        }
+      </ul>
+    </section>
+
+    <!-- 3. IA -->
+    <section class="panel panel--cobalto entra" style="--i: 13" aria-labelledby="titulo-ia">
+      <h2 id="titulo-ia"><i class="vineta" aria-hidden="true"></i>Pregúntale a la IA</h2>
+
+      <form class="formulario" [formGroup]="formIA" (ngSubmit)="preguntar()">
+        <ui-text-field formControlName="pregunta" label="Tu pregunta" multilinea />
+        <ui-button
+          tipo="submit"
+          [cargando]="pensando()"
+          textoCargando="Pensando…"
+          [deshabilitado]="formIA.invalid"
+        >
+          <ui-icon nombre="chispa" />
+          Preguntar
+        </ui-button>
+      </form>
+
+      @if (errorIA()) {
+        <ui-alert tipo="error">{{ errorIA() }}</ui-alert>
+      }
+      @if (respuesta()) {
+        <div class="respuesta" aria-live="polite">{{ respuesta() }}</div>
+      }
+    </section>
+  </main>
+</div>

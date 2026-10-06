@@ -1,0 +1,246 @@
+:host {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: var(--color-fondo);
+}
+
+/* ---------- Cabecera ---------- */
+.cabecera {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) clamp(var(--space-4), 4vw, var(--space-10));
+  animation: caer-cabecera var(--duracion-escena) var(--easing-golpe) 100ms both;
+}
+
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  color: var(--color-texto);
+  font-family: var(--font-display);
+  font-weight: var(--peso-display);
+  font-size: var(--text-lg);
+  text-decoration: none;
+}
+
+.marca__logo {
+  display: flex;
+  gap: 3px;
+}
+
+.logo {
+  width: 14px;
+  height: 14px;
+}
+
+.logo--triangulo {
+  background: var(--color-rojo);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.logo--circulo {
+  border-radius: 50%;
+  background: var(--color-cobalto);
+}
+
+.logo--cuadrado {
+  background: var(--color-amarillo);
+  box-shadow: inset 0 0 0 2px var(--color-tinta);
+}
+
+@media (hover: hover) {
+  .marca:hover .logo {
+    animation: logo-salto 500ms var(--easing-golpe);
+  }
+
+  .marca:hover .logo--circulo {
+    animation-delay: 60ms;
+  }
+
+  .marca:hover .logo--cuadrado {
+    animation-delay: 120ms;
+  }
+}
+
+/* ---------- Escena: póster a la izquierda, tarjeta a la derecha ---------- */
+.escena {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(300px, 440px);
+  align-items: center;
+  gap: clamp(var(--space-8), 6vw, var(--space-16));
+  width: min(100%, 1200px);
+  margin: 0 auto;
+  padding: var(--space-6) clamp(var(--space-4), 5vw, var(--space-12)) var(--space-16);
+}
+
+.poster {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.titular {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  max-width: none;
+  font-family: var(--font-display);
+  font-weight: var(--peso-display);
+  font-size: var(--text-poster);
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  color: var(--color-texto);
+}
+
+/* Cada palabra entra de golpe: grande, desde arriba, y se asienta con un rebote seco. */
+.palabra {
+  display: block;
+  animation: golpe 620ms var(--easing-golpe) both;
+  animation-delay: calc(var(--retraso-palabra, 400ms) + var(--i) * 150ms);
+}
+
+.palabra:nth-child(2) {
+  color: var(--color-cobalto);
+}
+
+.lema {
+  justify-self: start;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-amarillo);
+  color: #111318;
+  font-weight: var(--peso-fuerte);
+  font-size: var(--text-lg);
+  box-shadow: 4px 4px 0 var(--color-sombra);
+  animation: lema-entra var(--duracion-escena) var(--easing-golpe) 850ms both;
+}
+
+/* ---------- Tarjeta ---------- */
+.tarjeta {
+  position: relative;
+  animation: tarjeta-entra 800ms var(--easing-golpe) 300ms both;
+}
+
+.inclinacion {
+  position: relative;
+  transition: transform 160ms linear;
+  will-change: transform;
+}
+
+.sombra {
+  position: absolute;
+  inset: 0;
+  background: var(--color-sombra);
+  translate: var(--sombra-desplazamiento) var(--sombra-desplazamiento);
+  transition: translate 160ms linear;
+  animation: sombra-aterriza 500ms var(--easing-golpe) 900ms both;
+}
+
+.cara {
+  position: relative;
+  border: var(--borde-grueso) solid var(--color-tinta);
+  background: var(--color-superficie);
+  backface-visibility: hidden;
+}
+
+.destello {
+  position: absolute;
+  inset: -2px;
+  border: 5px solid var(--color-error);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.contenido {
+  --retraso-base: 650ms;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: clamp(var(--space-6), 4vw, var(--space-10));
+}
+
+@media (max-width: 860px) {
+  .escena {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-6);
+    padding-top: var(--space-2);
+  }
+
+  .titular {
+    flex-direction: row;
+    gap: 0 0.3em;
+    font-size: var(--text-3xl);
+  }
+
+  .lema {
+    font-size: var(--text-base);
+  }
+
+  .tarjeta {
+    width: min(100%, 460px);
+    justify-self: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .escena {
+    padding-inline: var(--space-4) calc(var(--space-4) + 6px);
+  }
+
+  .lema {
+    display: none;
+  }
+}
+
+@keyframes caer-cabecera {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+}
+
+@keyframes golpe {
+  0% {
+    opacity: 0;
+    transform: translateY(-60px) scale(1.6);
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes lema-entra {
+  from {
+    opacity: 0;
+    transform: translateX(-40px) rotate(-4deg);
+  }
+}
+
+@keyframes tarjeta-entra {
+  from {
+    opacity: 0;
+    transform: translateX(80px) rotate(4deg);
+  }
+}
+
+@keyframes sombra-aterriza {
+  from {
+    opacity: 0;
+    transform: translate(-10px, -10px);
+  }
+}
+
+@keyframes logo-salto {
+  50% {
+    transform: translateY(-6px) rotate(90deg);
+  }
+}
