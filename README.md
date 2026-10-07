@@ -32,14 +32,14 @@ npm run build      # genera dist/pow-proyecto2-frontend/browser
 | Archivo                                         | Se usa con             | `apiUrl`                                |
 | ----------------------------------------------- | ---------------------- | --------------------------------------- |
 | `src/environments/environment.development.ts`   | `ng serve` (local)     | `http://localhost:3002/api`             |
-| `src/environments/environment.ts`               | `ng build` (producción) | `https://TU-BACKEND.onrender.com/api`  |
+| `src/environments/environment.ts`               | `ng build` (producción) | `https://pow-proyecto2-backend.onrender.com/api` |
 
-El reemplazo lo hace `fileReplacements` en `angular.json`. **Antes de desplegar**, cambia
-`TU-BACKEND` en `environment.ts` por la URL real de tu servicio en Render.
+El reemplazo lo hace `fileReplacements` en `angular.json`. Si el servicio de Render tiene otro nombre,
+cambia la URL de `environment.ts` antes de desplegar.
 
 ## Desplegar en Vercel
 
-1. Despliega primero el backend en Render y pon su URL en `src/environments/environment.ts`. Haz commit y push.
+1. Despliega primero el backend en Render como `pow-proyecto2-backend` (la URL ya está en `src/environments/environment.ts`).
 2. En <https://vercel.com> crea un **New Project** e importa este repositorio.
 3. Configura:
    - **Framework Preset:** Angular
@@ -47,6 +47,8 @@ El reemplazo lo hace `fileReplacements` en `angular.json`. **Antes de desplegar*
    - **Output Directory:** `dist/pow-proyecto2-frontend/browser`
 4. Despliega y copia la URL que te da Vercel (por ejemplo `https://pow-proyecto2.vercel.app`).
 5. En Render, agrega esa URL a la variable `FRONTEND_URL` del backend (sin `/` al final) para que CORS la permita.
+
+`vercel.json` reescribe todas las rutas a `/index.html`, así que recargar `/login` o `/app` no da 404.
 
 ## Rutas y sesión
 

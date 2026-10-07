@@ -1,5 +1,5 @@
-// Se usa con `ng build` (producción). Cambia la URL por la de tu backend en Render.
+// Se usa con `ng build` (producción): apunta al backend desplegado en Render.
 export const environment = {
   production: true,
-  apiUrl: 'https://TU-BACKEND.onrender.com/api',
+  apiUrl: 'https://pow-proyecto2-backend.onrender.com/api',
 };
