@@ -1,7 +1,15 @@
+<div class="campo__cabecera">
+  <label class="campo__label" [for]="id">
+    {{ label() }}
+    @if (opcional()) {
+      <span class="campo__opcional">(opcional)</span>
+    }
+  </label>
+</div>
+
 <div
   class="campo"
   [class.campo--con-icono]="icono()"
-  [class.campo--flotante]="flotante()"
   [class.campo--enfocado]="enfocado()"
   [class.campo--error]="error()"
   [class.campo--deshabilitado]="deshabilitado()"
@@ -20,6 +28,7 @@
       [disabled]="deshabilitado()"
       [attr.maxlength]="maxlength()"
       [attr.aria-invalid]="error() ? true : null"
+      [attr.aria-required]="requerido() || null"
       [attr.aria-describedby]="describedBy()"
       (input)="escribir($event)"
       (focus)="enfocado.set(true)"
@@ -37,25 +46,18 @@
       [attr.maxlength]="maxlength()"
       [attr.inputmode]="tipo() === 'email' ? 'email' : null"
       [attr.aria-invalid]="error() ? true : null"
+      [attr.aria-required]="requerido() || null"
       [attr.aria-describedby]="describedBy()"
       (input)="escribir($event)"
       (focus)="enfocado.set(true)"
       (blur)="salir()"
     />
   }
-
-  <label class="campo__label" [for]="id">
-    {{ label() }}
-    @if (opcional()) {
-      <span class="campo__opcional">(opcional)</span>
-    }
-  </label>
-
-  <span class="campo__barra" aria-hidden="true"></span>
+  <ng-content select="[campo-accion]" />
 </div>
 
 @if (error(); as mensaje) {
-  <!-- El @for con track recrea el párrafo cuando cambia el mensaje, para que vuelva a animarse. -->
+  <!-- El @for con track recrea el párrafo cuando cambia el mensaje, para que vuelva a anunciarse. -->
   @for (texto of [mensaje]; track texto) {
     <p class="campo__mensaje campo__mensaje--error" [id]="id + '-error'">
       <ui-icon nombre="alerta" />

@@ -74,10 +74,9 @@ export class Guia {
     '--text-xs',
   ];
   protected readonly iconos: NombreIcono[] = [
-    'triangulo',
-    'circulo',
-    'cuadrado',
-    'media-luna',
+    'correo',
+    'candado',
+    'usuario',
     'alerta',
     'check',
     'info',

@@ -31,6 +31,8 @@ export class PasswordField implements ControlValueAccessor {
   readonly ayuda = input<string | null>(null);
   readonly error = input<string | null>(null);
   readonly conMedidor = input(false, { transform: booleanAttribute });
+  // Marca el campo como obligatorio para lectores de pantalla (aria-required).
+  readonly requerido = input(false, { transform: booleanAttribute });
 
   protected readonly id = `clave-${++contador}`;
   protected readonly valor = signal('');
@@ -38,7 +40,6 @@ export class PasswordField implements ControlValueAccessor {
   protected readonly deshabilitado = signal(false);
   protected readonly visible = signal(false);
   protected readonly mayusculas = signal(false);
-  protected readonly flotante = computed(() => this.enfocado() || this.valor() !== '');
   protected readonly describedBy = computed(() => {
     const ids = [this.error() ? `${this.id}-error` : this.ayuda() ? `${this.id}-ayuda` : null];
     if (this.mayusculas()) ids.push(`${this.id}-mayus`);

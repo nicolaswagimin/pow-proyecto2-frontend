@@ -35,12 +35,13 @@ export class TextField implements ControlValueAccessor {
   readonly multilinea = input(false, { transform: booleanAttribute });
   readonly opcional = input(false, { transform: booleanAttribute });
   readonly maxlength = input<number | null>(null);
+  // Marca el campo como obligatorio para lectores de pantalla (aria-required).
+  readonly requerido = input(false, { transform: booleanAttribute });
 
   protected readonly id = `campo-${++contador}`;
   protected readonly valor = signal('');
   protected readonly enfocado = signal(false);
   protected readonly deshabilitado = signal(false);
-  protected readonly flotante = computed(() => this.enfocado() || this.valor() !== '');
   protected readonly describedBy = computed(() => {
     if (this.error()) return `${this.id}-error`;
     return this.ayuda() ? `${this.id}-ayuda` : null;
