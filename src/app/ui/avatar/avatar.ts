@@ -1,21 +1,25 @@
-import { ChangeDetectionStrategy, Component, booleanAttribute, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
-// Avatar construido con cuatro cuartos de círculo de colores primarios y las iniciales al centro.
-// Con [ensamblar], los cuartos llegan volando desde las esquinas y encajan.
+// Iniciales del usuario en un círculo de tinta. Decorativo: el nombre se muestra al lado.
 @Component({
   selector: 'ui-avatar',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <span class="cuarto cuarto--1" aria-hidden="true"></span>
-    <span class="cuarto cuarto--2" aria-hidden="true"></span>
-    <span class="cuarto cuarto--3" aria-hidden="true"></span>
-    <span class="cuarto cuarto--4" aria-hidden="true"></span>
-    <span class="centro" aria-hidden="true">{{ iniciales() }}</span>
+  template: `<span aria-hidden="true">{{ iniciales() }}</span>`,
+  styles: `
+    :host {
+      display: inline-grid;
+      place-items: center;
+      width: var(--avatar-tamano, 44px);
+      height: var(--avatar-tamano, 44px);
+      border-radius: 50%;
+      background: var(--color-texto);
+      color: var(--color-superficie);
+      font-weight: var(--peso-fuerte);
+      font-size: calc(var(--avatar-tamano, 44px) * 0.38);
+      flex-shrink: 0;
+    }
   `,
-  styleUrl: './avatar.css',
-  host: { '[class.ensamblar]': 'ensamblar()' },
 })
 export class Avatar {
   readonly iniciales = input.required<string>();
-  readonly ensamblar = input(false, { transform: booleanAttribute });
 }

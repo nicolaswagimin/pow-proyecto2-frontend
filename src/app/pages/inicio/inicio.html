@@ -15,7 +15,7 @@
       <ui-theme-toggle />
       <div class="perfil">
         <!-- Bienvenida: los cuatro cuartos del avatar llegan desde las esquinas y encajan. -->
-        <ui-avatar ensamblar [iniciales]="auth.iniciales()" />
+        <ui-avatar [iniciales]="auth.iniciales()" />
         <div class="perfil__texto">
           <span class="perfil__nombre">{{ usuario()?.nombre }}</span>
           <span class="perfil__correo">{{ usuario()?.email }}</span>
