@@ -8,19 +8,11 @@
   [attr.aria-disabled]="cargando() || null"
   [attr.aria-busy]="cargando() || null"
   (click)="alHacerClic($event)"
-  (pointermove)="seguir($event)"
-  (pointerleave)="soltar()"
 >
-  <span class="sombra" aria-hidden="true"></span>
-  <span class="cara">
-    <span class="contenido" [attr.aria-hidden]="cargando() || null"><ng-content /></span>
-    <span class="saltos" aria-hidden="true">
-      <i class="salto salto--circulo"></i>
-      <i class="salto salto--cuadrado"></i>
-      <i class="salto salto--triangulo"></i>
-    </span>
-  </span>
   @if (cargando()) {
-    <span class="visually-hidden">{{ textoCargando() }}</span>
+    <span class="contenido" role="status">{{ textoCargando() }}</span>
+    <span class="escaneo" aria-hidden="true"></span>
+  } @else {
+    <span class="contenido"><ng-content /></span>
   }
 </button>

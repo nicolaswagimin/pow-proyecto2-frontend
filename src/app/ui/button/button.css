@@ -9,71 +9,46 @@
 .boton {
   --boton-fondo: transparent;
   --boton-texto: var(--color-texto);
-  --boton-borde: var(--color-tinta);
-  --boton-sombra: var(--color-sombra);
-  --hundir: 0px;
-  --sombra-x: 5px;
+  --boton-borde: transparent;
   position: relative;
-  display: inline-block;
-  min-height: 52px;
-  min-width: 52px;
-  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 48px;
+  min-width: 48px;
+  padding: 0 var(--space-5);
+  overflow: hidden;
   border: 0;
-  background: none;
+  border-radius: var(--radius-control);
+  background: var(--boton-fondo);
+  box-shadow: inset 0 0 0 2px var(--boton-borde);
   color: var(--boton-texto);
   font-weight: var(--peso-fuerte);
-  letter-spacing: 0.02em;
-  text-transform: none;
   -webkit-tap-highlight-color: transparent;
-  transition: translate var(--duracion-lenta) var(--easing-resorte);
+  transition: background-color var(--duracion-media);
+}
+
+.boton:focus-visible {
+  box-shadow:
+    inset 0 0 0 2px var(--boton-borde),
+    var(--anillo-foco);
 }
 
 :host(.ancho-completo) .boton {
   width: 100%;
 }
 
-/* Sombra dura: un bloque sólido desplazado detrás de la cara. */
-.sombra {
-  position: absolute;
-  inset: 0;
-  background: var(--boton-sombra);
-  transform: translate(var(--sombra-x), var(--sombra-x));
-  transition: transform var(--duracion-media) var(--easing-golpe);
-}
-
-.cara {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  min-height: inherit;
-  padding: 0 var(--space-6);
-  border: var(--borde-grueso) solid var(--boton-borde);
-  background: var(--boton-fondo);
-  transform: translate(var(--hundir), var(--hundir));
-  transition:
-    transform var(--duracion-media) var(--easing-golpe),
-    background-color var(--duracion-media);
-}
-
 .boton--compacto {
   min-height: 44px;
+  padding: 0 var(--space-3);
   font-size: var(--text-sm);
-  --sombra-x: 3px;
-}
-
-.boton--compacto .cara {
-  padding: 0 var(--space-4);
 }
 
 .contenido {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  transition:
-    opacity var(--duracion-rapida),
-    transform var(--duracion-media) var(--easing-golpe);
 }
 
 /* ---------- Variantes ---------- */
@@ -83,117 +58,68 @@
 }
 
 .boton--secundario {
-  --boton-fondo: var(--color-superficie);
+  --boton-borde: var(--color-texto);
 }
 
 .boton--fantasma {
-  --boton-borde: transparent;
-  --boton-sombra: transparent;
   --boton-texto: var(--color-enlace);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 
 .boton--peligro {
   --boton-borde: var(--color-error);
   --boton-texto: var(--color-error);
-  --boton-fondo: var(--color-superficie);
-  --boton-sombra: var(--color-error);
 }
 
 /* ---------- Estados ---------- */
-/* Hover: la cara se levanta y la sombra crece. */
 @media (hover: hover) {
-  .boton:not(:disabled):not(.cargando):hover {
-    --hundir: -3px;
+  .boton--primario:not(:disabled):not(.cargando):hover {
+    --boton-fondo: color-mix(in srgb, var(--color-primario) 85%, var(--color-texto));
   }
 
-  .boton:not(:disabled):not(.cargando):hover .sombra {
-    transform: translate(calc(var(--sombra-x) + 3px), calc(var(--sombra-x) + 3px));
+  .boton--secundario:not(:disabled):hover,
+  .boton--fantasma:not(:disabled):hover {
+    --boton-fondo: color-mix(in srgb, var(--color-texto) 8%, transparent);
   }
 
-  .boton--fantasma:not(:disabled):hover .cara {
-    text-decoration: underline;
-    text-decoration-thickness: 3px;
-    text-underline-offset: 0.25em;
+  .boton--peligro:not(:disabled):hover {
+    --boton-fondo: color-mix(in srgb, var(--color-error) 10%, transparent);
   }
 }
 
-/* Activo: la cara se hunde sobre su sombra. */
 .boton:not(:disabled):not(.cargando):active {
-  --hundir: var(--sombra-x);
+  transform: translateY(1px);
 }
 
-.boton:not(:disabled):not(.cargando):active .cara {
-  transition-duration: 50ms;
-}
-
-/* Deshabilitado: pierde el color y la sombra, con borde punteado (sin bajar el contraste del texto). */
+/* Deshabilitado: atenuado y con borde discontinuo, para que no dependa solo de la opacidad. */
 .boton:disabled {
-  --boton-fondo: var(--color-campo);
-  --boton-texto: var(--color-texto-suave);
-  --boton-borde: var(--color-borde);
+  opacity: 0.55;
   cursor: not-allowed;
+  outline: 2px dashed var(--color-borde);
+  outline-offset: -2px;
 }
 
-.boton:disabled .cara {
-  border-style: dashed;
-}
-
-.boton:disabled .sombra {
-  opacity: 0;
-}
-
-/* Cargando: la etiqueta cae y tres formas saltan en secuencia. */
+/* Cargando: el texto cambia y una línea de escaneo recorre la base, como la auditoría en curso. */
 .cargando {
   cursor: progress;
 }
 
-.cargando .contenido {
-  opacity: 0;
-  transform: translateY(14px);
-}
-
-.saltos {
+.escaneo {
   position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  opacity: 0;
-  pointer-events: none;
+  left: 0;
+  bottom: 0;
+  width: 35%;
+  height: 4px;
+  background: var(--color-marcador);
+  animation: escanear 1.1s var(--easing-suave) infinite alternate;
 }
 
-.cargando .saltos {
-  opacity: 1;
-}
-
-.salto {
-  width: 12px;
-  height: 12px;
-  background: var(--boton-texto);
-  animation: saltar 900ms var(--easing-suave) infinite;
-}
-
-.salto--circulo {
-  border-radius: 50%;
-}
-
-.salto--cuadrado {
-  animation-delay: 120ms;
-}
-
-.salto--triangulo {
-  clip-path: polygon(50% 0, 100% 100%, 0 100%);
-  animation-delay: 240ms;
-}
-
-@keyframes saltar {
-  0%,
-  60%,
-  100% {
-    transform: translateY(4px) rotate(0deg);
+@keyframes escanear {
+  from {
+    transform: translateX(0);
   }
-  30% {
-    transform: translateY(-9px) rotate(90deg);
+  to {
+    transform: translateX(186%);
   }
 }
