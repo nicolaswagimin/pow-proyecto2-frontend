@@ -84,5 +84,11 @@
   </div>
 }
 
+@if (guia()) {
+  <svg class="guia" aria-hidden="true" focusable="false">
+    <path [attr.d]="guia()" />
+  </svg>
+}
+
 <!-- La lente que viaja entre controles: decorativa, el foco real lo lleva el control. -->
 <div class="lente" #lente aria-hidden="true"></div>

@@ -96,7 +96,7 @@ dt {
 
 dd {
   margin: 0;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .nivel {
@@ -151,4 +151,22 @@ q {
   box-shadow: var(--anillo-foco);
   opacity: 0;
   pointer-events: none;
+}
+
+/* ---------- Línea guía del campo a su ficha ---------- */
+.guia {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  width: 100vw;
+  height: 100vh;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.guia path {
+  fill: none;
+  stroke: var(--color-texto);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
 }

@@ -32,6 +32,9 @@ export class Margen {
   protected readonly resumen = signal<string[]>([]);
   // En escritorio la ficha baja hasta la altura del elemento enfocado.
   protected readonly desplazamiento = signal(0);
+  // Línea guía (en coordenadas de la ventana) del campo enfocado a su ficha, como una llamada
+  // de corrección al margen. Solo en escritorio.
+  protected readonly guia = signal('');
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly ficha = viewChild<ElementRef<HTMLElement>>('ficha');
@@ -65,6 +68,7 @@ export class Margen {
       document.addEventListener('focusout', alSalir);
       ambito.addEventListener('input', alEscribir);
       addEventListener('resize', alEscribir);
+      addEventListener('scroll', alEscribir, { passive: true });
 
       // Los atributos ARIA cambian después de validar (aria-invalid, aria-describedby…).
       const observador = new MutationObserver(alEscribir);
@@ -86,6 +90,7 @@ export class Margen {
         document.removeEventListener('focusout', alSalir);
         ambito.removeEventListener('input', alEscribir);
         removeEventListener('resize', alEscribir);
+        removeEventListener('scroll', alEscribir);
         observador.disconnect();
         cancelAnimationFrame(this.cuadro);
       });
@@ -134,23 +139,37 @@ export class Margen {
       this.inspeccion.set(null);
       this.resumen.set(resumir(this.ambito()));
       this.desplazamiento.set(0);
+      this.guia.set('');
       return;
     }
     this.inspeccion.set(inspeccionar(el));
     if (this.ambito().contains(el)) this.alinear(el);
+    else this.guia.set('');
   }
 
   private alinear(el: HTMLElement): void {
-    if (!matchMedia('(min-width: 960px)').matches) {
+    const ficha = this.ficha()?.nativeElement;
+    if (!ficha || !this.visible() || !matchMedia('(min-width: 960px)').matches) {
       this.desplazamiento.set(0);
+      this.guia.set('');
       return;
     }
     const columna = this.host.getBoundingClientRect();
     const objetivo = el.getBoundingClientRect();
-    const altoFicha = this.ficha()?.nativeElement.offsetHeight ?? 0;
-    const maximo = Math.max(0, columna.height - altoFicha - 40);
+    const maximo = Math.max(0, columna.height - ficha.offsetHeight - 40);
     const deseado = objetivo.top - columna.top - 72;
-    this.desplazamiento.set(Math.round(Math.min(Math.max(deseado, 0), maximo)));
+    const nuevo = Math.round(Math.min(Math.max(deseado, 0), maximo));
+
+    // La ficha se mueve con transición: la línea apunta a donde va a quedar.
+    const cajaFicha = ficha.getBoundingClientRect();
+    const fichaArriba = cajaFicha.top - this.desplazamiento() + nuevo;
+    const x1 = Math.round(objetivo.right + 8);
+    const y1 = Math.round(objetivo.top + objetivo.height / 2);
+    const x2 = Math.round(cajaFicha.left - 6);
+    const y2 = Math.round(fichaArriba + 26);
+    const xm = Math.round(x1 + (x2 - x1) * 0.45);
+    this.guia.set(`M${x1} ${y1}H${xm}V${y2}H${x2}`);
+    this.desplazamiento.set(nuevo);
   }
 }
 
