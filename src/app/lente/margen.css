@@ -140,3 +140,15 @@ q {
 .pista {
   margin-top: var(--space-3);
 }
+
+/* ---------- La lente que recorre el orden de foco ---------- */
+.lente {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  border-radius: var(--radius-control);
+  box-shadow: var(--anillo-foco);
+  opacity: 0;
+  pointer-events: none;
+}

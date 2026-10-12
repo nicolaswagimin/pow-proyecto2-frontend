@@ -9,6 +9,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { prefiereMenosMovimiento } from '../core/movimiento';
 import { Inspeccion, inspeccionar, resumir } from './inspeccion';
 
 const CLAVE = 'a11lens.anotaciones';
@@ -34,7 +35,9 @@ export class Margen {
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly ficha = viewChild<ElementRef<HTMLElement>>('ficha');
+  private readonly lente = viewChild.required<ElementRef<HTMLElement>>('lente');
   private actual: HTMLElement | null = null;
+  private cajaAnterior: DOMRect | null = null;
   private cuadro = 0;
 
   constructor() {
@@ -46,6 +49,7 @@ export class Margen {
       const alEnfocar = (e: FocusEvent) => {
         const el = e.target as HTMLElement;
         if (!ambito.contains(el) && !this.host.contains(el)) return;
+        this.recorrer(el);
         this.actual = el;
         this.programar();
       };
@@ -92,6 +96,30 @@ export class Margen {
     this.visible.update((v) => !v);
     guardarPreferencia(this.visible());
     this.programar();
+  }
+
+  // La lente se desliza del control anterior al nuevo: hace visible el orden de foco.
+  // Con movimiento reducido no se anima; el anillo de foco del control basta.
+  private recorrer(el: HTMLElement): void {
+    const destino = el.getBoundingClientRect();
+    const origen = this.cajaAnterior;
+    this.cajaAnterior = destino;
+    if (!origen || !this.visible() || prefiereMenosMovimiento() || !this.ambito().contains(el)) {
+      return;
+    }
+    const caja = (r: DOMRect) => ({
+      transform: `translate(${r.left}px, ${r.top}px)`,
+      width: `${r.width}px`,
+      height: `${r.height}px`,
+    });
+    this.lente().nativeElement.animate(
+      [
+        { ...caja(origen), opacity: 1 },
+        { ...caja(destino), opacity: 1, offset: 0.7 },
+        { ...caja(destino), opacity: 0 },
+      ],
+      { duration: 420, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' },
+    );
   }
 
   // Agrupa las actualizaciones en un cuadro de animación: el DOM ya refleja el último cambio.
