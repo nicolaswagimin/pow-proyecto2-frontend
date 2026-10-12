@@ -141,6 +141,11 @@ q {
   margin-top: var(--space-3);
 }
 
+/* La auditoría queda al pie del margen, fuera del recorrido de la ficha. */
+.auditoria {
+  margin-top: var(--space-6);
+}
+
 /* ---------- La lente que recorre el orden de foco ---------- */
 .lente {
   position: fixed;

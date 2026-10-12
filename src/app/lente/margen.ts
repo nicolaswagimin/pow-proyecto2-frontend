@@ -10,6 +10,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { prefiereMenosMovimiento } from '../core/movimiento';
+import { Auditoria } from './auditoria';
 import { Inspeccion, inspeccionar, resumir } from './inspeccion';
 
 const CLAVE = 'a11lens.anotaciones';
@@ -20,6 +21,7 @@ const CLAVE = 'a11lens.anotaciones';
 @Component({
   selector: 'app-margen',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [Auditoria],
   templateUrl: './margen.html',
   styleUrl: './margen.css',
 })
@@ -95,6 +97,10 @@ export class Margen {
         cancelAnimationFrame(this.cuadro);
       });
     });
+  }
+
+  protected releer(): void {
+    this.programar();
   }
 
   protected alternar(): void {
