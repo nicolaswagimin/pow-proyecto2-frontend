@@ -99,8 +99,14 @@ export function etiquetaDe(el: HTMLElement): string {
 
 type Rgba = [number, number, number, number];
 
-// Acepta rgb()/rgba() y color(srgb …), que es lo que devuelve el navegador para color-mix().
+// Acepta rgb()/rgba(), color(srgb …) (lo que devuelve el navegador para color-mix()) y #rrggbb
+// (el valor tal cual de una variable CSS).
 function leerColor(valor: string): Rgba | null {
+  const hex = valor.trim().match(/^#([0-9a-f]{6})$/i);
+  if (hex) {
+    const n = parseInt(hex[1], 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255, 1];
+  }
   const rgb = valor.match(/rgba?\(([^)]+)\)/);
   if (rgb) {
     const [r, g, b, a = '1'] = rgb[1].split(/[\s,/]+/).filter(Boolean);
@@ -157,6 +163,15 @@ export function contrasteDe(el: HTMLElement): Inspeccion['contraste'] {
   const nivel =
     ratio >= (grande ? 4.5 : 7) ? 'AAA' : ratio >= (grande ? 3 : 4.5) ? 'AA' : 'No cumple';
   return { ratio: Math.round(ratio * 10) / 10, nivel };
+}
+
+// Contraste entre dos colores CSS ya resueltos (por ejemplo, dos tokens leídos con getComputedStyle).
+export function contrasteEntre(texto: string, fondo: string): number | null {
+  const a = leerColor(texto);
+  const b = leerColor(fondo);
+  if (!a || !b) return null;
+  const [mayor, menor] = [luminancia(mezclar(a, b)), luminancia(b)].sort((x, y) => y - x);
+  return Math.round(((mayor + 0.05) / (menor + 0.05)) * 10) / 10;
 }
 
 // ---------- Todo junto ----------
