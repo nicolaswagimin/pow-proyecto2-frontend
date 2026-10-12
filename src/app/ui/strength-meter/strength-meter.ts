@@ -1,18 +1,15 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { ETIQUETAS_FUERZA, calcularFuerza, pistaFuerza } from '../../core/fuerza';
 
-const FORMAS = ['triangulo', 'media-luna', 'cuadrado', 'circulo'] as const;
-
-// Medidor de fortaleza: cuatro casillas que se llenan con una forma cada una, con un pop.
+// Medidor de fortaleza: cuatro tramos que se rellenan según el nivel. El texto es la información;
+// la barra solo la acompaña.
 @Component({
   selector: 'ui-strength-meter',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="casillas" aria-hidden="true">
-      @for (forma of formas; track forma; let i = $index) {
-        <span class="casilla" [class.llena]="nivel() > i">
-          <i [class]="'forma forma--' + forma"></i>
-        </span>
+    <div class="regla" aria-hidden="true">
+      @for (tramo of tramos; track tramo) {
+        <span class="tramo" [class.tramo--lleno]="nivel() >= tramo"></span>
       }
     </div>
     <p class="texto" aria-live="polite">
@@ -22,11 +19,12 @@ const FORMAS = ['triangulo', 'media-luna', 'cuadrado', 'circulo'] as const;
     </p>
   `,
   styleUrl: './strength-meter.css',
+  host: { '[attr.data-nivel]': 'nivel()' },
 })
 export class StrengthMeter {
   readonly password = input('');
 
-  protected readonly formas = FORMAS;
+  protected readonly tramos = [1, 2, 3, 4];
   protected readonly nivel = computed(() => calcularFuerza(this.password()));
   protected readonly etiqueta = computed(() => ETIQUETAS_FUERZA[this.nivel()]);
   protected readonly pista = computed(() => pistaFuerza(this.password(), this.nivel()));

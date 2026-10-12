@@ -1,58 +1,33 @@
 :host {
   display: block;
   margin-top: var(--space-3);
-  animation: caer var(--duracion-lenta) var(--easing-golpe);
+  --medidor-color: var(--color-texto);
 }
 
-.casillas {
+:host([data-nivel='1']) {
+  --medidor-color: var(--color-error);
+}
+
+/* Cuatro tramos con borde: se distinguen llenos y vacíos sin depender del color. */
+.regla {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-2);
+  gap: 4px;
+  height: 8px;
 }
 
-.casilla {
-  display: grid;
-  place-items: center;
-  height: 30px;
-  border: var(--borde-grueso) dashed color-mix(in srgb, var(--color-texto) 35%, transparent);
-  transition: border-color var(--duracion-media);
+.tramo {
+  border: 2px solid var(--color-borde);
+  border-radius: 1px;
+  background: transparent;
+  transition:
+    background-color var(--duracion-media) var(--easing-salida),
+    border-color var(--duracion-media);
 }
 
-.casilla.llena {
-  border-style: solid;
-  border-color: var(--color-tinta);
-}
-
-.forma {
-  width: 18px;
-  height: 18px;
-  transform: scale(0) rotate(-180deg);
-  transition: transform var(--duracion-lenta) var(--easing-golpe);
-}
-
-.llena .forma {
-  transform: none;
-}
-
-.forma--triangulo {
-  background: var(--color-rojo);
-  clip-path: polygon(50% 0, 100% 100%, 0 100%);
-}
-
-.forma--media-luna {
-  height: 9px;
-  border-radius: 999px 999px 0 0;
-  background: var(--color-amarillo);
-  box-shadow: inset 0 0 0 2px var(--color-tinta);
-}
-
-.forma--cuadrado {
-  background: var(--color-tinta);
-}
-
-.forma--circulo {
-  border-radius: 50%;
-  background: var(--color-cobalto);
+.tramo--lleno {
+  border-color: var(--medidor-color);
+  background: var(--medidor-color);
 }
 
 .texto {
@@ -66,9 +41,6 @@
   color: var(--color-texto);
 }
 
-@keyframes caer {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
+:host([data-nivel='1']) .texto strong {
+  color: var(--color-error);
 }
