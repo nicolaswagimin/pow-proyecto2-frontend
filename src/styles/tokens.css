@@ -29,8 +29,11 @@
   --color-foco-exterior: #ffe14d;
 
   /* ---------- Tipografía ---------- */
-  --font-display: 'Unbounded', 'Arial Black', system-ui, sans-serif;
-  --font-texto: 'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Atkinson Hyperlegible Next: diseñada por el Braille Institute para personas con baja visión
+     (letras que no se confunden: I l 1, O 0, b d). Mono: para código y atributos. */
+  --font-display: 'Atkinson Hyperlegible Next', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-texto: 'Atkinson Hyperlegible Next', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-codigo: 'Atkinson Hyperlegible Mono', ui-monospace, 'SF Mono', Menlo, monospace;
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-base: 1rem;
@@ -40,12 +43,12 @@
   --text-3xl: clamp(2rem, 1.3rem + 2.8vw, 3.1rem);
   --text-poster: clamp(2.6rem, 1rem + 7vw, 6.8rem);
   --peso-normal: 400;
-  --peso-medio: 500;
+  --peso-medio: 400;
   --peso-fuerte: 700;
-  --peso-display: 800;
-  --peso-display-medio: 600;
-  --leading-ajustado: 1;
-  --leading-normal: 1.55;
+  --peso-display: 700;
+  --peso-display-medio: 700;
+  --leading-ajustado: 1.15;
+  --leading-normal: 1.6; /* un poco más de aire: lectura cómoda (WCAG 1.4.12) */
 
   /* ---------- Espaciado (escala de 4 px) ---------- */
   --space-1: 0.25rem;
