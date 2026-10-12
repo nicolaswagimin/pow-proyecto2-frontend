@@ -62,16 +62,18 @@
   --space-12: 3rem;
   --space-16: 4rem;
 
-  /* ---------- Radios: geometría pura, casi sin redondeo ---------- */
-  --radius-control: 2px;
-  --radius-panel: 4px;
+  /* ---------- Radios por jerarquía ---------- */
+  /* Hojas de un informe: esquinas apenas suavizadas. */
+  --radius-control: 4px;
+  --radius-panel: 8px;
   --radius-pill: 999px;
   --borde-grueso: 2px;
 
-  /* ---------- Sombras duras (desplazadas, sin desenfoque) ---------- */
-  --sombra-desplazamiento: 10px;
-  --shadow-elevacion-1: 4px 4px 0 var(--color-sombra);
-  --shadow-elevacion-2: 10px 10px 0 var(--color-sombra);
+  /* ---------- Sombras ---------- */
+  /* Hoja sobre la mesa: un borde de 1 px hace el trabajo; la sombra solo separa capas. */
+  --sombra-desplazamiento: 0px;
+  --shadow-elevacion-1: 0 1px 2px rgb(21 22 30 / 0.1);
+  --shadow-elevacion-2: 0 1px 2px rgb(21 22 30 / 0.1), 0 12px 32px -18px rgb(21 22 30 / 0.3);
 
   /* ---------- Movimiento ---------- */
   --duracion-rapida: 120ms;
