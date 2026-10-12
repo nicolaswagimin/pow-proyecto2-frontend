@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { APP_NOMBRE } from '../../config';
+import { Auditoria } from '../../lente/auditoria';
 import { Margen } from '../../lente/margen';
 import { ThemeToggle } from '../../ui/theme-toggle/theme-toggle';
 
@@ -9,7 +10,7 @@ import { ThemeToggle } from '../../ui/theme-toggle/theme-toggle';
 @Component({
   selector: 'app-auth-layout',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, Margen, ThemeToggle],
+  imports: [RouterLink, Auditoria, Margen, ThemeToggle],
   templateUrl: './auth-layout.html',
   styleUrl: './auth-layout.css',
 })

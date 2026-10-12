@@ -79,6 +79,10 @@
   border-bottom: 2px solid var(--color-linea-margen);
 }
 
+.auditoria-movil {
+  margin-top: var(--space-4);
+}
+
 /* Escritorio: formulario a la izquierda y margen a la derecha de la línea roja. */
 @media (min-width: 960px) {
   .cabecera {
@@ -100,6 +104,10 @@
     flex: 1;
     max-width: 560px;
     padding: var(--space-12) var(--space-12) var(--space-16);
+  }
+
+  .auditoria-movil {
+    display: none;
   }
 
   .margen {

@@ -175,3 +175,31 @@ q {
   stroke-width: 1.5;
   stroke-dasharray: 4 3;
 }
+
+/* ---------- Móvil: el margen va fijo arriba, así que solo muestra lo esencial ---------- */
+@media (max-width: 959px) {
+  .cabecera {
+    margin-bottom: var(--space-2);
+  }
+
+  .ficha {
+    padding: var(--space-3);
+  }
+
+  .ficha__elemento,
+  .datos,
+  .resumen,
+  .auditoria {
+    display: none;
+  }
+
+  .lector {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .pista {
+    margin-top: 0;
+  }
+}
