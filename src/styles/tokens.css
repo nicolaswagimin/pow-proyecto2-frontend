@@ -44,12 +44,9 @@
   --text-xl: 1.375rem;
   --text-2xl: clamp(1.45rem, 1.1rem + 1.4vw, 1.9rem);
   --text-3xl: clamp(2rem, 1.3rem + 2.8vw, 3.1rem);
-  --text-poster: clamp(2.6rem, 1rem + 7vw, 6.8rem);
   --peso-normal: 400;
-  --peso-medio: 400;
   --peso-fuerte: 700;
   --peso-display: 700;
-  --peso-display-medio: 700;
   --leading-ajustado: 1.15;
   --leading-normal: 1.6; /* un poco más de aire: lectura cómoda (WCAG 1.4.12) */
 
@@ -69,25 +66,18 @@
   /* Hojas de un informe: esquinas apenas suavizadas. */
   --radius-control: 4px;
   --radius-panel: 8px;
-  --radius-pill: 999px;
-  --borde-grueso: 2px;
 
   /* ---------- Sombras ---------- */
-  /* Hoja sobre la mesa: un borde de 1 px hace el trabajo; la sombra solo separa capas. */
-  --sombra-desplazamiento: 0px;
-  --shadow-elevacion-1: 0 1px 2px rgb(21 22 30 / 0.1);
+  /* Hoja sobre la mesa: un borde de 1 px hace el trabajo; la sombra solo separa la hoja del fondo. */
   --shadow-elevacion-2: 0 1px 2px rgb(21 22 30 / 0.1), 0 12px 32px -18px rgb(21 22 30 / 0.3);
 
   /* ---------- Movimiento ---------- */
   --duracion-rapida: 120ms;
   --duracion-media: 220ms;
   --duracion-lenta: 420ms;
-  --duracion-escena: 700ms;
-  --escalonado: 80ms;
   --easing-salida: cubic-bezier(0.16, 1, 0.3, 1);
   --easing-entrada: cubic-bezier(0.7, 0, 0.84, 0);
   --easing-resorte: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --easing-golpe: cubic-bezier(0.2, 1.8, 0.45, 0.9);
   --easing-suave: cubic-bezier(0.45, 0, 0.55, 1);
 }
 
