@@ -7,7 +7,8 @@ import { environment } from '../../../environments/environment';
 import { APP_NOMBRE } from '../../config';
 import { AuthService } from '../../core/auth.service';
 import { mapearError } from '../../core/errores';
-import { Formas } from '../../fx/formas/formas';
+import { Auditoria } from '../../lente/auditoria';
+import { Margen } from '../../lente/margen';
 import { ApiService, Estado, Item } from '../../services/api.service';
 import { Alert } from '../../ui/alert/alert';
 import { Avatar } from '../../ui/avatar/avatar';
@@ -23,7 +24,8 @@ import { ThemeToggle } from '../../ui/theme-toggle/theme-toggle';
     DatePipe,
     ReactiveFormsModule,
     RouterLink,
-    Formas,
+    Auditoria,
+    Margen,
     Alert,
     Avatar,
     Button,
@@ -46,11 +48,25 @@ export class Inicio {
   protected readonly primerNombre = computed(
     () => (this.usuario()?.nombre ?? '').trim().split(/\s+/)[0] || 'de nuevo',
   );
-  protected readonly letrasSaludo = computed(() => [...`Hola, ${this.primerNombre()}`]);
 
   // Estado de conexión
   protected readonly estado = signal<Estado | null>(null);
   protected readonly cargandoEstado = signal(true);
+  // El estado se presenta como una lista de verificación: cada punto dice su resultado en texto.
+  protected readonly verificacion = computed(() => {
+    const estado = this.estado();
+    const revisando = this.cargandoEstado();
+    const punto = (nombre: string, ok: boolean | undefined, falla: string) => ({
+      nombre,
+      estado: revisando ? 'revisando' : ok ? 'cumple' : 'falla',
+      resultado: revisando ? 'Revisando…' : ok ? 'Responde' : falla,
+    });
+    return [
+      punto('Backend', estado?.ok, 'No responde'),
+      punto('Base de datos', estado?.db, estado ? 'No responde' : 'Sin datos'),
+      punto('IA', estado?.ia, estado ? 'Sin configurar' : 'Sin datos'),
+    ];
+  });
 
   // Registros
   protected readonly items = signal<Item[]>([]);
