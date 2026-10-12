@@ -27,6 +27,8 @@
   /* Foco: anillo interior de tinta (18:1) y exterior de marcador; se ve sobre cualquier fondo. */
   --color-foco: #15161e;
   --color-foco-exterior: #ffe14d;
+  /* El anillo doble: interior de 2 px y exterior de 4 px. Los componentes lo suman a sus sombras. */
+  --anillo-foco: 0 0 0 2px var(--color-foco), 0 0 0 6px var(--color-foco-exterior);
 
   /* ---------- Tipografía ---------- */
   /* Atkinson Hyperlegible Next: diseñada por el Braille Institute para personas con baja visión

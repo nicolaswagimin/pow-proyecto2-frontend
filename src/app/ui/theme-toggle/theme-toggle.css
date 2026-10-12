@@ -3,75 +3,45 @@
 }
 
 .tema {
-  position: relative;
-  width: 50px;
-  height: 50px;
-  padding: 0;
-  border: 0;
-  background: none;
-}
-
-.sombra {
-  position: absolute;
-  inset: 0;
-  background: var(--color-sombra);
-  transform: translate(4px, 4px);
-  transition: transform var(--duracion-media) var(--easing-golpe);
-}
-
-.cara {
-  position: absolute;
-  inset: 0;
   display: grid;
   place-items: center;
-  border: var(--borde-grueso) solid var(--color-tinta);
-  background: var(--color-superficie);
-  transition: transform var(--duracion-media) var(--easing-golpe);
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--color-borde);
+  color: var(--color-texto);
+}
+
+.tema:focus-visible {
+  box-shadow:
+    inset 0 0 0 1px var(--color-borde),
+    var(--anillo-foco);
 }
 
 @media (hover: hover) {
-  .tema:hover .cara {
-    transform: translate(-2px, -2px);
-  }
-
-  .tema:hover .sombra {
-    transform: translate(6px, 6px);
+  .tema:hover {
+    background: color-mix(in srgb, var(--color-texto) 8%, transparent);
   }
 }
 
-.tema:active .cara {
-  transform: translate(4px, 4px);
+svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
 }
 
-/* Disco: mitad amarilla (día) y mitad de tinta (noche). */
-.disco {
-  position: relative;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  overflow: hidden;
-  box-shadow: 0 0 0 2px var(--color-tinta);
-  transform: rotate(-45deg);
-  transition: transform var(--duracion-escena) var(--easing-golpe);
-}
-
+/* La mitad rellena gira media vuelta: el contraste se invierte. */
 .mitad {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 50%;
+  fill: currentColor;
+  stroke: none;
+  transform-origin: 12px 12px;
+  transition: transform var(--duracion-lenta) var(--easing-salida);
 }
 
-.mitad--sol {
-  top: 0;
-  background: var(--color-amarillo);
-}
-
-.mitad--noche {
-  bottom: 0;
-  background: var(--color-cobalto);
-}
-
-.tema--oscuro .disco {
-  transform: rotate(135deg);
+.tema--oscuro .mitad {
+  transform: rotate(180deg);
 }

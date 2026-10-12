@@ -65,34 +65,33 @@ a {
   text-decoration-thickness: 3px;
 }
 
+/*
+ * Foco: la lente de a11Lens. Anillo doble (tinta y marcador) que se ve sobre cualquier fondo.
+ * El outline transparente es para el modo de alto contraste de Windows, donde las sombras
+ * desaparecen y el navegador pinta el outline con el color del sistema.
+ */
 :focus-visible {
-  outline: 3px solid var(--color-foco);
-  outline-offset: 3px;
+  outline: 2px solid transparent;
+  box-shadow: var(--anillo-foco);
 }
 
 ::selection {
-  background: var(--color-amarillo);
-  color: #111318;
+  background: var(--color-marcador);
+  color: var(--color-marcador-texto);
 }
 
-/* Transición de tema: el nuevo tema entra como una persiana diagonal que barre la pantalla. */
+code,
+pre,
+kbd {
+  font-family: var(--font-codigo);
+  font-size: 0.95em;
+}
+
+/* Cambio de tema: un fundido corto. */
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation: none;
-  mix-blend-mode: normal;
-}
-
-::view-transition-new(root) {
-  animation: barrer-tema var(--duracion-escena) var(--easing-salida);
-}
-
-@keyframes barrer-tema {
-  from {
-    clip-path: polygon(0 0, 0 0, -30% 100%, -30% 100%);
-  }
-  to {
-    clip-path: polygon(0 0, 130% 0, 100% 100%, -30% 100%);
-  }
+  animation-duration: var(--duracion-media);
+  animation-timing-function: var(--easing-suave);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -20,8 +20,7 @@ export class TemaService {
     });
   }
 
-  // origen: punto desde donde se expande el círculo de luz (normalmente el centro del botón).
-  alternar(origen?: { x: number; y: number }): void {
+  alternar(): void {
     const nuevo: Tema = this.tema() === 'oscuro' ? 'claro' : 'oscuro';
     const aplicar = () => {
       this.elegido = nuevo;
@@ -34,9 +33,6 @@ export class TemaService {
       aplicar();
       return;
     }
-    const raiz = document.documentElement.style;
-    raiz.setProperty('--tema-x', `${origen?.x ?? innerWidth / 2}px`);
-    raiz.setProperty('--tema-y', `${origen?.y ?? 0}px`);
     document.startViewTransition(aplicar);
   }
 
