@@ -1,10 +1,7 @@
-<fx-formas [densidad]="0.5" />
-<fx-confeti />
-
 <div class="pagina">
   <header class="cabecera">
     <div>
-      <p class="sobre">{{ nombreApp }} · Constructiva</p>
+      <p class="sobre">{{ nombreApp }}, dirección «Margen anotado»</p>
       <h1>Guía de diseño</h1>
     </div>
     <div class="cabecera__acciones">
@@ -13,111 +10,163 @@
     </div>
   </header>
 
-  <section class="seccion" aria-labelledby="g-color">
-    <h2 id="g-color">Color</h2>
-    <p class="nota">
-      Valores del tema actual, leídos de <code>tokens.css</code>. Cambia el tema para ver el otro
-      modo.
-    </p>
-    <ul class="muestras">
-      @for (color of colores(); track color.nombre) {
-        <li>
-          <span class="muestra-color" [style.background]="'var(' + color.nombre + ')'"></span>
-          <code>{{ color.nombre }}</code>
-          <span class="valor">{{ color.valor }}</span>
-        </li>
-      }
-    </ul>
-  </section>
+  <div class="hoja">
+    <main class="contenido" #contenido>
+      <section class="seccion" aria-labelledby="g-color">
+        <h2 id="g-color">Color y contraste</h2>
+        <p class="nota">
+          Valores del tema actual, leídos de <code>tokens.css</code>, con el contraste medido en
+          vivo. Cambia el tema para revisar el otro modo.
+        </p>
+        <table class="tabla">
+          <caption class="visually-hidden">
+            Contraste de cada color contra el fondo y la superficie
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Token</th>
+              <th scope="col">Valor</th>
+              <th scope="col">Sobre fondo</th>
+              <th scope="col">Sobre superficie</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (color of colores(); track color.nombre) {
+              <tr>
+                <th scope="row">
+                  <span class="muestra" [style.background]="'var(' + color.nombre + ')'"></span>
+                  <code>{{ color.nombre }}</code>
+                </th>
+                <td>
+                  <code>{{ color.valor }}</code>
+                </td>
+                <td>
+                  {{ color.sobreFondo }}:1 <span class="nivel">{{ nivel(color.sobreFondo) }}</span>
+                </td>
+                <td>
+                  {{ color.sobreSuperficie }}:1
+                  <span class="nivel">{{ nivel(color.sobreSuperficie) }}</span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <ul class="fondos">
+          @for (fondo of fondos(); track fondo.nombre) {
+            <li>
+              <span class="muestra" [style.background]="'var(' + fondo.nombre + ')'"></span>
+              <code>{{ fondo.nombre }}</code> <code class="valor">{{ fondo.valor }}</code>
+            </li>
+          }
+        </ul>
+      </section>
 
-  <section class="seccion" aria-labelledby="g-tipo">
-    <h2 id="g-tipo">Tipografía</h2>
-    <p class="nota">Unbounded 600/800 para títulos · Archivo 400/500/700 para texto.</p>
-    @for (paso of escala; track paso) {
-      <p class="paso" [style.font-size]="'var(' + paso + ')'" [class.display]="$index < 3">
-        <code>{{ paso }}</code> Forma, color y función
-      </p>
-    }
-  </section>
+      <section class="seccion" aria-labelledby="g-foco">
+        <h2 id="g-foco">Foco</h2>
+        <p class="nota">
+          El anillo doble (tinta por dentro, marcador por fuera) se distingue sobre cualquier fondo.
+          Recorre esta página con Tab para verlo.
+        </p>
+        <div class="fila">
+          <span class="anillo">Así se ve el foco</span>
+        </div>
+      </section>
 
-  <section class="seccion" aria-labelledby="g-botones">
-    <h2 id="g-botones">Botones</h2>
-    <div class="fila">
-      <ui-button>Primario</ui-button>
-      <ui-button variante="secundario">Secundario</ui-button>
-      <ui-button variante="fantasma">Fantasma</ui-button>
-      <ui-button variante="peligro">Peligro</ui-button>
-    </div>
-    <div class="fila">
-      <ui-button deshabilitado>Deshabilitado</ui-button>
-      <ui-button [cargando]="true" textoCargando="Cargando…">Cargando</ui-button>
-      <ui-button tamano="compacto"><ui-icon nombre="mas" /> Compacto</ui-button>
-      <ui-button variante="peligro" tamano="compacto" etiqueta="Eliminar"
-        ><ui-icon nombre="papelera"
-      /></ui-button>
-      <ui-button
-        variante="secundario"
-        [cargando]="cargando()"
-        textoCargando="Probando…"
-        (click)="demoCarga()"
-        >Probar carga</ui-button
-      >
-    </div>
-  </section>
+      <section class="seccion" aria-labelledby="g-tipo">
+        <h2 id="g-tipo">Tipografía</h2>
+        <p class="nota">
+          Atkinson Hyperlegible Next 400/700 para todo; Atkinson Hyperlegible Mono 400/700 para
+          código y atributos.
+        </p>
+        @for (paso of escala; track paso) {
+          <p class="paso" [style.font-size]="'var(' + paso + ')'" [class.fuerte]="$index < 3">
+            <code>{{ paso }}</code> Il1 O0 rn m: letras que no se confunden
+          </p>
+        }
+        <p class="paso"><code>&lt;input type="email" aria-required="true"&gt;</code></p>
+      </section>
 
-  <section class="seccion" aria-labelledby="g-campos">
-    <h2 id="g-campos">Campos</h2>
-    <div class="rejilla">
-      <ui-text-field
-        label="Correo"
-        tipo="email"
-        icono="correo"
-        [formControl]="vacio"
-        ayuda="Texto de ayuda bajo el campo."
-      />
-      <ui-text-field label="Correo" tipo="email" icono="correo" [formControl]="conValor" />
-      <ui-text-field
-        label="Correo"
-        tipo="email"
-        icono="correo"
-        [formControl]="conError"
-        error="Escribe un correo válido, como nombre@dominio.com."
-      />
-      <ui-text-field label="Deshabilitado" icono="usuario" [formControl]="deshabilitado" />
-      <ui-password-field [formControl]="clave" autocomplete="new-password" conMedidor />
-      <ui-text-field label="Descripción" multilinea opcional [formControl]="vacio" />
-    </div>
-  </section>
+      <section class="seccion" aria-labelledby="g-botones">
+        <h2 id="g-botones">Botones</h2>
+        <div class="fila">
+          <ui-button>Primario</ui-button>
+          <ui-button variante="secundario">Secundario</ui-button>
+          <ui-button variante="fantasma">Fantasma</ui-button>
+          <ui-button variante="peligro">Peligro</ui-button>
+        </div>
+        <div class="fila">
+          <ui-button deshabilitado>Deshabilitado</ui-button>
+          <ui-button [cargando]="true" textoCargando="Auditando…">Cargando</ui-button>
+          <ui-button tamano="compacto"><ui-icon nombre="mas" /> Compacto</ui-button>
+          <ui-button variante="peligro" tamano="compacto" etiqueta="Eliminar"
+            ><ui-icon nombre="papelera"
+          /></ui-button>
+          <ui-button
+            variante="secundario"
+            [cargando]="cargando()"
+            textoCargando="Probando…"
+            (click)="demoCarga()"
+            >Probar carga</ui-button
+          >
+        </div>
+      </section>
 
-  <section class="seccion" aria-labelledby="g-alertas">
-    <h2 id="g-alertas">Alertas</h2>
-    <div class="pila">
-      <ui-alert tipo="error">El correo o la contraseña no coinciden.</ui-alert>
-      <ui-alert tipo="exito">Cuenta creada. Entrando…</ui-alert>
-      <ui-alert tipo="info">Tu sesión expiró. Inicia sesión de nuevo.</ui-alert>
-      <ui-alert tipo="aviso" titulo="Servidor lento"
-        >El servidor está despertando; puede tardar unos segundos.</ui-alert
-      >
-    </div>
-  </section>
+      <section class="seccion" aria-labelledby="g-campos">
+        <h2 id="g-campos">Campos</h2>
+        <div class="rejilla">
+          <ui-text-field
+            label="Correo"
+            tipo="email"
+            icono="correo"
+            requerido
+            [formControl]="vacio"
+            ayuda="Texto de ayuda bajo el campo."
+          />
+          <ui-text-field label="Correo" tipo="email" icono="correo" [formControl]="conValor" />
+          <ui-text-field
+            label="Correo"
+            tipo="email"
+            icono="correo"
+            requerido
+            [formControl]="conError"
+            error="Escribe un correo válido, como nombre@dominio.com."
+          />
+          <ui-text-field label="Deshabilitado" icono="usuario" [formControl]="deshabilitado" />
+          <ui-password-field [formControl]="clave" autocomplete="new-password" conMedidor />
+          <ui-text-field label="Descripción" multilinea opcional [formControl]="vacio" />
+        </div>
+      </section>
 
-  <section class="seccion" aria-labelledby="g-otros">
-    <h2 id="g-otros">Íconos, avatar y efectos</h2>
-    <div class="fila iconos">
-      @for (icono of iconos; track icono) {
-        <span class="icono" [attr.title]="icono"><ui-icon [nombre]="icono" /></span>
-      }
-    </div>
-    <div class="fila">
-      <ui-avatar iniciales="AP" />
-      <ui-avatar iniciales="NB" style="--avatar-tamano: 72px" />
-    </div>
-    <div class="demo" #muestra>
-      <p>Tarjeta de prueba para los efectos de error y éxito.</p>
-      <div class="fila">
-        <ui-button variante="peligro" (click)="demoSacudida()">Probar error</ui-button>
-        <ui-button (click)="demoCelebracion($event)">Probar éxito</ui-button>
-      </div>
-    </div>
-  </section>
+      <section class="seccion" aria-labelledby="g-alertas">
+        <h2 id="g-alertas">Alertas</h2>
+        <div class="pila">
+          <ui-alert tipo="error">El correo o la contraseña no coinciden.</ui-alert>
+          <ui-alert tipo="exito">Cuenta creada. Entrando…</ui-alert>
+          <ui-alert tipo="info">Tu sesión expiró. Inicia sesión de nuevo.</ui-alert>
+          <ui-alert tipo="aviso" titulo="Servidor lento"
+            >El servidor está despertando; puede tardar unos segundos.</ui-alert
+          >
+        </div>
+      </section>
+
+      <section class="seccion" aria-labelledby="g-otros">
+        <h2 id="g-otros">Íconos y avatar</h2>
+        <div class="fila iconos">
+          @for (icono of iconos; track icono) {
+            <span class="icono" [attr.title]="icono"><ui-icon [nombre]="icono" /></span>
+          }
+        </div>
+        <div class="fila">
+          <ui-avatar iniciales="AP" />
+          <ui-avatar iniciales="NB" style="--avatar-tamano: 64px" />
+        </div>
+      </section>
+
+      <app-auditoria class="auditoria-movil" />
+    </main>
+
+    <aside class="margen" aria-labelledby="titulo-anotaciones">
+      <app-margen [ambito]="contenido" />
+    </aside>
+  </div>
 </div>

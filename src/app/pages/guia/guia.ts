@@ -1,19 +1,12 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  afterNextRender,
-  inject,
-  signal,
-  viewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, afterNextRender, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { APP_NOMBRE } from '../../config';
 import { leerToken } from '../../core/movimiento';
-import { Confeti } from '../../fx/confeti/confeti';
-import { Formas } from '../../fx/formas/formas';
+import { Auditoria } from '../../lente/auditoria';
+import { contrasteEntre } from '../../lente/inspeccion';
+import { Margen } from '../../lente/margen';
 import { Alert } from '../../ui/alert/alert';
 import { Avatar } from '../../ui/avatar/avatar';
 import { Button } from '../../ui/button/button';
@@ -22,34 +15,45 @@ import { PasswordField } from '../../ui/password-field/password-field';
 import { TextField } from '../../ui/text-field/text-field';
 import { ThemeToggle } from '../../ui/theme-toggle/theme-toggle';
 
+// Colores de texto y de estado: cada uno se mide contra el fondo y la superficie.
 const COLORES = [
-  '--color-fondo',
-  '--color-superficie',
-  '--color-campo',
   '--color-texto',
   '--color-texto-suave',
-  '--color-tinta',
   '--color-primario',
-  '--color-primario-contraste',
   '--color-enlace',
-  '--color-rojo',
-  '--color-cobalto',
-  '--color-amarillo',
   '--color-error',
   '--color-exito',
   '--color-aviso',
+  '--color-borde',
   '--color-foco',
 ];
 
-// Guía de estilo viva: tokens y cada componente en todos sus estados. No se enlaza desde la app.
+// Colores de superficie: no llevan texto encima salvo su par indicado.
+const FONDOS = [
+  '--color-fondo',
+  '--color-superficie',
+  '--color-marcador',
+  '--color-regla',
+  '--color-linea-margen',
+];
+
+interface Muestra {
+  nombre: string;
+  valor: string;
+  sobreFondo: number | null;
+  sobreSuperficie: number | null;
+}
+
+// Guía de estilo viva: tokens con su contraste medido en vivo y cada componente en todos sus
+// estados. Sus controles también se anotan en el margen. No se enlaza desde la app.
 @Component({
   selector: 'app-guia',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
     RouterLink,
-    Formas,
-    Confeti,
+    Auditoria,
+    Margen,
     Alert,
     Avatar,
     Button,
@@ -63,7 +67,8 @@ const COLORES = [
 })
 export class Guia {
   protected readonly nombreApp = APP_NOMBRE;
-  protected readonly colores = signal(COLORES.map((nombre) => ({ nombre, valor: '' })));
+  protected readonly colores = signal<Muestra[]>([]);
+  protected readonly fondos = signal<{ nombre: string; valor: string }[]>([]);
   protected readonly escala = [
     '--text-3xl',
     '--text-2xl',
@@ -95,11 +100,8 @@ export class Guia {
     { value: 'No editable', disabled: true },
     { nonNullable: true },
   );
-  protected readonly clave = new FormControl('Bauhaus2026!', { nonNullable: true });
+  protected readonly clave = new FormControl('Lente2026!', { nonNullable: true });
   protected readonly cargando = signal(false);
-
-  private readonly muestra = viewChild.required<ElementRef<HTMLElement>>('muestra');
-  private readonly celebracion = viewChild.required(Confeti);
 
   constructor() {
     inject(Title).setTitle(`Guía de diseño · ${APP_NOMBRE}`);
@@ -108,36 +110,35 @@ export class Guia {
 
   // El tema cambia dentro de una View Transition: se espera un momento antes de releer los tokens.
   protected releerColores(): void {
-    setTimeout(() => this.leerColores(), 150);
+    setTimeout(() => this.leerColores(), 300);
   }
 
   private leerColores(): void {
-    this.colores.set(COLORES.map((nombre) => ({ nombre, valor: leerToken(nombre) })));
+    const fondo = leerToken('--color-fondo');
+    const superficie = leerToken('--color-superficie');
+    this.colores.set(
+      COLORES.map((nombre) => {
+        const valor = leerToken(nombre);
+        return {
+          nombre,
+          valor,
+          sobreFondo: contrasteEntre(valor, fondo),
+          sobreSuperficie: contrasteEntre(valor, superficie),
+        };
+      }),
+    );
+    this.fondos.set(FONDOS.map((nombre) => ({ nombre, valor: leerToken(nombre) })));
+  }
+
+  protected nivel(ratio: number | null, minimo = 4.5): string {
+    if (ratio === null) return '';
+    if (ratio >= 7) return 'AAA';
+    if (ratio >= minimo) return 'AA';
+    return ratio >= 3 ? 'Solo controles' : 'No cumple';
   }
 
   protected demoCarga(): void {
     this.cargando.set(true);
     setTimeout(() => this.cargando.set(false), 2200);
-  }
-
-  protected demoSacudida(): void {
-    this.muestra().nativeElement.animate(
-      [
-        { transform: 'none' },
-        { transform: 'translateX(-16px) rotate(-2deg)' },
-        { transform: 'translateX(14px) rotate(1.6deg)' },
-        { transform: 'translateX(-9px) rotate(-1deg)' },
-        { transform: 'none' },
-      ],
-      { duration: 380, easing: 'linear' },
-    );
-  }
-
-  protected demoCelebracion(evento: MouseEvent): void {
-    const caja = this.muestra().nativeElement.getBoundingClientRect();
-    this.celebracion().lanzar(
-      { x: evento.clientX, y: evento.clientY },
-      { x: caja.left + caja.width / 2, y: caja.top + caja.height / 2 },
-    );
   }
 }
