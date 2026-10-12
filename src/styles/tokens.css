@@ -1,31 +1,32 @@
 /*
- * Tokens de diseño · Dirección "Constructiva" (póster Bauhaus).
- * Es el único archivo que hay que cambiar para re-tematizar el proyecto (ver docs/brief-diseno.md).
- * Contraste verificado (WCAG AA) en ambos modos; los valores están anotados junto a cada par.
+ * Tokens de diseño · a11Lens · Dirección "Margen anotado".
+ * La interfaz se lee como un informe de auditoría: tinta sobre papel, anotaciones en el margen
+ * y un marcador amarillo. El foco es la firma: anillo doble de tinta y marcador.
+ * Meta: texto principal y secundario ≥ 7:1 (AAA); estados ≥ 4.5:1; controles y foco ≥ 3:1.
+ * Ver docs/design-system.md.
  */
 
 :root {
   color-scheme: light;
 
   /* ---------- Color · modo claro (papel) ---------- */
-  --color-fondo: #eceef2;
+  --color-fondo: #f4f5f7;
   --color-superficie: #ffffff;
-  --color-campo: #f4f5f8;
-  --color-texto: #111318; /* 16:1 sobre fondo */
-  --color-texto-suave: #4a4f5c; /* 7:1 sobre fondo */
-  --color-borde: #4a4f5c; /* 7.5:1 sobre campo */
-  --color-tinta: #111318; /* contornos y sombras duras */
-  --color-sombra: #111318;
-  --color-primario: #1d46c9; /* cobalto */
-  --color-primario-contraste: #ffffff; /* 7.6:1 */
-  --color-enlace: #1d46c9; /* 6.5:1 sobre fondo */
-  --color-rojo: #d62b1e; /* 5:1 sobre blanco */
-  --color-cobalto: #1d46c9;
-  --color-amarillo: #ffc21a; /* solo decoración */
-  --color-error: #b3261e; /* 6.5:1 */
-  --color-exito: #1e7b3a; /* 5.3:1 */
-  --color-aviso: #8a5a00; /* 5.9:1 */
-  --color-foco: #d62b1e; /* 4.3:1 sobre fondo */
+  --color-texto: #15161e; /* 16.5:1 sobre fondo, 18:1 sobre superficie */
+  --color-texto-suave: #474b5c; /* 7.9:1 sobre fondo, 8.7:1 sobre superficie */
+  --color-borde: #6b6f80; /* 4.6:1 sobre fondo, 5:1 sobre superficie */
+  --color-regla: #d9dbe3; /* línea del margen (decorativa) */
+  --color-primario: #1f2a7a; /* tinta azul: 11.5:1 sobre fondo, 12.6:1 sobre superficie */
+  --color-primario-contraste: #ffffff; /* 12.6:1 sobre primario */
+  --color-enlace: #1f2a7a;
+  --color-marcador: #ffe14d; /* el marcador amarillo: fondo de anotaciones y anillo exterior del foco */
+  --color-marcador-texto: #15161e; /* 13.8:1 sobre marcador */
+  --color-error: #b42318; /* 6.6:1 sobre superficie */
+  --color-exito: #0e6b3a; /* 6.6:1 sobre superficie */
+  --color-aviso: #8a4b00; /* 6.8:1 sobre superficie */
+  /* Foco: anillo interior de tinta (18:1) y exterior de marcador; se ve sobre cualquier fondo. */
+  --color-foco: #15161e;
+  --color-foco-exterior: #ffe14d;
 
   /* ---------- Tipografía ---------- */
   --font-display: 'Unbounded', 'Arial Black', system-ui, sans-serif;
@@ -80,52 +81,56 @@
   --easing-resorte: cubic-bezier(0.34, 1.56, 0.64, 1);
   --easing-golpe: cubic-bezier(0.2, 1.8, 0.45, 0.9);
   --easing-suave: cubic-bezier(0.45, 0, 0.55, 1);
+
+  /* ---------- Alias del diseño anterior (se retiran al migrar los componentes) ---------- */
+  --color-amarillo: var(--color-marcador);
+  --color-cobalto: var(--color-primario);
+  --color-rojo: var(--color-error);
+  --color-tinta: var(--color-texto);
+  --color-sombra: var(--color-texto);
+  --color-campo: var(--color-superficie);
 }
 
-/* ---------- Color · modo oscuro (tinta) ---------- */
+/* ---------- Color · modo oscuro (pantalla de lectura) ---------- */
 /* Se repite en dos bloques: uno sigue al sistema y otro lo fija el botón de tema. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
-    --color-fondo: #111318;
-    --color-superficie: #1c1f27;
-    --color-campo: #262a34;
-    --color-texto: #f2f2ee; /* 16.6:1 */
-    --color-texto-suave: #a8adba; /* 7.3:1 sobre superficie */
-    --color-borde: #a8adba; /* 6.4:1 sobre campo */
-    --color-tinta: #f2f2ee;
-    --color-sombra: #000000;
-    --color-primario: #ffd23f; /* amarillo */
-    --color-primario-contraste: #111318; /* 12.9:1 */
-    --color-enlace: #ffd23f; /* 11.4:1 */
-    --color-rojo: #ff6b5c; /* 5.9:1 */
-    --color-cobalto: #8fa6ff; /* 7.1:1 */
-    --color-amarillo: #ffd23f;
-    --color-error: #ff8a80; /* 7.2:1 */
-    --color-exito: #5fd38a;
-    --color-aviso: #ffb547;
-    --color-foco: #8fa6ff; /* 8:1 */
+    --color-fondo: #111219;
+    --color-superficie: #1a1c26;
+    --color-texto: #f3f3ee; /* 16.8:1 sobre fondo, 15.2:1 sobre superficie */
+    --color-texto-suave: #b4b7c6; /* 9.4:1 sobre fondo, 8.5:1 sobre superficie */
+    --color-borde: #8a8ea3; /* 5.2:1 sobre superficie */
+    --color-regla: #2b2e3b;
+    --color-primario: #a9b4ff; /* 8.6:1 sobre superficie */
+    --color-primario-contraste: #111219; /* 9.5:1 sobre primario */
+    --color-enlace: #a9b4ff;
+    --color-marcador: #ffe14d;
+    --color-marcador-texto: #15161e;
+    --color-error: #ff8a80; /* 7.4:1 sobre superficie */
+    --color-exito: #6ee7a0; /* 11:1 sobre superficie */
+    --color-aviso: #ffc97a; /* 11.2:1 sobre superficie */
+    --color-foco: #ffe14d; /* 13:1 sobre superficie */
+    --color-foco-exterior: #111219;
   }
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --color-fondo: #111318;
-  --color-superficie: #1c1f27;
-  --color-campo: #262a34;
-  --color-texto: #f2f2ee;
-  --color-texto-suave: #a8adba;
-  --color-borde: #a8adba;
-  --color-tinta: #f2f2ee;
-  --color-sombra: #000000;
-  --color-primario: #ffd23f;
-  --color-primario-contraste: #111318;
-  --color-enlace: #ffd23f;
-  --color-rojo: #ff6b5c;
-  --color-cobalto: #8fa6ff;
-  --color-amarillo: #ffd23f;
+  --color-fondo: #111219;
+  --color-superficie: #1a1c26;
+  --color-texto: #f3f3ee;
+  --color-texto-suave: #b4b7c6;
+  --color-borde: #8a8ea3;
+  --color-regla: #2b2e3b;
+  --color-primario: #a9b4ff;
+  --color-primario-contraste: #111219;
+  --color-enlace: #a9b4ff;
+  --color-marcador: #ffe14d;
+  --color-marcador-texto: #15161e;
   --color-error: #ff8a80;
-  --color-exito: #5fd38a;
-  --color-aviso: #ffb547;
-  --color-foco: #8fa6ff;
+  --color-exito: #6ee7a0;
+  --color-aviso: #ffc97a;
+  --color-foco: #ffe14d;
+  --color-foco-exterior: #111219;
 }
