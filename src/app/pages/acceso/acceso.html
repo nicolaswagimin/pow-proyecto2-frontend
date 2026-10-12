@@ -1,14 +1,11 @@
 <app-auth-layout>
-  <header auth-encabezado class="encabezado" data-ola style="--i: 0">
+  <header auth-encabezado class="encabezado">
     <h1 #encabezado tabindex="-1">{{ textos().titulo }}</h1>
-    <span class="barra" aria-hidden="true"></span>
     <p class="subtitulo">{{ textos().subtitulo }}</p>
   </header>
 
   @if (sesionExpirada()) {
-    <ui-alert tipo="info" data-ola style="--i: 1"
-      >Tu sesión expiró. Inicia sesión de nuevo.</ui-alert
-    >
+    <ui-alert tipo="info">Tu sesión expiró. Inicia sesión de nuevo.</ui-alert>
   }
 
   @if (errorGeneral(); as error) {
@@ -28,6 +25,7 @@
         label="Nombre"
         icono="usuario"
         autocomplete="name"
+        requerido
         [maxlength]="100"
         [error]="errorDe('nombre')"
       />
@@ -40,22 +38,20 @@
       tipo="email"
       icono="correo"
       autocomplete="email"
+      requerido
       [error]="errorDe('email')"
-      data-ola
-      style="--i: 2"
     />
 
     <ui-password-field
       formControlName="password"
+      requerido
       [autocomplete]="modoVisible() === 'registro' ? 'new-password' : 'current-password'"
       [conMedidor]="modoVisible() === 'registro'"
       [ayuda]="modoVisible() === 'registro' ? 'Mínimo 8 caracteres.' : null"
       [error]="errorDe('password')"
-      data-ola
-      style="--i: 3"
     />
 
-    <div data-ola style="--i: 4">
+    <div>
       <ui-button
         tipo="submit"
         anchoCompleto
@@ -70,7 +66,7 @@
     </div>
   </form>
 
-  <p auth-pie class="cambio" data-ola style="--i: 5">
+  <p auth-pie class="cambio">
     {{ textos().pregunta }}
     <a [routerLink]="textos().enlace">{{ textos().enlaceTexto }}</a>
   </p>

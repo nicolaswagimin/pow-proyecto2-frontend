@@ -36,18 +36,19 @@ const EMAIL_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const TEXTOS = {
   login: {
-    titulo: 'Iniciar sesión',
-    subtitulo: 'Entra con tu correo y tu contraseña.',
+    titulo: 'Inicia sesión',
+    subtitulo:
+      'Enfoca cualquier campo: las anotaciones muestran lo que anuncia un lector de pantalla.',
     boton: 'Iniciar sesión',
     cargando: 'Iniciando sesión…',
-    pregunta: '¿Sin cuenta?',
+    pregunta: '¿No tienes cuenta?',
     enlace: '/registro',
-    enlaceTexto: 'Crear una',
+    enlaceTexto: 'Crea una',
     exito: 'Sesión iniciada. Entrando…',
   },
   registro: {
-    titulo: 'Crear cuenta',
-    subtitulo: 'Solo te toma un momento.',
+    titulo: 'Crea tu cuenta',
+    subtitulo: 'Cada campo nuevo trae su anotación: compruébalo con Tab.',
     boton: 'Crear cuenta',
     cargando: 'Creando tu cuenta…',
     pregunta: '¿Ya tienes cuenta?',
@@ -67,7 +68,7 @@ function noVacio(control: AbstractControl<string>): ValidationErrors | null {
   return control.value.trim() ? null : { required: true };
 }
 
-// Login y registro son el mismo componente: así el cambio entre ambos es un giro 3D, no una recarga.
+// Login y registro son el mismo componente: el cambio entre ambos no recarga la página.
 @Component({
   selector: 'app-acceso',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -187,7 +188,7 @@ export class Acceso {
         } else {
           this.errorGeneral.set(error);
         }
-        },
+      },
     });
   }
 
