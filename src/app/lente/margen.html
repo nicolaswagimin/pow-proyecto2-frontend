@@ -1,0 +1,85 @@
+<div class="cabecera">
+  <h2 class="titulo" id="titulo-anotaciones">Anotaciones</h2>
+  <button
+    type="button"
+    class="interruptor"
+    role="switch"
+    [attr.aria-checked]="visible()"
+    aria-describedby="titulo-anotaciones"
+    (click)="alternar()"
+  >
+    <span class="interruptor__pista" aria-hidden="true"
+      ><span class="interruptor__mando"></span
+    ></span>
+    Mostrar
+  </button>
+</div>
+
+@if (visible()) {
+  <div class="ficha" #ficha [style.transform]="'translateY(' + desplazamiento() + 'px)'">
+    @if (inspeccion(); as i) {
+      <p class="ficha__elemento">
+        <code>{{ i.etiqueta }}</code>
+      </p>
+      <dl class="datos">
+        <div>
+          <dt>Nombre accesible</dt>
+          <dd [class.falla]="!i.nombre">{{ i.nombre || 'Falta: el lector no sabrá qué es' }}</dd>
+        </div>
+        <div>
+          <dt>Rol</dt>
+          <dd>{{ i.rol }}</dd>
+        </div>
+        @if (i.estados.length) {
+          <div>
+            <dt>Estado</dt>
+            <dd>{{ i.estados.join(', ') }}</dd>
+          </div>
+        }
+        @if (i.autocomplete) {
+          <div>
+            <dt>Autocompletar</dt>
+            <dd>
+              <code>{{ i.autocomplete }}</code>
+            </dd>
+          </div>
+        }
+        @if (i.descripcion) {
+          <div>
+            <dt>Descrito por</dt>
+            <dd>{{ i.descripcion }}</dd>
+          </div>
+        }
+        @if (i.contraste; as c) {
+          <div>
+            <dt>Contraste del texto</dt>
+            <dd [class.falla]="c.nivel === 'No cumple'">
+              {{ c.ratio }}:1 <span class="nivel">{{ c.nivel }}</span>
+            </dd>
+          </div>
+        }
+        <div>
+          <dt>Tamaño del objetivo</dt>
+          <dd [class.falla]="!i.objetivo.cumple">
+            {{ i.objetivo.ancho }} × {{ i.objetivo.alto }} px
+            <span class="nivel">{{
+              i.objetivo.cumple ? 'cumple 24 × 24' : 'menos de 24 × 24'
+            }}</span>
+          </dd>
+        </div>
+      </dl>
+      <p class="lector">
+        <span class="lector__rotulo">Un lector de pantalla diría</span>
+        <q>{{ i.frase }}</q>
+      </p>
+    } @else {
+      <p class="ficha__elemento">Esta página</p>
+      <ul class="resumen">
+        @for (linea of resumen(); track linea) {
+          <li>{{ linea }}</li>
+        }
+      </ul>
+      <p class="pista">Enfoca un campo con Tab o con un clic para ver sus anotaciones.</p>
+    }
+  </div>
+}
