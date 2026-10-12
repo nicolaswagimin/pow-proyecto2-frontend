@@ -120,7 +120,7 @@ export class Margen {
     const columna = this.host.getBoundingClientRect();
     const objetivo = el.getBoundingClientRect();
     const altoFicha = this.ficha()?.nativeElement.offsetHeight ?? 0;
-    const maximo = Math.max(0, columna.height - altoFicha - 120);
+    const maximo = Math.max(0, columna.height - altoFicha - 40);
     const deseado = objetivo.top - columna.top - 72;
     this.desplazamiento.set(Math.round(Math.min(Math.max(deseado, 0), maximo)));
   }
