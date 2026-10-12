@@ -15,7 +15,8 @@
   --color-texto: #15161e; /* 16.5:1 sobre fondo, 18:1 sobre superficie */
   --color-texto-suave: #474b5c; /* 7.9:1 sobre fondo, 8.7:1 sobre superficie */
   --color-borde: #6b6f80; /* 4.6:1 sobre fondo, 5:1 sobre superficie */
-  --color-regla: #d9dbe3; /* línea del margen (decorativa) */
+  --color-regla: #d9dbe3; /* separadores finos (decorativos) */
+  --color-linea-margen: #e3a3a3; /* la línea roja del margen del cuaderno (decorativa) */
   --color-primario: #1f2a7a; /* tinta azul: 11.5:1 sobre fondo, 12.6:1 sobre superficie */
   --color-primario-contraste: #ffffff; /* 12.6:1 sobre primario */
   --color-enlace: #1f2a7a;
@@ -109,6 +110,7 @@
     --color-texto-suave: #b4b7c6; /* 9.4:1 sobre fondo, 8.5:1 sobre superficie */
     --color-borde: #8a8ea3; /* 5.2:1 sobre superficie */
     --color-regla: #2b2e3b;
+    --color-linea-margen: #6b3a42;
     --color-primario: #a9b4ff; /* 8.6:1 sobre superficie */
     --color-primario-contraste: #111219; /* 9.5:1 sobre primario */
     --color-enlace: #a9b4ff;
@@ -130,6 +132,7 @@
   --color-texto-suave: #b4b7c6;
   --color-borde: #8a8ea3;
   --color-regla: #2b2e3b;
+  --color-linea-margen: #6b3a42;
   --color-primario: #a9b4ff;
   --color-primario-contraste: #111219;
   --color-enlace: #a9b4ff;

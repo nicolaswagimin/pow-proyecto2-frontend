@@ -37,11 +37,6 @@ export class Button {
     }
   }
 
-  centro(): { x: number; y: number } {
-    const caja = this.boton().nativeElement.getBoundingClientRect();
-    return { x: caja.left + caja.width / 2, y: caja.top + caja.height / 2 };
-  }
-
   enfocar(): void {
     this.boton().nativeElement.focus();
   }
