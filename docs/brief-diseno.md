@@ -1,102 +1,94 @@
-# Brief de diseño · Proyecto 2 · Constructiva
+# Brief de diseño · a11Lens
 
-## Encargo
-- **Pantalla:** acceso (login y registro). Trabajo principal: que alguien entre o cree su cuenta en segundos, y que la primera impresión sea espectacular.
-- **Quién la usa:** un profesor evaluando el proyecto (escritorio) y cualquier persona desde el móvil.
-- **Qué debe sentir:** contundencia, juego, precisión (todo encaja con peso).
-- **Restricciones:** contraste AA, `prefers-reduced-motion`, 60 fps (solo `transform`/`opacity`), modo claro/oscuro, sin librerías de UI. El tema del proyecto aún no se conoce: el nombre vive en `nombreApp`.
-- **Prioridad del usuario:** muchas animaciones en todos los elementos (sustituye la regla de "un solo momento memorable").
+## El encargo
 
-## Dirección elegida: Constructiva
-Un póster Bauhaus que cobra vida: geometría pura (círculos, triángulos, medias lunas), colores primarios, sombras duras y tipografía gigante.
+- **Producto:** a11Lens, un autocorrector de accesibilidad web. La persona pega HTML (o una URL), la app detecta los problemas con axe-core, los explica en lenguaje simple y la IA propone el código corregido.
+- **Pantallas de este trabajo:** acceso (login y registro), bienvenida de `/app` y guía `/design`.
+- **Trabajo principal del acceso:** que alguien entre o cree su cuenta en segundos y, mientras lo hace, vea cómo trabaja el producto: inspeccionar y explicar la accesibilidad.
+- **Quién la usa:** desarrolladores y diseñadores que quieren cumplir WCAG; en la sustentación, el profesor.
+- **Qué debe sentir:** confianza (la herramienta sabe de lo que habla), claridad, precisión de auditor.
+- **Restricción que define todo:** la propia app tiene que ser ejemplar en accesibilidad. WCAG 2.2 AA como mínimo y AAA en el contraste del texto.
 
-### Paleta (contraste verificado)
-| Token | Claro (papel) | Oscuro (tinta) |
+## El problema que resuelve el rediseño
+
+El diseño anterior ("Constructiva": póster Bauhaus con titular gigante, formas en parallax, tarjeta que se inclinaba en 3D y confeti) no tenía relación con el tema. Además, una herramienta de accesibilidad con texto gigante en mayúsculas, inclinación al cursor y confeti contradice lo que audita.
+
+## Dirección elegida: Margen anotado
+
+La interfaz es el **informe de un auditor**: tinta sobre papel, con anotaciones en el margen y un marcador amarillo para lo que hay que mirar. Del lado derecho de una línea de margen (como la del cuaderno) se anota cada elemento.
+
+**La lente es el foco.** No es una lupa que persigue al cursor, porque eso dejaría fuera a quien usa teclado. El anillo de foco es la firma de la marca: un anillo doble, tinta por dentro y marcador por fuera, que se ve sobre cualquier fondo. El logo es una lupa con ese mismo anillo.
+
+### Paleta
+
+| Token | Claro (papel) | Oscuro (pantalla de lectura) |
 |---|---|---|
-| fondo | `#ECEEF2` | `#111318` |
-| superficie | `#FFFFFF` | `#1C1F27` |
-| texto | `#111318` (16:1) | `#F2F2EE` (16.6:1) |
-| texto-2 | `#4A4F5C` (8.2:1) | `#A8ADBA` (7.3:1) |
-| primario | Cobalto `#1D46C9`, texto botón `#FFFFFF` (7.6:1) | Amarillo `#FFD23F`, texto botón `#111318` (12.9:1) |
-| rojo | `#D62B1E` (5:1) | `#FF5A4A` |
-| amarillo / cobalto deco | `#FFC21A` (solo decoración) | `#6E8DFF` (5.4:1) |
-| sombra dura | `#111318` | `#000000` |
-| error | `#B3261E` | `#FF8A80` |
-| éxito | `#1E7B3A` | `#5FD38A` |
+| fondo / superficie | `#F4F5F7` / `#FFFFFF` | `#111219` / `#1A1C26` |
+| texto | `#15161E`: 16.5:1 | `#F3F3EE`: 16.8:1 |
+| texto suave | `#474B5C`: 7.9:1 | `#B4B7C6`: 9.4:1 |
+| primario (tinta azul) | `#1F2A7A`, texto blanco 12.6:1 | `#A9B4FF`, texto `#111219` 9.5:1 |
+| marcador | `#FFE14D` con texto `#15161E`: 13.8:1 | igual |
+| error / éxito / aviso | `#B42318` 6.6:1 · `#0E6B3A` 6.6:1 · `#8A4B00` 6.8:1 | `#FF8A80` 7.4:1 · `#6EE7A0` 11:1 · `#FFC97A` 11.2:1 |
 
-### Tipografía (solo estos pesos)
-- **Unbounded** 600 y 800: titular-póster y títulos.
-- **Archivo** 400, 500 y 700: texto, labels y botones.
+El texto principal y el secundario son AAA (7:1 o más) en ambos modos. La lista completa está en [design-system.md](design-system.md).
+
+### Tipografía
+
+**Atkinson Hyperlegible Next** (400 y 700) para todo y **Atkinson Hyperlegible Mono** (400 y 700) para código y atributos. La diseñó el Braille Institute para personas con baja visión: sus letras no se confunden entre sí (I l 1, O 0, rn m). En una herramienta de accesibilidad, la tipografía es parte del argumento.
 
 ### Composición
-Escritorio (asimétrica)
+
 ```
-┌──────────────────────────────────────────────────────────────┐
-│  ▲ nombreApp                                    ◐ [tema]     │
-│        ●                         ┌─────────────────────────┐ │
-│  HOLA                    ■       │ Iniciar sesión          │█│
-│  DE                              │ ━━━━━━━━━━━━━━━━━━━━━━━ │█│
-│  NUEVO.      ◗                   │ Correo                  │█│
-│                                  │ ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁ │█│
-│  ▲     Tu espacio te espera.     │ Contraseña          ◎   │█│
-│                    ●             │ ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁ │█│
-│     ◐                 ■          │ [██ Iniciar sesión ██]  │█│
-│                                  │ ¿Sin cuenta? Crear una  │█│
-│   ▲          ●                   └─────────────────────────┘█│
-│                                    ██████████████████████████│
-└──────────────────────────────────────────────────────────────┘
-```
-Móvil
-```
-┌────────────────────┐
-│ ▲ nombreApp  [◐]   │
-│ HOLA DE    ●       │
-│ NUEVO.        ■    │
-│┌──────────────────┐│
-││ Iniciar sesión   │█
-││ Correo           │█
-││ ▁▁▁▁▁▁▁▁▁▁▁▁▁▁   │█
-││ Contraseña   ◎   │█
-││ ▁▁▁▁▁▁▁▁▁▁▁▁▁▁   │█
-││[█Iniciar sesión█]│█
-││ Crear una cuenta │█
-│└──────────────────┘█
-│  ███████████████████
-└────────────────────┘
+Escritorio                                          Móvil
+┌──────────────────────────────────────────────┐    ┌──────────────────┐
+│ ◎ a11Lens                               [◐]  │    │ ◎ a11Lens    [◐] │
+│ ┌───────────────────────┬──────────────────┐ │    │ Anotaciones [■ ] │ ← fijo
+│ │ Inicia sesión         ┃ Anotaciones [■ ] │ │    │ «Correo, campo…» │
+│ │ Enfoca cualquier…     ┃ ┌──────────────┐ │ │    │━━━━━━━━━━━━━━━━━━│
+│ │ Correo                ┃ │<input email> │ │ │    │ Inicia sesión    │
+│ │ ╔══════════════════╗┄┄┃┄│Nombre: Correo│ │ │    │ Correo           │
+│ │ ╚══════════════════╝  ┃ │Rol, estado…  │ │ │    │ [______________] │
+│ │ Contraseña            ┃ │«Correo, …»   │ │ │    │ Contraseña       │
+│ │ [________________]    ┃ └──────────────┘ │ │    │ [______________] │
+│ │ [ Iniciar sesión ]    ┃ [Auditar página] │ │    │ [Iniciar sesión] │
+│ │ ¿No tienes cuenta?    ┃                  │ │    │ [Auditar página] │
+│ └───────────────────────┴──────────────────┘ │    └──────────────────┘
+└──────────────────────────────────────────────┘
 ```
 
-### Animaciones
-- **Fondo:** formas geométricas en SVG con volumen falso que flotan, giran y se mueven en parallax según el mouse, cada capa a su profundidad. Hay unas 14 formas en escritorio y unas 6 en móvil.
-- **Entrada:** las formas caen y rebotan al aterrizar, el titular se arma palabra por palabra con un golpe seco, y la tarjeta se desliza mientras su sombra dura aterriza después.
-- **Tarjeta:** inclinación 3D que sigue al cursor, con la sombra dura desplazándose en sentido contrario.
-- **Login ↔ registro:** giro 3D de dos caras (rotateY 180° con un leve rebote). **La altura de la tarjeta se anima durante el giro**: se mide cada cara y la altura del contenedor interpola entre las dos, para que el registro (con más campos) no quede cortado. Las formas del fondo se reacomodan al mismo tiempo.
-- **Campos:** el label sube y se reduce, el subrayado se dibuja como bloque grueso de color, y el ícono geométrico gira 90°.
-- **Botón:** magnético; la sombra dura crece al pasar el mouse y se hunde al hacer clic. Al enviar se convierte en círculo, cuadrado y triángulo que saltan en secuencia.
-- **Medidor de contraseña:** cuatro bloques que aparecen con pop y cambian de forma: triángulo rojo, media luna, cuadrado y círculo cobalto.
-- **Mostrar contraseña:** ojo con iris de diafragma de cámara que se abre en láminas.
-- **Error:** sacudida seca con inclinación, y el mensaje entra deslizándose sobre una franja roja.
-- **Éxito:** confeti de formas geométricas primarias con giro, y un check que cae como sello estampado.
-- **Bienvenida en `/app`:** las formas se ensamblan en el avatar y el nombre se arma con letras que caen.
-- **Tema:** un disco que gira y revela su mitad oscura (media luna Bauhaus) con un rebote seco.
+Alineación a la izquierda. La línea del margen separa el contenido de las anotaciones; una línea guía discontinua une el campo enfocado con su ficha.
 
-### Rendimiento y accesibilidad
-- Las animaciones del fondo se pausan con `visibilitychange` (`animation-play-state` y parada del rAF de parallax).
-- La cantidad de formas depende del ancho de pantalla, y el parallax se actualiza dentro de `requestAnimationFrame`.
-- En dispositivos táctiles se desactivan la inclinación 3D, el botón magnético y el parallax del cursor.
-- Con `prefers-reduced-motion`, el giro pasa a un fundido, las formas quedan quietas y no hay confeti.
-- El tema recuerda la elección en `localStorage`; la primera vez usa `prefers-color-scheme`.
+### El login es una demostración del producto
+
+1. El formulario se anota a sí mismo. Al enfocar un campo (con Tab o con un clic), el margen muestra una ficha de marcador con lo que la herramienta inspecciona, **calculado en vivo desde el DOM**: la etiqueta del elemento, su nombre accesible, el rol, los estados (obligatorio, inválido), el autocompletar, la descripción enlazada, el contraste real de su texto y el tamaño del objetivo (WCAG 2.5.8).
+2. Debajo, **lo que diría un lector de pantalla**: «Correo, campo de texto (correo), obligatorio, ana@ejemplo.com».
+3. Al tabular, un anillo viaja del control anterior al nuevo: se ve el orden de foco.
+4. Si hay un error, la ficha muestra "inválido" y el mensaje enlazado con `aria-describedby`. Así se ve que el error también se anuncia.
+5. "Auditar esta página" carga axe-core bajo demanda y lo corre sobre el propio login: el resultado real es "0 problemas".
+6. Un interruptor (`role="switch"`) oculta las anotaciones y recuerda la elección.
+
+### Extensión a `/app`
+
+`/app` es la misma hoja anotada: el contenido a la izquierda y el margen a la derecha, que anota cualquier control enfocado y permite auditar la página. El estado del sistema es una lista de verificación con resultado en texto ("Responde", "No responde", "Sin configurar"). Lo que falla se resalta con el marcador. Las secciones son apartados con regla, no tarjetas.
+
+## Revisión contra lo genérico
+
+| Default genérico | Qué se hizo |
+|---|---|
+| Lupa que sigue al cursor | La lente es el foco: funciona con teclado y no depende del mouse. |
+| Tarjeta 3D, confeti, partículas | Nada de eso. El único elemento móvil es la anotación del elemento enfocado. |
+| Tarjetas redondeadas idénticas | Apartados de informe con regla bajo el título. La única "tarjeta" es la ficha de marcador, y tiene un motivo. |
+| Fondo casi negro con acento ácido | El amarillo es un marcador real sobre papel. En oscuro es una pantalla de lectura con el mismo marcador. |
+| Monoespaciado de adorno | Solo en código y atributos (`<input type="email">`, `current-password`, la frase del lector). |
+
+## Direcciones descartadas
+
+- **Laboratorio óptico:** lentes, aberración cromática y escalas de dioptrías. Se descartó porque la aberración cromática daña el contraste y la estética de "óptica" no dice nada de WCAG.
+- **Terminal de auditoría:** salida de consola con líneas `PASS` / `FAIL`. Se descartó porque deja fuera a los diseñadores, que también usan la herramienta, y se acerca al cliché de fondo negro con acento verde.
 
 ## Textos
-- Titular: "HOLA DE NUEVO." / registro: "EMPIEZA AQUÍ."
-- Login: botón "Iniciar sesión", enlace "¿Sin cuenta? Crear una".
-- Registro: botón "Crear cuenta", enlace "¿Ya tienes cuenta? Inicia sesión".
-- Errores: los mismos mensajes que en el resto del sistema (credenciales, correo duplicado, contraseña corta, correo inválido, servidor caído, demasiados intentos).
 
-## Direcciones de los otros proyectos (no reutilizar aquí)
-- **Bioluminiscencia (Proyecto 1):** océano nocturno con plancton en canvas, vidrio cáustico, morph líquido y burbujas.
-- **Hora Dorada (Proyecto 3):** atardecer en el desierto con brillo holográfico, panel solar con rebote y estallido solar.
-
-## Cómo re-tematizar
-- Cambia los tres primarios (`--color-rojo`, `--color-primario` y `--color-amarillo`) y la tinta en `src/styles/tokens.css`. Las formas del fondo y el confeti usan esos tokens.
-- Cambia las familias en `--font-display` y `--font-texto`.
-- Cambia `nombreApp` y el titular-póster.
+- Login: "Inicia sesión" / "Enfoca cualquier campo: las anotaciones muestran lo que anuncia un lector de pantalla." Botón "Iniciar sesión". Enlace "¿No tienes cuenta? Crea una".
+- Registro: "Crea tu cuenta" / "Cada campo nuevo trae su anotación: compruébalo con Tab." Botón "Crear cuenta".
+- Margen: "Anotaciones", "Mostrar anotaciones", "Un lector de pantalla diría", "Auditar esta página", "0 problemas. N reglas de WCAG 2.2 A y AA superadas."
+- Errores: "El correo o la contraseña no coinciden.", "Ese correo ya tiene una cuenta.", "Escribe un correo válido, como nombre@dominio.com.", "No pudimos conectar con el servidor. Revisa tu conexión e inténtalo de nuevo."
