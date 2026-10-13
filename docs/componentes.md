@@ -1,0 +1,106 @@
+# Componentes
+
+Todos son standalone, con `ChangeDetectionStrategy.OnPush`, `input()` / `output()` y signals. Solo usan tokens de `tokens.css`. Se ven en todos sus estados en `/design`, donde además se pueden anotar y auditar.
+
+## La lente (`app/lente/`)
+
+### `inspeccion.ts` (funciones)
+
+| Función | Qué devuelve |
+|---|---|
+| `inspeccionar(el)` | `Inspeccion`: etiqueta (`<input type="email">`), nombre accesible, rol en palabras, estados, descripción enlazada, autocompletar, contraste del texto con su nivel, tamaño del objetivo y la frase del lector de pantalla |
+| `nombreAccesible(el)` | Nombre en el orden de accname simplificado: `aria-labelledby`, `aria-label`, `<label for>`, `<label>` envolvente, `title` y, en botones, enlaces y títulos, su texto |
+| `rolDe(el)` | "campo de texto (correo)", "campo de contraseña", "botón", "enlace", "interruptor", "encabezado de nivel 1"… |
+| `estadosDe(el)` | "obligatorio", "inválido", "no disponible", "ocupado", "presionado", "activado"… |
+| `contrasteDe(el)` | Contraste del color del texto contra su fondo real (sube por los ancestros mezclando fondos semitransparentes) y su nivel: AAA, AA o "No cumple", según si el texto es grande |
+| `contrasteEntre(a, b)` | Contraste entre dos colores CSS (`#rrggbb`, `rgb()`, `color(srgb …)`) |
+| `resumir(ambito)` | Idioma de la página, cantidad de títulos y campos, y cuántos controles no tienen nombre accesible |
+
+### `app-margen`
+
+| Input | Tipo | Descripción |
+|---|---|---|
+| `ambito` | `HTMLElement` (requerido) | Parte de la página que se anota |
+
+- Escucha `focusin` y `focusout` en el documento; anota los elementos del ámbito y los del propio margen.
+- Se actualiza al escribir y cuando cambian `aria-invalid`, `aria-describedby`, `aria-busy`, `disabled` o `aria-pressed` (MutationObserver), agrupando los cambios en un `requestAnimationFrame`.
+- Sin foco, muestra el resumen de la página.
+- **Interruptor** "Mostrar anotaciones" (`role="switch"`, `aria-checked`), recordado en `localStorage` (`a11lens.anotaciones`).
+- **Ficha:** en escritorio se desliza hasta la altura del campo enfocado sin pasar de la auditoría, y una línea guía discontinua la une con el campo. En móvil el margen queda fijo arriba y solo muestra la frase del lector.
+- **Lente:** al tabular, un anillo viaja del control anterior al nuevo y se desvanece.
+- No es `aria-live`: quien usa lector ya escucha el campo, y repetirlo lo duplicaría.
+
+### `app-auditoria`
+
+| Input / output | Tipo | Descripción |
+|---|---|---|
+| `textoBoton` | `string` | Por defecto "Auditar esta página" |
+| `termino` (output) | `void` | Al terminar, para que el margen relea el botón (su texto cambió) |
+
+Importa `axe-core` solo al pulsar el botón y corre las reglas de WCAG 2.2 A y AA sobre el documento. El resultado va en un `role="status"`: "0 problemas. N reglas superadas", o la lista de problemas con su impacto (crítico, grave, moderado, menor), la cantidad de elementos y el enlace a la explicación. Si no puede cargar axe, lo dice.
+
+## Base (`app/ui/`)
+
+### `ui-button`
+
+| Input | Tipo | Por defecto |
+|---|---|---|
+| `variante` | `'primario' \| 'secundario' \| 'fantasma' \| 'peligro'` | `'primario'` |
+| `tipo` | `'button' \| 'submit'` | `'button'` |
+| `tamano` | `'normal' \| 'compacto'` | `'normal'` (48 px; compacto 44 px) |
+| `cargando` | `boolean` | `false` |
+| `textoCargando` | `string` | `'Cargando…'` |
+| `deshabilitado` | `boolean` | `false` |
+| `anchoCompleto` | `boolean` | `false` |
+| `etiqueta` | `string \| null` | Para botones de solo ícono |
+
+Estados: hover (solo con puntero), foco (anillo doble), presionado (baja 1 px), deshabilitado (55 % y borde discontinuo, para no depender solo de la opacidad), cargando (el texto cambia a `textoCargando` dentro de un `role="status"`, una línea de marcador recorre la base, `aria-busy` y el clic no hace nada). El fantasma va subrayado, como un enlace.
+
+Método público: `enfocar()`.
+
+### `ui-text-field`
+
+Compatible con Reactive Forms (`ControlValueAccessor`).
+
+| Input | Tipo | Descripción |
+|---|---|---|
+| `label` | `string` (requerido) | Visible, arriba y en negrita |
+| `tipo` | `'text' \| 'email'` | `email` agrega `inputmode="email"` |
+| `autocomplete` | `string` | |
+| `icono` | `NombreIcono \| null` | Decorativo |
+| `ayuda` | `string \| null` | Enlazada con `aria-describedby` |
+| `error` | `string \| null` | Activa `aria-invalid`, reemplaza la ayuda y se subraya con el marcador |
+| `requerido` | `boolean` | `aria-required="true"` |
+| `multilinea`, `opcional`, `maxlength` | | |
+
+Estados: reposo (borde de 2 px), hover, foco (borde de tinta y anillo doble en todo el campo), error (borde rojo, ícono y mensaje con ícono), deshabilitado (rayado diagonal además de la opacidad).
+
+### `ui-password-field`
+
+Igual que el campo de texto (`label`, `autocomplete`, `ayuda`, `error`, `requerido`) más `conMedidor`. Botón de mostrar u ocultar con `aria-label` y `aria-pressed`, sin perder el foco ni el cursor. Aviso de Bloq Mayús con `aria-live`.
+
+### `ui-strength-meter`
+
+`password: string`. Cuatro tramos con borde que se rellenan según el nivel; el débil usa el color de error. El texto ("Fortaleza: Fuerte. …") es la información y se anuncia con `aria-live`; los tramos son `aria-hidden`.
+
+### `ui-alert`
+
+`tipo: 'error' | 'exito' | 'info' | 'aviso'`, `titulo: string | null`. Anotación con borde lateral de 6 px, ícono y texto. Errores con `role="alert"`; el resto, `role="status"`.
+
+### `ui-avatar`
+
+`iniciales: string`. Círculo de tinta. `aria-hidden`: el nombre se muestra al lado.
+
+### `ui-icon`
+
+`nombre: NombreIcono`. Íconos de función (correo, candado, usuario, alerta, check…), siempre decorativos.
+
+### `ui-theme-toggle`
+
+El símbolo de contraste: un círculo mitad tinta, mitad papel. Al cambiar de tema, la mitad rellena gira media vuelta. `aria-label` dice a qué modo cambia.
+
+## Plantilla
+
+### `app-auth-layout`
+
+Slots: `[auth-encabezado]`, contenido por defecto y `[auth-pie]`, todos dentro de `<main>`, que es el ámbito del margen. Al lado, un `<aside aria-labelledby="titulo-anotaciones">` con `app-margen`. En móvil suma una `app-auditoria` al pie del formulario.
