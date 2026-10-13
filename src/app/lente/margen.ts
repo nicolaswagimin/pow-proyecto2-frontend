@@ -170,9 +170,10 @@ export class Margen {
     const deseado = objetivo.top - columna.top - 72;
     const nuevo = Math.round(Math.min(Math.max(deseado, 0), maximo));
 
-    // La ficha se mueve con transición: la línea apunta a donde va a quedar.
+    // La ficha se mueve con transición: la línea apunta a donde va a quedar. offsetTop ignora el
+    // transform, así que no importa si la ficha está a mitad de camino.
     const cajaFicha = ficha.getBoundingClientRect();
-    const fichaArriba = cajaFicha.top - this.desplazamiento() + nuevo;
+    const fichaArriba = columna.top + ficha.offsetTop + nuevo;
     const x1 = Math.round(objetivo.right + 8);
     const y1 = Math.round(objetivo.top + objetivo.height / 2);
     const x2 = Math.round(cajaFicha.left - 6);
