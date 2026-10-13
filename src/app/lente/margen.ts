@@ -41,6 +41,7 @@ export class Margen {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly ficha = viewChild<ElementRef<HTMLElement>>('ficha');
   private readonly lente = viewChild.required<ElementRef<HTMLElement>>('lente');
+  private readonly auditoria = viewChild(Auditoria, { read: ElementRef });
   private actual: HTMLElement | null = null;
   private cajaAnterior: DOMRect | null = null;
   private cuadro = 0;
@@ -162,7 +163,10 @@ export class Margen {
     }
     const columna = this.host.getBoundingClientRect();
     const objetivo = el.getBoundingClientRect();
-    const maximo = Math.max(0, columna.height - ficha.offsetHeight - 40);
+    // La ficha baja como mucho hasta quedar encima de la auditoría, al pie del margen.
+    const pie = (this.auditoria()?.nativeElement as HTMLElement | undefined)?.offsetTop;
+    const limite = (pie ?? this.host.offsetHeight) - 16;
+    const maximo = Math.max(0, limite - ficha.offsetTop - ficha.offsetHeight);
     const deseado = objetivo.top - columna.top - 72;
     const nuevo = Math.round(Math.min(Math.max(deseado, 0), maximo));
 

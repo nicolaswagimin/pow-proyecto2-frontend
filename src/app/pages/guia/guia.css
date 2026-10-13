@@ -68,6 +68,8 @@ h1 {
   }
 
   .margen {
+    display: flex;
+    flex-direction: column;
     order: 0;
     flex: 0 0 400px;
     position: static;
@@ -213,4 +215,9 @@ h1 {
   height: 44px;
   border-radius: var(--radius-control);
   box-shadow: inset 0 0 0 1px var(--color-regla);
+}
+
+/* El margen ocupa toda la altura de la hoja: la auditoría queda al pie. */
+app-margen {
+  flex: 1;
 }

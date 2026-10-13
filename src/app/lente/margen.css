@@ -1,6 +1,7 @@
 :host {
-  display: block;
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .cabecera {
@@ -141,9 +142,10 @@ q {
   margin-top: var(--space-3);
 }
 
-/* La auditoría queda al pie del margen, fuera del recorrido de la ficha. */
+/* La auditoría queda al pie del margen; la ficha nunca baja más allá de ella. */
 .auditoria {
-  margin-top: var(--space-6);
+  margin-top: auto;
+  padding-top: var(--space-6);
 }
 
 /* ---------- La lente que recorre el orden de foco ---------- */

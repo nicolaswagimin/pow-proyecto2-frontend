@@ -111,6 +111,8 @@
   }
 
   .margen {
+    display: flex;
+    flex-direction: column;
     order: 0;
     position: static;
     flex: 0 0 400px;
@@ -119,4 +121,9 @@
     border-left: 2px solid var(--color-linea-margen);
     background: transparent;
   }
+}
+
+/* El margen ocupa toda la altura de la hoja: la auditoría queda al pie. */
+app-margen {
+  flex: 1;
 }
