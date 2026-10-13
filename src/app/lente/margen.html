@@ -5,13 +5,12 @@
     class="interruptor"
     role="switch"
     [attr.aria-checked]="visible()"
-    aria-describedby="titulo-anotaciones"
     (click)="alternar()"
   >
     <span class="interruptor__pista" aria-hidden="true"
       ><span class="interruptor__mando"></span
     ></span>
-    Mostrar
+    Mostrar<span class="visually-hidden"> anotaciones</span>
   </button>
 </div>
 
