@@ -8,6 +8,7 @@ export const ESTADO_CORRECCION: Record<EstadoCorreccion, string> = {
   resuelto: 'Resuelto (verificado con axe)',
   'no-resolvio': 'No resolvió el problema',
   'introdujo-problemas': 'Resolvió el problema pero introdujo otros',
+  'quita-elemento': 'Quitó u ocultó el elemento en lugar de corregirlo',
   'no-aplicable': 'No se pudo aplicar (el fragmento no está en el HTML)',
 };
 

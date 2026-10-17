@@ -106,3 +106,48 @@ describe('verificarDocumento', () => {
     expect(r.puntajeDespues).toBe(85);
   });
 });
+
+describe('verificarPorProblema: quitar u ocultar el elemento no es corregirlo', () => {
+  const sinImagen = async () => auditoria(problema('button-name', ['button']));
+  const trampas = [
+    '',
+    '<img src="a.png" hidden>',
+    '<img src="a.png" style="display: none">',
+    '<img src="a.png" style="visibility:hidden">',
+    '<img src="a.png" aria-hidden="true">',
+    '<div hidden><img src="a.png" alt="Logo"></div>',
+    '<span>Logo</span>',
+  ];
+  for (const corregido of trampas) {
+    it(`«${corregido || '(vacío)'}» queda como quita-elemento`, async () => {
+      const r = await verificarPorProblema(
+        original,
+        antes,
+        { ...correccion, corregido },
+        sinImagen,
+      );
+      expect(r.estado).toBe('quita-elemento');
+    });
+  }
+
+  it('alt vacío (imagen decorativa) sigue siendo una corrección válida', async () => {
+    const r = await verificarPorProblema(
+      original,
+      antes,
+      { ...correccion, corregido: '<img src="a.png" alt="">' },
+      sinImagen,
+    );
+    expect(r.estado).toBe('resuelto');
+  });
+
+  it('si el original ya estaba oculto, mantenerlo oculto no cuenta como trampa', async () => {
+    const html = '<main><img src="a.png" hidden><button></button></main>';
+    const r = await verificarPorProblema(
+      html,
+      antes,
+      { ...correccion, original: '<img src="a.png" hidden>', corregido: '<img src="a.png" hidden alt="x">' },
+      sinImagen,
+    );
+    expect(r.estado).toBe('resuelto');
+  });
+});
