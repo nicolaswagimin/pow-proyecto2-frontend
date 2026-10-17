@@ -74,7 +74,7 @@ Diff del HTML original contra el documento corregido, lado a lado, con las líne
 
 `/historial` agrupa las auditorías guardadas por página. Cada grupo muestra:
 
-- el último puntaje y la evolución de todos (gráfico de línea con su tabla de datos equivalente),
+- el último puntaje y su cambio respecto del anterior (+/−, con signo y no solo con color), y una línea de evolución decorativa (`aria-hidden`: los mismos datos están en la lista),
 - cada auditoría con fecha, origen, puntaje y, si se corrigió, el puntaje corregido,
 - **Abrir**: vuelve a `/app?auditoria=<id>` y re-audita ese HTML (la lente necesita los resultados vivos),
 - **Borrar**, con confirmación.
