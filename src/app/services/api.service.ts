@@ -18,8 +18,4 @@ export class ApiService {
   estado(): Observable<Estado> {
     return this.http.get<Estado>(`${this.url}/health`);
   }
-
-  preguntarIA(pregunta: string): Observable<{ respuesta: string }> {
-    return this.http.post<{ respuesta: string }>(`${this.url}/ia`, { pregunta });
-  }
 }

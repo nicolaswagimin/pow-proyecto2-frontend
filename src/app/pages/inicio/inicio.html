@@ -95,29 +95,6 @@
         }
       </section>
 
-      <!-- 3. IA -->
-      <section class="panel" aria-labelledby="titulo-ia">
-        <h2 id="titulo-ia"><ui-icon nombre="chispa" class="titulo-icono" /> Pregúntale a la IA</h2>
-
-        <form class="formulario" [formGroup]="formIA" (ngSubmit)="preguntar()">
-          <ui-text-field formControlName="pregunta" label="Tu pregunta" multilinea />
-          <ui-button
-            tipo="submit"
-            [cargando]="pensando()"
-            textoCargando="Pensando…"
-            [deshabilitado]="formIA.invalid"
-          >
-            Preguntar
-          </ui-button>
-        </form>
-
-        @if (errorIA()) {
-          <ui-alert tipo="error">{{ errorIA() }}</ui-alert>
-        }
-        @if (respuesta()) {
-          <div class="respuesta" aria-live="polite">{{ respuesta() }}</div>
-        }
-      </section>
       <!-- En móvil el margen es una franja compacta: la auditoría va al pie. -->
       <app-auditoria class="auditoria-movil" />
     </main>

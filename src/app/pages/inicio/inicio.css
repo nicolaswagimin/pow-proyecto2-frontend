@@ -234,13 +234,6 @@
   justify-self: stretch;
 }
 
-.respuesta {
-  padding: var(--space-4);
-  border-left: 6px solid var(--color-primario);
-  background: var(--color-fondo);
-  white-space: pre-wrap;
-}
-
 @media (max-width: 720px) {
   .perfil__texto,
   .solo-ancho {
