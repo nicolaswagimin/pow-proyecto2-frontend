@@ -1,0 +1,50 @@
+@if (sinCambios()) {
+  <p class="vacio">El código no cambió.</p>
+} @else {
+  <div
+    class="desplazable"
+    tabindex="0"
+    role="region"
+    aria-label="Diferencias del código, se puede desplazar"
+  >
+    <table class="tabla">
+      <caption class="visually-hidden">
+        Antes y después del HTML: líneas quitadas (−) y agregadas (+)
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col" colspan="2">Antes</th>
+          <th scope="col" colspan="2">Después</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (f of filas(); track $index) {
+          @if (f.tipo === 'omitidas') {
+            <tr class="omitidas">
+              <td colspan="4">
+                … {{ f.cantidad }} {{ f.cantidad === 1 ? 'línea igual' : 'líneas iguales' }} …
+              </td>
+            </tr>
+          } @else {
+            <tr>
+              <td class="num">{{ f.izq?.numA }}</td>
+              <td class="celda" [class.celda--quitada]="f.izq?.tipo === 'quitada'">
+                @if (f.izq?.tipo === 'quitada') {
+                  <span class="marca">−<span class="visually-hidden"> quitada:</span></span>
+                }
+                <code>{{ f.izq?.texto }}</code>
+              </td>
+              <td class="num">{{ f.der?.numB }}</td>
+              <td class="celda" [class.celda--agregada]="f.der?.tipo === 'agregada'">
+                @if (f.der?.tipo === 'agregada') {
+                  <span class="marca">+<span class="visually-hidden"> agregada:</span></span>
+                }
+                <code>{{ f.der?.texto }}</code>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+}
