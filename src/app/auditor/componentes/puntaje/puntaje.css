@@ -1,3 +1,91 @@
 :host {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.cifra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-4);
+}
+
+.cifra__numero {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.numero {
+  font-family: var(--font-display);
+  font-weight: var(--peso-display);
+  font-size: var(--text-3xl);
+  line-height: 1;
+}
+
+.de,
+.cifra__calificacion {
+  font-weight: var(--peso-fuerte);
+  color: var(--color-texto-suave);
+}
+
+.cifra__calificacion {
+  padding: 0 var(--space-2);
+  background: var(--color-marcador);
+  color: var(--color-marcador-texto);
+}
+
+/* La barra es solo un refuerzo visual: el número y la calificación ya dicen todo. */
+.barra {
+  height: 10px;
+  border-radius: var(--radius-control);
+  background: var(--color-regla);
+  overflow: hidden;
+}
+
+.barra__relleno {
   display: block;
+  height: 100%;
+  background: var(--color-texto);
+}
+
+.conteo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+}
+
+.conteo__item[data-gravedad='critico'] {
+  color: var(--color-error);
+  font-weight: var(--peso-fuerte);
+}
+
+.conteo__item[data-gravedad='serio'] {
+  color: var(--color-aviso);
+  font-weight: var(--peso-fuerte);
+}
+
+.formula summary {
+  width: fit-content;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  color: var(--color-enlace);
+  font-weight: var(--peso-fuerte);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.formula summary:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: var(--anillo-foco);
+}
+
+.formula p {
+  margin-top: var(--space-2);
+  color: var(--color-texto-suave);
 }
