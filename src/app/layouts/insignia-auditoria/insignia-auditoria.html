@@ -1,0 +1,20 @@
+<button
+  type="button"
+  class="insignia"
+  [attr.data-limpia]="problemas() === 0"
+  [attr.aria-expanded]="abierta()"
+  aria-controls="detalle-autoauditoria"
+  (click)="alternar()"
+>
+  <ui-icon [nombre]="problemas() === 0 ? 'check' : 'alerta'" />
+  {{ texto() }}
+</button>
+<div id="detalle-autoauditoria" class="detalle" [hidden]="!abierta()">
+  @if (creada()) {
+    <p class="detalle__texto">
+      a11Lens se audita a sí misma con axe-core y las reglas de WCAG 2.2 A y AA, sin contar la vista
+      previa de la página que auditas.
+    </p>
+    <app-auditoria [auto]="true" textoBoton="Auditar esta página" (problemas)="contar($event)" />
+  }
+</div>
