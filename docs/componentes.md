@@ -35,9 +35,41 @@ Todos son standalone, con `ChangeDetectionStrategy.OnPush`, `input()` / `output(
 | Input / output | Tipo | Descripción |
 |---|---|---|
 | `textoBoton` | `string` | Por defecto "Auditar esta página" |
+| `auto` | `boolean` | Audita apenas aparece, sin esperar al botón. Por defecto `false`; lo usa la insignia de `/app` |
 | `termino` (output) | `void` | Al terminar, para que el margen relea el botón (su texto cambió) |
+| `problemas` (output) | `number` | Cuántas reglas fallaron. No se emite si axe no pudo cargar |
 
-Importa `axe-core` solo al pulsar el botón y corre las reglas de WCAG 2.2 A y AA sobre el documento. El resultado va en un `role="status"`: "0 problemas. N reglas superadas", o la lista de problemas con su impacto (crítico, grave, moderado, menor), la cantidad de elementos y el enlace a la explicación. Si no puede cargar axe, lo dice.
+Importa `axe-core` solo al auditar y corre, con `iframes: false`, las reglas de WCAG 2.2 A y AA sobre el documento. El resultado va en un `role="status"`: "0 problemas. N reglas superadas", o la lista de problemas con su impacto (crítico, grave, moderado, menor), la cantidad de elementos y el enlace a la explicación. Si no puede cargar axe, lo dice.
+
+## Auditoría (`app/auditor/componentes/`)
+
+### `ui-lente`
+
+| Input / output | Tipo | Descripción |
+|---|---|---|
+| `html`, `baseHref` | `string` | La página auditada, en el iframe aislado ([lente.md](lente.md)) |
+| `selectores`, `seleccionado` | `string[]`, `string \| null` | Qué resaltar y cuál enfocar |
+| `direccion` | `string` | Lo que muestra la barra de la ventana: la URL, el archivo o el nombre de lo pegado |
+| `clic` (output) | `string` | Selector del elemento resaltado en el que se hizo clic |
+| `visibles` (output) | `string[]` | Selectores de los elementos resaltados que están a la vista, en el orden de la página |
+
+Se ve como una ventana de navegador: barra con tres puntos (`aria-hidden`) y la dirección.
+
+### `ui-recomendaciones`
+
+| Input / output | Tipo | Descripción |
+|---|---|---|
+| `estado` | `'vacio' \| 'auditando' \| 'listo' \| 'error'` | Para el estado vacío y «Auditando…» |
+| `problemas` | `Problema[] \| null` | `null` antes de auditar |
+| `visibles` | `string[]` | Lo que avisa `ui-lente` |
+| `seleccionado` | `string \| null` | Marca la recomendación con `aria-pressed` |
+| `correcciones` | `CorreccionVerificada[]` | Si hay, muestra la explicación de la IA y su estado |
+| `seleccionar` (output) | `string` | Clic en una recomendación |
+| `probar` (output) | `string` | Clic en un ejemplo del estado vacío (su URL) |
+
+- **Estados:** vacío (qué va a encontrar a11Lens y dos ejemplos), «Auditando…», sin problemas, y con problemas.
+- **Con problemas:** un contador, la lista de los que están a la vista y aparte «En toda la página». Cada recomendación tiene gravedad, descripción, qué hacer (`queHacer(regla)` de `auditor/recomendaciones.ts`), la explicación de la IA si hay, y la ubicación.
+- No es `aria-live`.
 
 ## Base (`app/ui/`)
 
@@ -104,3 +136,12 @@ El símbolo de contraste: un círculo mitad tinta, mitad papel. Al cambiar de te
 ### `app-auth-layout`
 
 Slots: `[auth-encabezado]`, contenido por defecto y `[auth-pie]`, todos dentro de `<main>`, que es el ámbito del margen. Al lado, un `<aside aria-labelledby="titulo-anotaciones">` con `app-margen`. En móvil suma una `app-auditoria` al pie del formulario.
+
+### `app-insignia-auditoria`
+
+La autoauditoría de a11Lens en el pie de `/app`.
+
+- Muestra un botón pequeño, «Esta app: 0 problemas WCAG 2.2 AA», con `aria-expanded` y `aria-controls`.
+- El 0 es el de la última verificación documentada en [accesibilidad.md](accesibilidad.md).
+- Al abrirlo por primera vez crea su detalle con `app-auditoria [auto]="true"`, y el texto pasa a mostrar el resultado real («1 problema», «2 problemas»).
+- El detalle se conserva al cerrarlo (`hidden`).
