@@ -58,7 +58,7 @@ En la herramienta sobre la propia app, `axe-core` se importa con `import('axe-co
 | `/design` | `Guia` (carga diferida) | — | Guía de estilo viva. No se enlaza desde la app |
 | `**` | — | — | Redirige a `/` |
 
-`withComponentInputBinding()` pasa `modo`, `?sesion=expirada` y `?auditoria` como inputs del componente.
+`withComponentInputBinding()` pasa `modo` y `?sesion=expirada` como inputs del componente. `Inicio` lee `?auditoria` del `ActivatedRoute` al crearse.
 
 ## Servicios
 
