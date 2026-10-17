@@ -1,0 +1,50 @@
+@for (grupo of grupos(); track grupo.gravedad) {
+  <section
+    class="grupo"
+    [attr.data-gravedad]="grupo.gravedad"
+    [attr.aria-labelledby]="'grupo-' + grupo.gravedad"
+  >
+    <h3 class="grupo__titulo" [id]="'grupo-' + grupo.gravedad">
+      {{ grupo.nombre }} ({{ grupo.problemas.length }})
+    </h3>
+    <ul class="problemas">
+      @for (p of grupo.problemas; track p.regla) {
+        <li class="problema">
+          <p class="problema__descripcion">{{ p.descripcion }}</p>
+          <p class="problema__datos">
+            <code>{{ p.regla }}</code>
+            @for (c of p.criterios; track c.id) {
+              · <span>WCAG {{ c.id }} {{ c.nombre }} ({{ c.nivel }})</span>
+            }
+            ·
+            <a [href]="p.ayudaUrl" target="_blank" rel="noopener noreferrer"
+              >Más información<span class="visually-hidden">
+                sobre {{ p.regla }} (se abre en otra pestaña)</span
+              ></a
+            >
+          </p>
+          <ul class="nodos">
+            @for (n of p.nodos; track n.selector) {
+              <li class="nodo">
+                <p class="nodo__ubicacion">
+                  Ubicación: <code>{{ n.selector }}</code>
+                </p>
+                <pre class="nodo__html"><code>{{ n.html }}</code></pre>
+                <button
+                  type="button"
+                  class="ver"
+                  [attr.aria-pressed]="seleccionado() === n.selector"
+                  (click)="seleccionar.emit(n.selector)"
+                >
+                  Ver en la lente<span class="visually-hidden">: {{ n.selector }}</span>
+                </button>
+              </li>
+            }
+          </ul>
+        </li>
+      }
+    </ul>
+  </section>
+} @empty {
+  <p class="vacio">axe no encontró problemas con las reglas de WCAG 2.2 A y AA.</p>
+}
