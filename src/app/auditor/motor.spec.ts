@@ -128,6 +128,15 @@ describe('MotorService', () => {
     expect(clics).toEqual(['main > img']);
   });
 
+  it('avisa qué elementos resaltados están a la vista, solo con el token de la sesión', async () => {
+    const { sesion, enviar } = await abrir();
+    const avisos: string[][] = [];
+    sesion.alVisibles((s) => avisos.push(s));
+    enviar({ tipo: 'visibles', selectores: ['main > img'] });
+    enviar({ tipo: 'visibles', selectores: ['#falso'], sesion: 'otro' });
+    expect(avisos).toEqual([['main > img']]);
+  });
+
   it('auditarHtml usa un iframe oculto que se elimina al terminar', async () => {
     const motor = TestBed.inject(MotorService);
     const original = motor.abrir.bind(motor);

@@ -12,12 +12,13 @@ const ESPERA_LISTO_MS = 15_000;
 const ESPERA_AUDITORIA_MS = 20_000;
 
 interface MensajeCorredor {
-  tipo: 'listo' | 'resultado' | 'error' | 'clic';
+  tipo: 'listo' | 'resultado' | 'error' | 'clic' | 'visibles';
   sesion?: string;
   id?: number;
   violaciones?: ViolacionAxe[];
   aprobadas?: number;
   selector?: string;
+  selectores?: string[];
   mensaje?: string;
 }
 
@@ -94,6 +95,13 @@ export class SesionAislada {
 
   alClic(oyente: (selector: string) => void): () => void {
     return this.escuchar((m) => m.tipo === 'clic' && m.selector && oyente(m.selector));
+  }
+
+  // Los elementos resaltados que están a la vista en el iframe (siguen su scroll).
+  alVisibles(oyente: (selectores: string[]) => void): () => void {
+    return this.escuchar((m) => {
+      if (m.tipo === 'visibles' && Array.isArray(m.selectores)) oyente(m.selectores);
+    });
   }
 
   cerrar(): void {
