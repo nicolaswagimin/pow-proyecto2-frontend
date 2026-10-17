@@ -39,12 +39,38 @@ a11Lens audita accesibilidad, así que la propia app tiene que ser ejemplar. Obj
 - `prefers-reduced-motion` desactiva la lente que recorre el foco y todas las transiciones.
 - Nada depende del cursor.
 
+### Las pantallas de auditoría (`/app` e `/historial`)
+- Cada bloque de `/app` es una `<section>` con su `h2` (`aria-labelledby`): Auditar, Resultado, Lente, Problemas, Corregir con IA, Antes y después, Guardar y exportar.
+- Las pestañas de entrada siguen el patrón de ARIA (`tablist`, `tab`, `tabpanel`, `aria-selected`) y se recorren con las flechas, Inicio y Fin.
+- La gravedad se dice con texto («Crítico», «Serio»…), además del color; el diff marca las líneas con − y + además del fondo.
+- **Todo lo de la lente se puede hacer desde la lista.** «Ver en la lente» lleva `aria-pressed`; un clic en la vista previa devuelve el foco al botón del problema en la lista. El iframe tiene título («Vista previa aislada de la página auditada»). El iframe oculto que verifica correcciones es `aria-hidden` y `tabindex="-1"`.
+- La corrección con IA anuncia su progreso en una región `role="status"` («Verificando la corrección 2 de 5…») y el botón queda en estado de carga con texto visible.
+- En el historial, la línea de evolución es decorativa (`aria-hidden`): los puntajes y su cambio están en texto. Borrar pide confirmación en línea, sin diálogo modal.
+- «¿Cómo se calcula?» es un `<details>` nativo.
+
 ### Táctil
 - Objetivos de 44 × 44 px o más (WCAG 2.5.8 pide 24 × 24, y la ficha lo mide en cada control).
 
 ## Verificación
 
-Fecha: 2026-10-12. Herramientas: axe-core 4.14 (reglas `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa` y `best-practice`) con Playwright sobre Chrome, más pruebas de teclado, de movimiento reducido y con el backend apagado.
+### 2026-10-17 · Funcionalidad de auditoría
+
+axe-core 4.14 (reglas `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa` y `wcag22aa`) con Playwright sobre Chrome, en 1440 y 390 px, claro y oscuro: **24 de 24 vistas con 0 violaciones**.
+
+| Vista | Claro 1440 px | Claro 390 px | Oscuro 1440 px | Oscuro 390 px |
+|---|---|---|---|---|
+| `/login` | 0 violaciones | 0 | 0 | 0 |
+| `/registro` | 0 | 0 | 0 | 0 |
+| `/app` vacío | 0 | 0 | 0 | 0 |
+| `/app` con resultados, lente y problemas | 0 | 0 | 0 | 0 |
+| `/app`, pestaña URL | 0 | 0 | 0 | 0 |
+| `/historial` | 0 | 0 | 0 | 0 |
+
+El contenido del iframe de la lente es la página auditada (con sus propios problemas, a propósito): se excluye de la auditoría de la app.
+
+### 2026-10-12 · Identidad y acceso
+
+Herramientas: axe-core 4.14 (reglas `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa` y `best-practice`) con Playwright sobre Chrome, más pruebas de teclado, de movimiento reducido y con el backend apagado.
 
 | Ruta | Claro 1440 px | Claro 390 px | Oscuro 1440 px | Oscuro 390 px |
 |---|---|---|---|---|
