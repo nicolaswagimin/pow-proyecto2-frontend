@@ -199,3 +199,54 @@
 app-margen {
   flex: 1;
 }
+
+/* ---------- Auditoría ---------- */
+.ayuda,
+.pagina-auditada,
+.progreso {
+  color: var(--color-texto-suave);
+}
+
+.pagina-auditada {
+  font-family: var(--font-codigo);
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+
+.progreso:empty {
+  display: none;
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+/* ---------- Impresión: el reporte en PDF ("Guardar como PDF") ----------
+   Quedan el resultado, los problemas, las correcciones y el antes/después; se ocultan la barra,
+   el margen, la entrada, la lente y los botones. */
+@media print {
+  .barra,
+  .margen,
+  .no-imprimir,
+  .auditoria-movil,
+  ui-button {
+    display: none !important;
+  }
+
+  :host,
+  .hoja {
+    background: #ffffff;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .contenido {
+    padding: 0;
+  }
+
+  .panel {
+    break-inside: avoid-page;
+  }
+}
