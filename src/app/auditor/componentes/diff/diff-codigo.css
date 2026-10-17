@@ -1,3 +1,82 @@
 :host {
   display: block;
 }
+
+.desplazable {
+  max-height: 28rem;
+  overflow: auto;
+  border: 1px solid var(--color-regla);
+  border-radius: var(--radius-control);
+}
+
+.desplazable:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: var(--anillo-foco);
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-codigo);
+  font-size: var(--text-sm);
+}
+
+th {
+  position: sticky;
+  top: 0;
+  padding: var(--space-2);
+  background: var(--color-superficie);
+  border-bottom: 2px solid var(--color-texto);
+  font-family: var(--font-texto);
+  text-align: left;
+}
+
+td {
+  padding: 2px var(--space-2);
+  vertical-align: top;
+}
+
+.num {
+  width: 1%;
+  color: var(--color-texto-suave);
+  text-align: right;
+  user-select: none;
+}
+
+.celda code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.celda--quitada {
+  background: color-mix(in srgb, var(--color-error) 12%, var(--color-superficie));
+}
+
+.celda--agregada {
+  background: color-mix(in srgb, var(--color-exito) 12%, var(--color-superficie));
+}
+
+.marca {
+  margin-right: var(--space-1);
+  font-weight: var(--peso-fuerte);
+}
+
+.celda--quitada .marca {
+  color: var(--color-error);
+}
+
+.celda--agregada .marca {
+  color: var(--color-exito);
+}
+
+.omitidas td {
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-fondo);
+  color: var(--color-texto-suave);
+  font-family: var(--font-texto);
+  text-align: center;
+}
+
+.vacio {
+  color: var(--color-texto-suave);
+}
