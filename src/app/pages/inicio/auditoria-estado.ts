@@ -135,6 +135,9 @@ export class AuditoriaEstado {
     this.baseHref.set(baseHref);
     this.guardadaId.set(null);
     this.seleccionado.set(null);
+    // El resultado anterior es de otra página: si esta auditoría falla, no debe quedar a la vista
+    // ni usarse para corregir el HTML nuevo.
+    this.resultado.set(null);
     this.pareceSpa.set(pareceSpa(html));
     try {
       this.resultado.set(await this.motor.auditarHtml(html, baseHref));
@@ -168,7 +171,13 @@ export class AuditoriaEstado {
   // reemplazos de texto y se verifica con axe; solo lo resuelto entra al documento.
   async corregir(): Promise<void> {
     const resultado = this.resultado();
-    if (!resultado || !resultado.problemas.length || this.corrigiendo() || this.quedan() === 0) {
+    if (
+      !resultado ||
+      this.estado() !== 'listo' ||
+      !resultado.problemas.length ||
+      this.corrigiendo() ||
+      this.quedan() === 0
+    ) {
       return;
     }
     const baseHref = this.baseHref();

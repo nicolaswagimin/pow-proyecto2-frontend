@@ -271,6 +271,34 @@ describe('AuditoriaEstado', () => {
     expect(estado.textoCorregir()).toBeNull();
   });
 
+  it('si la auditoría de otra página falla, no se corrige con el resultado de la anterior', async () => {
+    let fallar = false;
+    const { estado, ia } = preparar({
+      auditar: async (html: string) => {
+        if (fallar) throw new Error('La auditoría tardó demasiado.');
+        return auditorFalso(html);
+      },
+    });
+    await estado.auditarPegado(HTML, 'A');
+    fallar = true;
+    await estado.auditarPegado('<main><p>otra</p><img src="b.png"></main>', 'B');
+    expect(estado.resultado()).toBeNull();
+    await estado.corregir();
+    expect(ia.corregirFragmentos).not.toHaveBeenCalled();
+  });
+
+  it('mientras audita no se puede corregir', async () => {
+    let terminar: () => void = () => {};
+    const { estado, ia } = preparar({
+      auditar: (html: string) => new Promise((ok) => (terminar = () => ok(auditorFalso(html)))),
+    });
+    const auditando = estado.auditarPegado(HTML, 'A');
+    await estado.corregir();
+    expect(ia.corregirFragmentos).not.toHaveBeenCalled();
+    terminar();
+    await auditando;
+  });
+
   describe('página grande de ejemplo', () => {
     const grande = paginaGrande(400);
 
