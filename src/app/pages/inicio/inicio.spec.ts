@@ -65,6 +65,15 @@ describe('/app (Inicio)', () => {
     expect(raiz.textContent).not.toContain('Anotaciones');
   });
 
+  it('la autoauditoría de a11Lens es una insignia en el pie de página', () => {
+    const { raiz } = montar();
+    const pie = raiz.querySelector('footer')!;
+    expect(pie.querySelector('button.insignia')?.textContent).toContain(
+      'Esta app: 0 problemas WCAG 2.2 AA',
+    );
+    expect(raiz.querySelectorAll('app-auditoria')).toHaveLength(0);
+  });
+
   it('en escritorio, la columna derecha muestra las recomendaciones con su estado vacío', () => {
     const { raiz } = montar();
     const aside = raiz.querySelector('aside.margen')!;

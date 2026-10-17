@@ -49,6 +49,17 @@
   }
 }
 
+/* ---------- Pie: la insignia de autoauditoría ---------- */
+.pie {
+  padding: var(--space-6) var(--space-4) var(--space-10);
+}
+
+@media (min-width: 960px) {
+  .pie {
+    margin-top: calc(-1 * var(--space-6));
+  }
+}
+
 /* ---------- Secciones ---------- */
 .bienvenida {
   display: grid;

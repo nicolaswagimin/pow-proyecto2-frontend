@@ -20,6 +20,7 @@ import { descargarTexto, nombreArchivo, reporteMarkdown } from '../../auditor/ex
 import { APP_NOMBRE } from '../../config';
 import { AuthService } from '../../core/auth.service';
 import { BarraApp } from '../../layouts/barra-app/barra-app';
+import { InsigniaAuditoria } from '../../layouts/insignia-auditoria/insignia-auditoria';
 import { Alert } from '../../ui/alert/alert';
 import { Button } from '../../ui/button/button';
 import { Icon } from '../../ui/icon/icon';
@@ -35,6 +36,7 @@ import { AuditoriaEstado } from './auditoria-estado';
     NgTemplateOutlet,
     Alert,
     BarraApp,
+    InsigniaAuditoria,
     Button,
     Icon,
     EntradaHtml,
