@@ -1,0 +1,57 @@
+@if (verificacion(); as v) {
+  <section class="documento" aria-labelledby="titulo-documento">
+    <h3 id="titulo-documento">Documento corregido completo</h3>
+    <p class="documento__puntaje">
+      Puntaje: <strong>{{ v.puntajeAntes }} → {{ v.puntajeDespues }}</strong>
+    </p>
+    <p>
+      {{ plural(v.comparacion.resueltos.length, 'resuelto', 'resueltos') }} ·
+      {{ plural(v.comparacion.sinResolver.length, 'sin resolver', 'sin resolver') }} ·
+      {{ plural(v.comparacion.nuevos.length, 'problema nuevo', 'problemas nuevos') }}
+    </p>
+  </section>
+}
+
+<section class="seccion" data-seccion="verificadas" aria-labelledby="titulo-verificadas">
+  <h3 id="titulo-verificadas">Correcciones verificadas ({{ verificadas().length }})</h3>
+  <ul class="lista">
+    @for (c of verificadas(); track c.regla + c.selector) {
+      <li class="correccion">
+        <p class="correccion__titulo">
+          <code>{{ c.regla }}</code> en <code>{{ c.selector }}</code>
+        </p>
+        <p>{{ c.explicacion }}</p>
+        <p class="estado estado--resuelto">{{ ESTADO[c.estado] }}</p>
+        <p class="etiqueta">Antes</p>
+        <pre class="codigo codigo--antes"><code>{{ c.original }}</code></pre>
+        <p class="etiqueta">Después</p>
+        <pre class="codigo codigo--despues"><code>{{ c.corregido }}</code></pre>
+      </li>
+    } @empty {
+      <li class="vacio">
+        Ninguna corrección individual resolvió su problema al verificarla con axe.
+      </li>
+    }
+  </ul>
+</section>
+
+@if (fallidas().length) {
+  <section class="seccion" data-seccion="fallidas" aria-labelledby="titulo-fallidas">
+    <h3 id="titulo-fallidas">Sin solución verificada ({{ fallidas().length }})</h3>
+    <ul class="lista">
+      @for (c of fallidas(); track c.regla + c.selector) {
+        <li class="correccion">
+          <p class="correccion__titulo">
+            <code>{{ c.regla }}</code> en <code>{{ c.selector }}</code>
+          </p>
+          <p>{{ c.explicacion }}</p>
+          <p class="estado estado--fallida">{{ ESTADO[c.estado] }}</p>
+          <details>
+            <summary>Ver lo que propuso la IA</summary>
+            <pre class="codigo"><code>{{ c.corregido }}</code></pre>
+          </details>
+        </li>
+      }
+    </ul>
+  </section>
+}
