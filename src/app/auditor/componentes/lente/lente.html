@@ -1,4 +1,11 @@
-<iframe #marco class="marco" title="Vista previa aislada de la página auditada"></iframe>
+<!-- La vista previa como una ventana de navegador: la barra es decorativa salvo la dirección. -->
+<div class="ventana">
+  <div class="ventana__barra">
+    <span class="ventana__puntos" aria-hidden="true"><span></span><span></span><span></span></span>
+    <span class="ventana__direccion">{{ direccion() }}</span>
+  </div>
+  <iframe #marco class="marco" title="Vista previa aislada de la página auditada"></iframe>
+</div>
 @if (error(); as e) {
   <p class="error" role="alert">{{ e }}</p>
 }

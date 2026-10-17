@@ -15,6 +15,7 @@ import { MotorService, SesionAislada } from '../../motor.service';
 
 // La lente: la página auditada en el iframe aislado, con sus elementos con problemas resaltados.
 // Seleccionar un problema enfoca su elemento; un clic en un elemento resaltado lo selecciona.
+// Al desplazarse dentro, avisa qué elementos con problemas quedan a la vista.
 // Todo lo que hace la lente también se puede hacer desde la lista (el iframe no es obligatorio).
 @Component({
   selector: 'ui-lente',
@@ -27,7 +28,11 @@ export class Lente {
   readonly baseHref = input<string | undefined>(undefined);
   readonly selectores = input<string[]>([]);
   readonly seleccionado = input<string | null>(null);
+  // La dirección que muestra la barra de la ventana (URL, nombre del archivo o de lo pegado).
+  readonly direccion = input('');
   readonly clic = output<string>();
+  // Los elementos con problemas que están a la vista: siguen el scroll de la vista previa.
+  readonly visibles = output<string[]>();
 
   private readonly motor = inject(MotorService);
   private readonly iframe = viewChild.required<ElementRef<HTMLIFrameElement>>('marco');
@@ -49,6 +54,7 @@ export class Lente {
           if (!vigente) return sesion.cerrar();
           actual = sesion;
           sesion.alClic((selector) => this.clic.emit(selector));
+          sesion.alVisibles((selectores) => this.visibles.emit(selectores));
           this.sesion.set(sesion);
         })
         .catch((err: Error) => vigente && this.error.set(err.message));

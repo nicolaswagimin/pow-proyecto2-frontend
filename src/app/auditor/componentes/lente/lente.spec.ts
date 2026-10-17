@@ -4,7 +4,13 @@ import { Lente } from './lente';
 
 function sesionFalsa() {
   let alClic: (s: string) => void = () => {};
+  let alVisibles: (s: string[]) => void = () => {};
   return {
+    alVisibles: vi.fn((f: (s: string[]) => void) => {
+      alVisibles = f;
+      return () => {};
+    }),
+    visibles: (s: string[]) => alVisibles(s),
     resaltar: vi.fn(),
     enfocar: vi.fn(),
     cerrar: vi.fn(),
@@ -25,6 +31,7 @@ async function montar() {
   fixture.componentRef.setInput('baseHref', 'https://ejemplo.org/');
   fixture.componentRef.setInput('selectores', ['main > img', '.gris']);
   fixture.componentRef.setInput('seleccionado', null);
+  fixture.componentRef.setInput('direccion', 'https://ejemplo.org/');
   fixture.detectChanges();
   await fixture.whenStable();
   // La sesión se abre de forma asíncrona: una detección más para que corra el efecto de resaltado.
@@ -34,6 +41,22 @@ async function montar() {
 }
 
 describe('ui-lente', () => {
+  it('se ve como una ventana de navegador con la dirección de la página', async () => {
+    const { raiz } = await montar();
+    expect(raiz.querySelector('.ventana__direccion')?.textContent?.trim()).toBe(
+      'https://ejemplo.org/',
+    );
+    expect(raiz.querySelector('.ventana__puntos')?.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('avisa qué elementos con problemas están a la vista', async () => {
+    const { fixture, sesion } = await montar();
+    const avisos: string[][] = [];
+    fixture.componentInstance.visibles.subscribe((v) => avisos.push(v));
+    sesion.visibles(['.gris']);
+    expect(avisos).toEqual([['.gris']]);
+  });
+
   it('abre el HTML en el iframe con título accesible', async () => {
     const { motor, raiz } = await montar();
     const iframe = raiz.querySelector('iframe')!;
