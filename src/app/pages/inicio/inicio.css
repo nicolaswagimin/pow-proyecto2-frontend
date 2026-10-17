@@ -178,52 +178,6 @@
   border-bottom: 0;
 }
 
-/* ---------- Lista de verificación del estado ---------- */
-.verificacion {
-  display: grid;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.verificacion__punto {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) 0;
-  border-bottom: 1px solid var(--color-regla);
-  --icono-tamano: 1.4rem;
-}
-
-.verificacion__nombre {
-  font-weight: var(--peso-fuerte);
-}
-
-.verificacion__resultado {
-  font-weight: var(--peso-fuerte);
-}
-
-.verificacion__punto--cumple ui-icon,
-.verificacion__punto--cumple .verificacion__resultado {
-  color: var(--color-exito);
-}
-
-/* Lo que falla se resalta con el marcador, además del ícono y el texto. */
-.verificacion__punto--falla ui-icon {
-  color: var(--color-error);
-}
-
-.verificacion__punto--falla .verificacion__resultado {
-  padding: 0 var(--space-2);
-  background: var(--color-marcador);
-  color: var(--color-marcador-texto);
-}
-
-.verificacion__punto--revisando .verificacion__resultado {
-  color: var(--color-texto-suave);
-}
-
 .formulario {
   display: grid;
   gap: var(--space-4);

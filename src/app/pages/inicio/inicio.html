@@ -36,65 +36,6 @@
         </p>
       </section>
 
-      <!-- 1. Estado de conexión, como una lista de verificación de auditoría -->
-      <section class="panel" aria-labelledby="titulo-estado">
-        <div class="panel__cabecera">
-          <h2 id="titulo-estado">Estado del sistema</h2>
-          <ui-button
-            variante="fantasma"
-            tamano="compacto"
-            [cargando]="cargandoEstado()"
-            textoCargando="Revisando…"
-            (click)="revisarEstado()"
-          >
-            <ui-icon nombre="recargar" />
-            Revisar de nuevo
-          </ui-button>
-        </div>
-
-        <ul class="verificacion">
-          @for (punto of verificacion(); track punto.nombre) {
-            <li [class]="'verificacion__punto verificacion__punto--' + punto.estado">
-              <ui-icon
-                [nombre]="
-                  punto.estado === 'cumple'
-                    ? 'check'
-                    : punto.estado === 'revisando'
-                      ? 'recargar'
-                      : 'alerta'
-                "
-              />
-              <span class="verificacion__nombre">{{ punto.nombre }}</span>
-              <span class="verificacion__resultado">{{ punto.resultado }}</span>
-            </li>
-          }
-        </ul>
-
-        @if (!cargandoEstado()) {
-          @if (!estado()) {
-            <ui-alert tipo="error" titulo="No hay conexión con el backend.">
-              Revisa que el backend esté corriendo (<code>npm run dev</code> en la carpeta
-              <code>backend</code>) y que responda en <code>{{ apiUrl }}</code
-              >. En producción, revisa también que <code>FRONTEND_URL</code> del backend incluya la
-              URL de este sitio (CORS).
-            </ui-alert>
-          } @else {
-            @if (!estado()!.db) {
-              <ui-alert tipo="aviso">
-                La base de datos no responde: revisa <code>DATABASE_URL</code> (y
-                <code>DB_SSL</code>) en el <code>.env</code> del backend.
-              </ui-alert>
-            }
-            @if (!estado()!.ia) {
-              <ui-alert tipo="aviso">
-                La IA no está configurada: agrega <code>GEMINI_API_KEY</code> en el
-                <code>.env</code> del backend.
-              </ui-alert>
-            }
-          }
-        }
-      </section>
-
       <!-- En móvil el margen es una franja compacta: la auditoría va al pie. -->
       <app-auditoria class="auditoria-movil" />
     </main>
