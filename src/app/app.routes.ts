@@ -30,6 +30,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/inicio/inicio').then((m) => m.Inicio),
   },
   {
+    path: 'historial',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/historial/historial').then((m) => m.Historial),
+  },
+  {
     path: 'design',
     loadComponent: () => import('./pages/guia/guia').then((m) => m.Guia),
   },
