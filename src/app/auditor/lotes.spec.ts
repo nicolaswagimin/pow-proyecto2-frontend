@@ -73,6 +73,19 @@ describe('prepararPendientes', () => {
     expect(r.noCorregibles).toEqual(['image-alt|a > img']);
   });
 
+  it('solo cuenta los elementos de la auditoría original (no los selectores que cambiaron ni problemas nuevos)', async () => {
+    const fuente = await analizarFuente(HTML);
+    const problemas = [
+      problema('image-alt', 'critico', [
+        { selector: 'a > img', ruta: [1, 0, 0, 0], etiqueta: 'img' },
+        { selector: 'main > img:nth-child(3)', ruta: [1, 0, 2], etiqueta: 'img' },
+      ]),
+    ];
+    const r = prepararPendientes(fuente, problemas, new Set(), new Set(['image-alt|a > img']));
+    expect(r.pendientes.map((p) => p.clave)).toEqual(['image-alt|a > img']);
+    expect(r.noCorregibles).toEqual([]);
+  });
+
   it('no repite lo que ya se intentó', async () => {
     const fuente = await analizarFuente(HTML);
     const problemas = [

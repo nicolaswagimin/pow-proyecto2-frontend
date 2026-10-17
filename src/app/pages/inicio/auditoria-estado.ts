@@ -3,7 +3,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { pareceSpa } from '../../auditor/axe-a-problemas';
 import { analizarFuente } from '../../auditor/fragmentos';
-import { armarLote, prepararPendientes } from '../../auditor/lotes';
+import { armarLote, claveDe, prepararPendientes } from '../../auditor/lotes';
 import { ResultadoAuditoria } from '../../auditor/modelo';
 import { MotorService } from '../../auditor/motor.service';
 import { calcularPuntaje, resumir } from '../../auditor/puntaje';
@@ -185,6 +185,9 @@ export class AuditoriaEstado {
     const vigente = () => generacion === this.generacion;
     const auditar = (h: string) => this.motor.auditarHtml(h, baseHref);
     let base = this.base ?? { html: this.html(), auditoria: resultado };
+    const originales = new Set(
+      resultado.problemas.flatMap((p) => p.nodos.map((n) => claveDe(p.regla, n.selector))),
+    );
 
     this.corrigiendo.set(true);
     this.errorIA.set(null);
@@ -197,6 +200,7 @@ export class AuditoriaEstado {
           fuente,
           base.auditoria.problemas,
           this.intentados,
+          originales,
         );
         this.quedan.set(pendientes.length);
         this.noCorregibles.set(noCorregibles.length);
@@ -253,7 +257,12 @@ export class AuditoriaEstado {
       if (vigente() && this.quedan()) {
         const fuente = await analizarFuente(base.html);
         if (vigente()) {
-          const r = prepararPendientes(fuente, base.auditoria.problemas, this.intentados);
+          const r = prepararPendientes(
+            fuente,
+            base.auditoria.problemas,
+            this.intentados,
+            originales,
+          );
           this.quedan.set(r.pendientes.length);
         }
       }

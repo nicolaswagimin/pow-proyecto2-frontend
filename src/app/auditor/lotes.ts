@@ -37,10 +37,14 @@ export const claveDe = (regla: string, selector: string) => `${regla}|${selector
 
 // Los nodos que se pueden corregir y aún no se intentaron. noCorregibles: los que no están
 // escritos en el HTML (implícitos, shadow DOM, iframes) o cuyo fragmento es demasiado largo.
+// originales: las claves de la auditoría original. La auditoría del documento acumulado puede
+// traer selectores que cambiaron o problemas nuevos; esos no se piden (no se reenvía lo intentado
+// y las explicaciones quedan con los selectores que ve la persona).
 export function prepararPendientes(
   fuente: FuenteHtml,
   problemas: Problema[],
   intentados: ReadonlySet<string>,
+  originales?: ReadonlySet<string>,
 ): { pendientes: Pendiente[]; noCorregibles: string[] } {
   const ordenados = [...problemas].sort(
     (a, b) => GRAVEDADES.indexOf(a.gravedad) - GRAVEDADES.indexOf(b.gravedad),
@@ -54,7 +58,7 @@ export function prepararPendientes(
   const noCorregibles: string[] = [];
   for (const { p, n, el } of ubicados) {
     const clave = claveDe(p.regla, n.selector);
-    if (intentados.has(clave)) continue;
+    if (intentados.has(clave) || (originales && !originales.has(clave))) continue;
     const fragmento = elegirFragmento(fuente, p.regla, el, rangos);
     if (!fragmento || fragmento.texto.length > MAX_FRAGMENTO_IA) {
       noCorregibles.push(clave);
