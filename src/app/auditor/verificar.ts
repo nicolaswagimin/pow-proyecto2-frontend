@@ -52,3 +52,48 @@ export function compararAuditorias(
     nuevos: [...d].filter((k) => !a.has(k)),
   };
 }
+
+// Resuelto solo si el par regla+selector desaparece Y la regla afecta a menos elementos que antes
+// (si la corrección cambió el selector pero el problema sigue, no cuenta como resuelto).
+export async function verificarPorProblema(
+  htmlOriginal: string,
+  auditoriaOriginal: ResultadoAuditoria,
+  correccion: CorreccionProblema,
+  auditar: Auditar,
+): Promise<CorreccionVerificada> {
+  const corregido = aplicarCorreccion(htmlOriginal, correccion.original, correccion.corregido);
+  if (corregido === null) return { ...correccion, estado: 'no-aplicable', nuevos: [] };
+
+  const despues = await auditar(corregido);
+  const { nuevos } = compararAuditorias(auditoriaOriginal, despues);
+  const sigue =
+    claves(despues).has(clave(correccion.regla, correccion.selector)) ||
+    nodosDe(despues, correccion.regla) >= nodosDe(auditoriaOriginal, correccion.regla);
+  const estado: EstadoCorreccion = sigue
+    ? 'no-resolvio'
+    : nuevos.length
+      ? 'introdujo-problemas'
+      : 'resuelto';
+  return { ...correccion, estado, nuevos };
+}
+
+export interface VerificacionDocumento {
+  auditoria: ResultadoAuditoria;
+  comparacion: Comparacion;
+  puntajeAntes: number;
+  puntajeDespues: number;
+}
+
+export async function verificarDocumento(
+  auditoriaOriginal: ResultadoAuditoria,
+  documento: string,
+  auditar: Auditar,
+): Promise<VerificacionDocumento> {
+  const auditoria = await auditar(documento);
+  return {
+    auditoria,
+    comparacion: compararAuditorias(auditoriaOriginal, auditoria),
+    puntajeAntes: calcularPuntaje(auditoriaOriginal.problemas),
+    puntajeDespues: calcularPuntaje(auditoria.problemas),
+  };
+}
