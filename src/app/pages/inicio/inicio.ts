@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { Correcciones } from '../../auditor/componentes/correcciones/correcciones';
 import { DiffCodigo } from '../../auditor/componentes/diff/diff-codigo';
 import { EntradaHtml } from '../../auditor/componentes/entrada/entrada-html';
@@ -12,11 +12,10 @@ import { APP_NOMBRE } from '../../config';
 import { AuthService } from '../../core/auth.service';
 import { Auditoria } from '../../lente/auditoria';
 import { Margen } from '../../lente/margen';
+import { BarraApp } from '../../layouts/barra-app/barra-app';
 import { Alert } from '../../ui/alert/alert';
-import { Avatar } from '../../ui/avatar/avatar';
 import { Button } from '../../ui/button/button';
 import { Icon } from '../../ui/icon/icon';
-import { ThemeToggle } from '../../ui/theme-toggle/theme-toggle';
 import { AuditoriaEstado } from './auditoria-estado';
 
 // /app: auditar HTML (pegado, archivo o URL), ver los problemas en la lente, corregirlos con la IA
@@ -25,14 +24,12 @@ import { AuditoriaEstado } from './auditoria-estado';
   selector: 'app-inicio',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    RouterLink,
     Auditoria,
     Margen,
     Alert,
-    Avatar,
+    BarraApp,
     Button,
     Icon,
-    ThemeToggle,
     EntradaHtml,
     PuntajeAuditoria,
     Lente,
@@ -45,11 +42,9 @@ import { AuditoriaEstado } from './auditoria-estado';
   styleUrl: './inicio.css',
 })
 export class Inicio {
-  private readonly router = inject(Router);
   protected readonly auth = inject(AuthService);
   protected readonly estado = inject(AuditoriaEstado);
 
-  protected readonly nombreApp = APP_NOMBRE;
   protected readonly usuario = this.auth.usuario;
   protected readonly primerNombre = computed(
     () => (this.usuario()?.nombre ?? '').trim().split(/\s+/)[0] || 'de nuevo',
@@ -127,10 +122,5 @@ export class Inicio {
     const documento = this.estado.documentoCorregido();
     if (documento)
       descargarTexto(documento, nombreArchivo(this.estado.pagina(), 'html'), 'text/html');
-  }
-
-  protected salir(): void {
-    this.auth.cerrarSesion();
-    this.router.navigateByUrl('/login');
   }
 }

@@ -4,81 +4,6 @@
   background: var(--color-fondo);
 }
 
-/* ---------- Barra superior ---------- */
-.barra {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  width: min(100% - 2 * var(--space-4), 1180px);
-  margin: 0 auto;
-  padding: var(--space-3) 0;
-}
-
-.marca {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: 44px;
-  color: var(--color-texto);
-  font-weight: var(--peso-fuerte);
-  font-size: var(--text-xl);
-  text-decoration: none;
-}
-
-.marca__logo {
-  flex-shrink: 0;
-  width: 30px;
-  height: 30px;
-  fill: none;
-  stroke-linecap: round;
-}
-
-.marca__exterior {
-  stroke: var(--color-marcador);
-  stroke-width: 4;
-}
-
-.marca__lente {
-  stroke: var(--color-texto);
-  stroke-width: 2.5;
-}
-
-.marca__mango {
-  stroke: var(--color-texto);
-  stroke-width: 3.5;
-}
-
-.barra__acciones {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.perfil {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  min-width: 0;
-}
-
-.perfil__texto {
-  display: grid;
-  min-width: 0;
-}
-
-.perfil__nombre {
-  font-weight: var(--peso-fuerte);
-}
-
-.perfil__correo {
-  font-size: var(--text-sm);
-  color: var(--color-texto-suave);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 /* ---------- La hoja: contenido y margen ---------- */
 .hoja {
   display: flex;
@@ -186,13 +111,6 @@
 
 .formulario > ui-text-field {
   justify-self: stretch;
-}
-
-@media (max-width: 720px) {
-  .perfil__texto,
-  .solo-ancho {
-    display: none;
-  }
 }
 
 /* El margen ocupa toda la altura de la hoja: la auditoría queda al pie. */
