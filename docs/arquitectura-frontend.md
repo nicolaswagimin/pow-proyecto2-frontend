@@ -26,14 +26,19 @@ src/
       axe-a-problemas.ts   resultado de axe → Problema (gravedad, descripción en español, WCAG); pareceSpa()
       criterios-wcag.ts    criterios de WCAG 2.2 A y AA con su nombre en español
       puntaje.ts           fórmula del puntaje y calificación
-      verificar.ts         aplica cada corrección y vuelve a auditar; compara antes y después
+      fragmentos.ts        parse5 (bajo demanda): ubicar cada elemento en el texto del HTML y elegir el fragmento
+      lotes.ts             pendientes por gravedad y lotes de 8 fragmentos / 12 000 caracteres, con deduplicación
+      reemplazos.ts        aplicar correcciones como reemplazos de texto (sin reformatear)
+      verificar.ts         verificación por lote con axe (y una por una si hay problemas nuevos); comparar
+      recomendaciones.ts   qué hacer con cada regla, en español
       diff.ts              diff por líneas (LCS entre los extremos iguales)
       exportar.ts          reporte en Markdown, nombres de archivo y descarga
-      componentes/         entrada-html, puntaje, lista-problemas, lente, correcciones y diff-codigo
+      componentes/         entrada-html, puntaje, lista-problemas, lente, recomendaciones, correcciones y diff-codigo
     lente/                 la herramienta sobre la propia app: inspeccion.ts, app-margen y app-auditoria
     ui/                    componentes base (botón, campos, medidor, alerta, avatar, íconos, tema)
     layouts/auth-layout/   plantilla de acceso: hoja con formulario y margen de anotaciones
     layouts/barra-app/     barra superior de /app e /historial (logo, Historial, tema, usuario, salir)
+    layouts/insignia-auditoria/  la autoauditoría de a11Lens en el pie de /app
     pages/
       acceso/              login y registro (un solo componente)
       inicio/              /app: la auditoría (auditoria-estado.ts guarda el estado con signals)
@@ -41,7 +46,7 @@ src/
       guia/                /design con contraste medido en vivo
 ```
 
-`lente/inspeccion.ts` lee el DOM real (nombre accesible, rol, estados, contraste, tamaño). `app-margen` no conoce el formulario: anota cualquier elemento enfocado dentro de su ámbito, así que sirve igual en el acceso, en `/app` y en `/design`. Es la misma inspección que el producto aplicará al HTML que pegue la persona.
+`lente/inspeccion.ts` lee el DOM real (nombre accesible, rol, estados, contraste, tamaño). `app-margen` no conoce el formulario: anota cualquier elemento enfocado dentro de su ámbito, así que sirve igual en el acceso y en `/design`. En `/app` no está: allí la columna derecha habla de la página auditada (`ui-recomendaciones`, [ADR 0011](decisiones/0011-columna-de-recomendaciones-en-vivo.md)). Es la misma inspección que el producto aplicará al HTML que pegue la persona.
 
 Fuera del iframe nadie toca el HTML de la persona: `public/auditor/corredor.js` corre dentro, junto a `auditor/axe.min.js` (copiado de `node_modules/axe-core` por `angular.json`), y habla con la app por `postMessage`. Detalle y protocolo en [lente.md](lente.md).
 
@@ -66,9 +71,9 @@ En la herramienta sobre la propia app, `axe-core` se importa con `import('axe-co
 |---|---|
 | `core/auth.service.ts` | `login`, `registrar`, `refrescarUsuario` y `cerrarSesion`. Guarda token y usuario en `localStorage` (con `try/catch`: en modo privado la sesión dura la pestaña) y los expone como signals. `estaAutenticado()` revisa la expiración del JWT en cada navegación. |
 | `services/paginas.service.ts` | `descargar(url)` → `POST /paginas/descargar`. |
-| `services/ia.service.ts` | `corregir(html, problemas)` → `POST /ia/corregir`. |
+| `services/ia.service.ts` | `corregirFragmentos(pagina, fragmentos)` → `POST /ia/fragmentos`. El documento nunca viaja. |
 | `services/auditorias.service.ts` | `listar`, `obtener`, `guardar` y `eliminar` en `/auditorias`. |
-| `pages/inicio/auditoria-estado.ts` | `AuditoriaEstado`, provisto en `Inicio`: entrada, auditoría, corrección con IA y su verificación, guardado y carga desde el historial. No repite la corrección si la entrada no cambió. |
+| `pages/inicio/auditoria-estado.ts` | `AuditoriaEstado`, provisto en `Inicio`: entrada, auditoría, rondas de corrección por fragmentos (documento acumulado, `quedan`, `noCorregibles`), guardado y carga desde el historial. No vuelve a pedir lo que ya se intentó; una auditoría nueva descarta la ronda en curso. |
 | `core/tema.service.ts` | Tema claro u oscuro. La primera vez sigue al sistema; después recuerda la elección. Aplica `data-theme` en `<html>` dentro de una View Transition. |
 | `core/errores.ts` | `mapearError(err, contexto)`: el único lugar donde las respuestas del backend se convierten en mensajes (0, 400, 401, 409, 413, 429, 502, 503, 5xx). |
 | `core/fuerza.ts` | Nivel de fortaleza de una contraseña y su pista. |
@@ -97,13 +102,20 @@ En la herramienta sobre la propia app, `axe-core` se importa con `import('axe-co
 
 1. `ui-entrada-html` emite el HTML pegado, el archivo o la URL. Con URL, `PaginasService` lo descarga por el backend.
 2. `AuditoriaEstado.auditar` llama a `MotorService.auditarHtml`: iframe oculto, `listo`, `auditar`, `resultado`. `aProblemas` traduce el resultado y `calcularPuntaje` lo puntúa.
-3. `ui-lente` abre su propia sesión con el mismo HTML para la vista previa; la selección viaja por `resaltar` y `enfocar`, y los clics vuelven por `clic`.
-4. «Explicar y corregir»: `IaService.corregir`, luego `verificarPorProblema` para cada corrección y `verificarDocumento` para el documento completo, cada una en un iframe oculto nuevo.
+3. `ui-lente` abre su propia sesión con el mismo HTML para la vista previa. La selección viaja por `resaltar` y `enfocar`; vuelven los clics (`clic`) y lo que está a la vista (`visibles`), que alimenta `ui-recomendaciones`.
+4. «Explicar y corregir» procesa una ronda de hasta 3 lotes. Por cada lote:
+   1. `analizarFuente` (parse5) sobre el documento acumulado;
+   2. `prepararPendientes` y `armarLote`;
+   3. `IaService.corregirFragmentos`;
+   4. `verificarLote`: una auditoría en un iframe oculto nuevo, o una por corrección si aparecen problemas nuevos;
+   5. el documento acumulado incorpora solo las resueltas.
+
+   «Corregir más» sigue con la siguiente ronda.
 5. «Guardar»: `AuditoriasService.guardar`. «Exportar»: `reporteMarkdown`, `window.print()` o el HTML corregido.
 
 ## Pruebas
 
-`npm test` corre Vitest con jsdom (`@angular/build:unit-test`, configuración en `vitest-base.config.mts`): 125 pruebas de puntaje, criterios, saneado, aislamiento (el `sandbox` es exactamente `allow-scripts`), verificación, diff, exportación, estado de la auditoría, historial y cada componente. Lo que jsdom no puede hacer (render real, contraste, iframes) se verificó con Playwright sobre Chrome.
+`npm test` corre Vitest con jsdom (`@angular/build:unit-test`, configuración en `vitest-base.config.mts`): 191 pruebas de puntaje, criterios, saneado, aislamiento (el `sandbox` es exactamente `allow-scripts`), corredor (ruta y visibles), ubicación con parse5, lotes, reemplazos, verificación por lote, diff, exportación, estado de la auditoría (con una página grande generada de más de 300 KB, `src/testing/pagina-grande.spec-util.ts`), historial y cada componente. Lo que jsdom no puede hacer (render real, contraste, iframes) se verificó con Playwright sobre Chrome.
 
 ## Configuración
 
