@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { APP_NOMBRE } from '../../config';
 import { AuthService } from '../../core/auth.service';
 import { Avatar } from '../../ui/avatar/avatar';
@@ -11,7 +11,7 @@ import { ThemeToggle } from '../../ui/theme-toggle/theme-toggle';
 @Component({
   selector: 'app-barra',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, Avatar, Button, Icon, ThemeToggle],
+  imports: [RouterLink, RouterLinkActive, Avatar, Button, Icon, ThemeToggle],
   templateUrl: './barra-app.html',
   styleUrl: './barra-app.css',
 })

@@ -9,6 +9,13 @@
   </a>
 
   <div class="barra__acciones">
+    <a
+      class="barra__enlace"
+      routerLink="/historial"
+      routerLinkActive="barra__enlace--activo"
+      ariaCurrentWhenActive="page"
+      >Historial</a
+    >
     <ui-theme-toggle />
     <div class="perfil">
       <ui-avatar class="perfil__avatar" [iniciales]="auth.iniciales()" />

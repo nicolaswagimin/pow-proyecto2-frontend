@@ -53,6 +53,25 @@
   gap: var(--space-3);
 }
 
+.barra__enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--space-2);
+  color: var(--color-enlace);
+  font-weight: var(--peso-fuerte);
+}
+
+.barra__enlace--activo {
+  color: var(--color-texto);
+  text-decoration: none;
+}
+
+.barra__enlace:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: var(--anillo-foco);
+}
+
 .perfil {
   display: flex;
   align-items: center;
@@ -81,5 +100,20 @@
   .perfil__texto,
   .solo-ancho {
     display: none;
+  }
+}
+
+/* En teléfonos el avatar cede su lugar al enlace del historial: la barra no desborda. */
+@media (max-width: 480px) {
+  .barra__acciones {
+    gap: var(--space-2);
+  }
+
+  .perfil {
+    display: none;
+  }
+
+  .barra__enlace {
+    padding: 0;
   }
 }
