@@ -41,7 +41,7 @@ El archivo se llama `a11lens-<página>.md`: `nombreArchivo()` pasa el nombre a m
 
 ### PDF
 
-Con la impresión del navegador (*Guardar como PDF*), sobre estilos `@media print` de `/app`: se ocultan la barra, la entrada, la lente, la sección de guardar, los botones y el margen de anotaciones; quedan el resultado, los problemas, las correcciones y el diff. Las propuestas que no pasaron la verificación siguen dentro de su `<details>` cerrado. Ver [ADR 0008](decisiones/0008-pdf-con-impresion-del-navegador.md).
+Con la impresión del navegador (*Guardar como PDF*), sobre estilos `@media print` de `/app`: se ocultan la barra, la entrada, la lente, la sección de guardar, los botones y el margen de anotaciones; quedan el resultado, los problemas, las correcciones y el diff. El código de las propuestas sin solución verificada sigue dentro de su `<details>` cerrado. Ver [ADR 0008](decisiones/0008-pdf-con-impresion-del-navegador.md).
 
 ### HTML corregido
 

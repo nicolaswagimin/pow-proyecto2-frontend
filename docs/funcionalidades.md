@@ -51,7 +51,7 @@ En la vista previa no se navega ni se envía nada: todos los clics y envíos se 
 | No resolvió | El problema sigue |
 | No se pudo aplicar | El fragmento original no está en el HTML |
 
-Las verificadas aparecen primero, con su explicación y el código. Las demás quedan dentro de un `<details>` cerrado, «Propuestas que no pasaron la verificación», con el motivo; su código no se ofrece como solución.
+Las verificadas aparecen primero, con su explicación y el código. Las demás van en «Sin solución verificada», con la explicación y el motivo; lo que propuso la IA queda dentro de un `<details>` cerrado («Ver lo que propuso la IA») y nunca se ofrece como solución.
 
 El documento completo también se vuelve a auditar: se muestran el puntaje antes → después y cuántos problemas se resolvieron, siguen y aparecieron.
 
