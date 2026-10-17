@@ -1,3 +1,96 @@
 :host {
-  display: block;
+  display: grid;
+  gap: var(--space-6);
+}
+
+h3 {
+  font-size: var(--text-lg);
+}
+
+.documento,
+.seccion,
+.correccion {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.documento__puntaje strong {
+  padding: 0 var(--space-2);
+  background: var(--color-marcador);
+  color: var(--color-marcador-texto);
+}
+
+.lista {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.correccion {
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-regla);
+}
+
+.correccion__titulo code {
+  font-family: var(--font-codigo);
+}
+
+/* El estado se lee como texto; el color lo refuerza. */
+.estado {
+  font-weight: var(--peso-fuerte);
+}
+
+.estado--resuelto {
+  color: var(--color-exito);
+}
+
+.estado--fallida {
+  color: var(--color-error);
+}
+
+.etiqueta {
+  font-size: var(--text-sm);
+  font-weight: var(--peso-fuerte);
+  color: var(--color-texto-suave);
+}
+
+.codigo {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  overflow-x: auto;
+  border-radius: var(--radius-control);
+  background: var(--color-fondo);
+  font-family: var(--font-codigo);
+  font-size: var(--text-sm);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.codigo--antes {
+  box-shadow: inset 4px 0 0 var(--color-error);
+}
+
+.codigo--despues {
+  box-shadow: inset 4px 0 0 var(--color-exito);
+}
+
+details summary {
+  width: fit-content;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  color: var(--color-enlace);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+details summary:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: var(--anillo-foco);
+}
+
+.vacio {
+  color: var(--color-texto-suave);
 }
