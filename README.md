@@ -55,7 +55,7 @@ Sin backend se puede auditar HTML pegado o un archivo (todo corre en el navegado
 Pruebas:
 
 ```bash
-npm test           # 191 pruebas con Vitest y jsdom
+npm test           # 212 pruebas con Vitest y jsdom
 ```
 
 Para compilar la versión de producción:

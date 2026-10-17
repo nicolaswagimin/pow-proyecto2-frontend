@@ -15,7 +15,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). L
 - **La vista previa se ve como una ventana de navegador** con la dirección de la página.
 - **Insignia de autoauditoría** en el pie de `/app` («Esta app: 0 problemas WCAG 2.2 AA»), que al abrirse audita la app en vivo.
 - `app-auditoria`: entrada `auto` y salida `problemas`. Ya no entra en iframes.
-- Pruebas con una **página grande de ejemplo** generada (más de 300 KB y más de 150 problemas). En total, 191 pruebas.
+- Pruebas con una **página grande de ejemplo** generada (más de 300 KB y más de 150 problemas). En total, 212 pruebas.
 - Documentación: ADR 0010 y 0011; actualizados `funcionalidades.md`, `lente.md`, `accesibilidad.md` (29 de 29 auditorías sin violaciones), `componentes.md`, `arquitectura-frontend.md`, `reporte.md`, la ADR 0007 y las capturas.
 
 ### Cambiado
@@ -26,7 +26,16 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). L
 - La corrección del documento completo (`IaService.corregir`, `verificarPorProblema`, `verificarDocumento`) y el límite de 30 elementos.
 
 ### Corregido
-- Si la IA falla a mitad de ronda, esos elementos se vuelven a pedir con «Corregir más».
+- Si la IA o la verificación fallan a mitad de ronda, esos elementos se vuelven a pedir con «Corregir más».
+- Con la huella de cada elemento, una ruta ya no puede caer en otro elemento con la misma etiqueta (modo quirks, `<form>` mal anidados, `<select>` personalizados).
+- No se corrige con el resultado de otra página si la auditoría de la nueva falla.
+- El título y el idioma se recortan a los límites del servidor: un `<title>` largo bloqueaba la IA.
+- Solo se corrigen los elementos de la auditoría original: no se reenvían a la IA elementos ya intentados con otro selector.
+- La columna de recomendaciones se puede recorrer con el teclado.
+
+### Seguridad
+- Se descartan las correcciones que agregan código ejecutable o, en una apertura, otros elementos: el iframe audita la versión saneada y axe nunca los vería.
+- Se revisa la forma de lo que manda el iframe (ruta, etiqueta y huella).
 
 ## 2026-10-17 · Funcionalidad de auditoría
 

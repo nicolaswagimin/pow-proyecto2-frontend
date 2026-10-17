@@ -115,7 +115,7 @@ En la herramienta sobre la propia app, `axe-core` se importa con `import('axe-co
 
 ## Pruebas
 
-`npm test` corre Vitest con jsdom (`@angular/build:unit-test`, configuración en `vitest-base.config.mts`): 191 pruebas de puntaje, criterios, saneado, aislamiento (el `sandbox` es exactamente `allow-scripts`), corredor (ruta y visibles), ubicación con parse5, lotes, reemplazos, verificación por lote, diff, exportación, estado de la auditoría (con una página grande generada de más de 300 KB, `src/testing/pagina-grande.spec-util.ts`), historial y cada componente. Lo que jsdom no puede hacer (render real, contraste, iframes) se verificó con Playwright sobre Chrome.
+`npm test` corre Vitest con jsdom (`@angular/build:unit-test`, configuración en `vitest-base.config.mts`): 212 pruebas de puntaje, criterios, saneado, aislamiento (el `sandbox` es exactamente `allow-scripts`), corredor (ruta y visibles), ubicación con parse5, lotes, reemplazos, verificación por lote, diff, exportación, estado de la auditoría (con una página grande generada de más de 300 KB, `src/testing/pagina-grande.spec-util.ts`), historial y cada componente. Lo que jsdom no puede hacer (render real, contraste, iframes) se verificó con Playwright sobre Chrome.
 
 ## Configuración
 
