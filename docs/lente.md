@@ -25,8 +25,8 @@ Todos con `postMessage(mensaje, '*')`: el destino tiene origen opaco, así que l
 
 | `tipo` | Campos | Qué hace el corredor |
 |---|---|---|
-| `auditar` | `id` | Corre `axe.run` con las etiquetas `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa` y `wcag22aa`, excluye `[data-a11lens]` y, en un fragmento, desactiva las reglas de documento |
-| `resaltar` | `selectores`, `seleccionado` | Marca cada elemento con `data-a11lens-marca` (`problema` o `seleccionado`) y `data-a11lens-selector`. No contornea `html`, `head` ni `body` |
+| `auditar` | `id` | Corre `axe.run` con las etiquetas `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa` y `wcag22aa` y `elementRef: true`, excluye `[data-a11lens]` y, en un fragmento, desactiva las reglas de documento |
+| `resaltar` | `selectores`, `seleccionado` | Marca cada elemento con `data-a11lens-marca` (`problema` o `seleccionado`) y `data-a11lens-selector`, y empieza a observarlos (ver `visibles`). No contornea `html`, `head` ni `body` |
 | `enfocar` | `selector` | Pasa ese elemento a `seleccionado` y lo desplaza al centro |
 
 ### Del iframe a la app
@@ -36,18 +36,29 @@ Todos llevan además `sesion` (el token de la carga).
 | `tipo` | Campos | Cuándo |
 |---|---|---|
 | `listo` | — | El corredor cargó; la app ya puede enviar mensajes (espera hasta 15 s) |
-| `resultado` | `id`, `violaciones`, `aprobadas` | Terminó `auditar` (espera hasta 20 s). Solo datos: `id`, `impact`, `help`, `helpUrl`, `tags` y `nodes[{ target, html }]` |
+| `resultado` | `id`, `violaciones`, `aprobadas` | Terminó `auditar` (espera hasta 20 s). Solo datos: `id`, `impact`, `help`, `helpUrl`, `tags` y `nodes[{ target, html, ruta, etiqueta, resumen }]` |
 | `error` | `id`, `mensaje` | axe falló |
 | `clic` | `selector` | Clic sobre un elemento resaltado (o dentro de él) |
+| `visibles` | `selectores` | Cambió qué elementos resaltados están a la vista. Usa un `IntersectionObserver`, avisa como mucho una vez por cuadro de animación y los ordena según la página. Alimenta la columna de recomendaciones |
 
 Los resaltados son atributos más un `<style data-a11lens>` con el nonce, no elementos nuevos: no cambian el layout de la página. El `<style>` se excluye de la auditoría.
 
 Los selectores con ` >> ` (elementos dentro de iframes o shadow DOM) se listan pero no se resaltan.
 
+### Ruta de cada nodo
+
+Para corregir por fragmentos, la app necesita la posición exacta de cada elemento en el **texto** del HTML original. El `html` que da axe no sirve para buscarlo: viene recortado (`<div class="…" ...>`) y con el formato del DOM (comillas, mayúsculas, atributos), no con el del archivo. Por eso el corredor manda, por nodo:
+
+- `ruta`: los índices de hijos-elemento desde `<html>` hasta el elemento. No cuenta los nodos que agregó a11Lens: `script`, `base`, `meta[http-equiv]` y `[data-a11lens]`. Como el saneador quitó todos los de la página, los que quedan son nuestros. Es `null` en shadow DOM o en otro documento.
+- `etiqueta`: el nombre del elemento, para comprobar que la ruta llegó al correcto.
+- `resumen`: el `failureSummary` de axe (hasta 500 caracteres), que para contraste trae los colores y la razón.
+
+La app recorre la misma ruta en un árbol de **parse5** del HTML original (`auditor/fragmentos.ts`), con las posiciones de origen y `scriptingEnabled: false` como `DOMParser`. Al recorrerla salta lo mismo que quita `sanear()`. Si la etiqueta no coincide o el elemento no está escrito en la fuente, el nodo queda como no corregible. Ver la [ADR 0010](decisiones/0010-ubicar-fragmentos-con-parse5.md).
+
 ## Dos usos del motor
 
-- **`MotorService.abrir(iframe, html, baseHref?)`** carga el HTML en un iframe visible (la lente, `ui-lente`) y devuelve una `SesionAislada` con `auditar`, `resaltar`, `enfocar`, `alClic` y `cerrar`. Cada HTML nuevo abre una sesión nueva; la anterior se cierra.
-- **`MotorService.auditarHtml(html, baseHref?)`** audita en un iframe oculto de 1280 × 800 px fuera de la pantalla (`aria-hidden`, `tabindex=-1`) y lo elimina al terminar. Se usa para la auditoría inicial y para verificar cada corrección.
+- **`MotorService.abrir(iframe, html, baseHref?)`** carga el HTML en un iframe visible (la lente, `ui-lente`) y devuelve una `SesionAislada` con `auditar`, `resaltar`, `enfocar`, `alClic`, `alVisibles` y `cerrar`. Cada HTML nuevo abre una sesión nueva; la anterior se cierra.
+- **`MotorService.auditarHtml(html, baseHref?)`** audita en un iframe oculto de 1280 × 800 px fuera de la pantalla (`aria-hidden`, `tabindex=-1`) y lo elimina al terminar. Se usa para la auditoría inicial y para verificar las correcciones, una vez por lote, o una por corrección si aparecen problemas nuevos.
 
 ## Lo que no hace
 
