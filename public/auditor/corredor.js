@@ -19,6 +19,35 @@
     window.parent.postMessage(mensaje, '*');
   }
 
+  // Nodos que agregó a11Lens: el saneador quitó todos los de la página, así que los que quedan son
+  // nuestros. La ruta no los cuenta, igual que la app al recorrer el HTML original (fragmentos.ts).
+  function esDeA11Lens(el) {
+    var nombre = el.localName;
+    return (
+      nombre === 'script' ||
+      nombre === 'base' ||
+      (nombre === 'meta' && el.hasAttribute('http-equiv')) ||
+      el.hasAttribute('data-a11lens')
+    );
+  }
+
+  // Índices de hijos-elemento desde <html> hasta el elemento. null si está en shadow DOM o en otro
+  // documento: no se puede ubicar en el HTML original.
+  function rutaDe(el) {
+    if (!el || el.ownerDocument !== document || !document.documentElement.contains(el)) return null;
+    var ruta = [];
+    for (var actual = el; actual !== document.documentElement; actual = actual.parentElement) {
+      var padre = actual.parentElement;
+      if (!padre) return null;
+      var indice = 0;
+      for (var hijo = padre.firstElementChild; hijo && hijo !== actual; hijo = hijo.nextElementSibling) {
+        if (!esDeA11Lens(hijo)) indice++;
+      }
+      ruta.unshift(indice);
+    }
+    return ruta;
+  }
+
   function soloDatos(v) {
     return {
       id: v.id,
@@ -27,7 +56,14 @@
       helpUrl: v.helpUrl,
       tags: v.tags,
       nodes: v.nodes.map(function (n) {
-        return { target: n.target, html: n.html };
+        var el = n.element;
+        return {
+          target: n.target,
+          html: n.html,
+          ruta: el ? rutaDe(el) : null,
+          etiqueta: el ? el.localName : '',
+          resumen: String(n.failureSummary || '').slice(0, 500),
+        };
       }),
     };
   }
@@ -40,7 +76,10 @@
       });
     }
     window.axe
-      .run({ exclude: [['[data-a11lens]']] }, { runOnly: { type: 'tag', values: ETIQUETAS }, rules: reglas })
+      .run(
+        { exclude: [['[data-a11lens]']] },
+        { runOnly: { type: 'tag', values: ETIQUETAS }, rules: reglas, elementRef: true },
+      )
       .then(function (r) {
         enviar({ tipo: 'resultado', id: id, violaciones: r.violations.map(soloDatos), aprobadas: r.passes.length });
       })
@@ -73,19 +112,63 @@
     }
   }
 
+  // ---------- Visibles ----------
+  // Qué elementos resaltados están a la vista dentro del iframe: la columna de recomendaciones de
+  // la app sigue el scroll de la vista previa. Como mucho un aviso por cuadro de animación.
+  var observador = null;
+  var orden = [];
+  var visibles = new Set();
+  var cuadro = 0;
+
+  function avisarVisibles() {
+    cancelAnimationFrame(cuadro);
+    cuadro = requestAnimationFrame(function () {
+      enviar({
+        tipo: 'visibles',
+        selectores: orden.filter(function (s) {
+          return visibles.has(s);
+        }),
+      });
+    });
+  }
+
+  function observar(marcados) {
+    if (observador) observador.disconnect();
+    visibles = new Set();
+    orden = marcados.map(function (m) {
+      return m.selector;
+    });
+    if (typeof IntersectionObserver !== 'function') return;
+    observador = new IntersectionObserver(function (entradas) {
+      entradas.forEach(function (e) {
+        var selector = e.target.getAttribute(SELECTOR);
+        if (e.isIntersecting) visibles.add(selector);
+        else visibles.delete(selector);
+      });
+      avisarVisibles();
+    });
+    marcados.forEach(function (m) {
+      observador.observe(m.el);
+    });
+    avisarVisibles();
+  }
+
   function resaltar(selectores, seleccionado) {
     estilos();
     document.querySelectorAll('[' + MARCA + ']').forEach(function (el) {
       el.removeAttribute(MARCA);
       el.removeAttribute(SELECTOR);
     });
+    var marcados = [];
     selectores.forEach(function (selector) {
       var el = buscar(selector);
       // El documento entero (html, head, body) no se contornea: no ayuda a ubicar nada.
       if (!el || el === document.documentElement || el === document.head || el === document.body) return;
       el.setAttribute(MARCA, selector === seleccionado ? 'seleccionado' : 'problema');
       el.setAttribute(SELECTOR, selector);
+      marcados.push({ el: el, selector: selector });
     });
+    observar(marcados);
   }
 
   function enfocar(selector) {

@@ -11,7 +11,13 @@ export interface ViolacionAxe {
   help: string;
   helpUrl: string;
   tags: string[];
-  nodes: { target: (string | string[])[]; html: string }[];
+  nodes: {
+    target: (string | string[])[];
+    html: string;
+    ruta?: number[] | null;
+    etiqueta?: string;
+    resumen?: string;
+  }[];
 }
 
 const GRAVEDAD_DE: Record<string, Gravedad> = {
@@ -64,6 +70,7 @@ const DESCRIPCIONES: Record<string, string> = {
 };
 
 const MAX_FRAGMENTO = 300;
+const MAX_RESUMEN = 500;
 
 function recortar(texto: string): string {
   return texto.length > MAX_FRAGMENTO ? `${texto.slice(0, MAX_FRAGMENTO - 1)}…` : texto;
@@ -90,6 +97,9 @@ export function aProblemas(violaciones: ViolacionAxe[]): Problema[] {
       nodos: v.nodes.map((n) => ({
         selector: n.target.map((t) => (Array.isArray(t) ? t.join(' >> ') : t)).join(' >> '),
         html: recortar(n.html),
+        ruta: n.ruta ?? null,
+        etiqueta: n.etiqueta ?? '',
+        resumen: (n.resumen ?? '').slice(0, MAX_RESUMEN),
       })),
     }))
     .sort((a, b) => GRAVEDADES.indexOf(a.gravedad) - GRAVEDADES.indexOf(b.gravedad));

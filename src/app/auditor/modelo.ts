@@ -20,6 +20,11 @@ export interface CriterioWcag {
 export interface NodoProblema {
   selector: string; // ubicación: el selector CSS que da axe
   html: string; // fragmento del elemento (recortado)
+  // Para ubicar el elemento en el HTML original y corregirlo con la IA (fragmentos.ts). Faltan en
+  // las auditorías creadas antes de la corrección por fragmentos.
+  ruta?: number[] | null; // índices de hijos-elemento desde <html>; null si no se puede ubicar
+  etiqueta?: string; // nombre del elemento ("img")
+  resumen?: string; // failureSummary de axe (para contraste trae los colores)
 }
 
 export interface Problema {

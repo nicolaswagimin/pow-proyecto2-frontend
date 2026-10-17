@@ -16,7 +16,22 @@ describe('aProblemas', () => {
     expect(p.gravedad).toBe('critico');
     expect(p.descripcion).toBe('Las imágenes deben tener texto alternativo.');
     expect(p.criterios).toEqual([{ id: '1.1.1', nombre: 'Contenido no textual', nivel: 'A' }]);
-    expect(p.nodos).toEqual([{ selector: 'main > img', html: '<img src="a.png">' }]);
+    expect(p.nodos).toEqual([
+      { selector: 'main > img', html: '<img src="a.png">', ruta: null, etiqueta: '', resumen: '' },
+    ]);
+  });
+
+  it('conserva la ruta, la etiqueta y el resumen que envía el corredor', () => {
+    const nodo = {
+      target: ['main > img'],
+      html: '<img src="a.png">',
+      ruta: [1, 0, 2],
+      etiqueta: 'img',
+      resumen: `Fix any of the following: ${'x'.repeat(600)}`,
+    };
+    const [p] = aProblemas([violacion({ nodes: [nodo] })]);
+    expect(p.nodos[0]).toMatchObject({ ruta: [1, 0, 2], etiqueta: 'img' });
+    expect(p.nodos[0].resumen).toHaveLength(500);
   });
 
   it('usa la ayuda de axe si la regla no tiene traducción', () => {
