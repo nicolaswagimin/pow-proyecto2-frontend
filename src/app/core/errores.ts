@@ -33,12 +33,16 @@ export function mapearError(err: unknown, contexto: ContextoError = 'general'): 
         : { mensaje: 'Tu sesión expiró. Inicia sesión de nuevo.' };
     case 409:
       return { mensaje: 'Ese correo ya tiene una cuenta.', campo: 'email', accion: 'ir-a-login' };
+    case 413:
+      return { mensaje: 'El HTML es demasiado grande para enviarlo (máximo 2 MB).' };
     case 429:
       return {
         mensaje: delServidor ?? 'Demasiados intentos. Espera unos minutos y vuelve a intentarlo.',
       };
     case 502:
       return { mensaje: delServidor ?? 'El servicio externo no respondió. Inténtalo de nuevo.' };
+    case 503:
+      return { mensaje: delServidor ?? 'El servicio no está disponible en este momento.' };
     default:
       if (err.status >= 500) {
         return { mensaje: 'Algo falló de nuestro lado. Inténtalo de nuevo en unos segundos.' };
