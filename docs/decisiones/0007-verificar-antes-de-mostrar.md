@@ -22,3 +22,9 @@ El documento completo corregido también se re-audita, y se muestra su puntaje r
 - Una corrección puede no verificarse sola y sí resolverse en el documento completo (dos cambios que dependen uno del otro); la interfaz muestra ambos resultados sin contradecirse.
 - Verificar cuesta una auditoría por corrección (unos cientos de milisegundos cada una, con progreso visible). No gasta cuota de Gemini.
 - La verificación solo cubre lo que axe detecta.
+
+## Actualización · corrección por fragmentos ([ADR 0010](0010-ubicar-fragmentos-con-parse5.md))
+- **Por lote.** Las correcciones de un lote se aplican juntas, como reemplazos de texto, y se auditan **una vez**. Cada una queda resuelta si su regla + selector desaparece y la regla bajó al menos en tantos elementos como correcciones suyas desaparecieron. Si la auditoría combinada trae problemas nuevos, se audita cada corrección por separado para atribuirlos.
+- **El documento corregido ya no lo escribe la IA.** Es el HTML original con **solo las correcciones resueltas**, así que el aviso de «problemas nuevos o puntaje más bajo» casi nunca aparece.
+- **Estado nuevo:** «La IA no devolvió una corrección válida», para los fragmentos en `sinRespuesta`.
+- **Costo:** cerca de una auditoría por lote en lugar de una por corrección.
