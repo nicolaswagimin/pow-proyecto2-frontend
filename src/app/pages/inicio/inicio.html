@@ -30,11 +30,128 @@
       <section class="bienvenida">
         <h1>Hola, {{ primerNombre() }}</h1>
         <p class="bienvenida__texto">
-          Aquí vas a pegar HTML o una URL para auditar su accesibilidad. Mientras tanto, enfoca
-          cualquier control de esta página para ver sus anotaciones, o audítala completa desde el
-          margen.
+          Pega HTML, sube un archivo o escribe una URL: a11Lens encuentra los problemas de
+          accesibilidad, te los explica y propone correcciones verificadas.
         </p>
       </section>
+
+      <section class="panel no-imprimir" aria-labelledby="titulo-auditar">
+        <h2 id="titulo-auditar">Auditar</h2>
+        <ui-entrada-html
+          [cargando]="auditando()"
+          (pegado)="estado.auditarPegado($event.html, $event.pagina)"
+          (archivo)="estado.auditarArchivo($event)"
+          (url)="estado.auditarUrl($event)"
+        />
+        <p class="visually-hidden" role="status">{{ auditando() ? 'Auditando la página…' : '' }}</p>
+        @if (estado.error(); as error) {
+          <ui-alert tipo="error">{{ error }}</ui-alert>
+        }
+      </section>
+
+      @if (estado.resultado(); as resultado) {
+        <section class="panel" aria-labelledby="titulo-resultado">
+          <div class="panel__cabecera">
+            <h2 id="titulo-resultado">Resultado</h2>
+            <p class="pagina-auditada">{{ estado.pagina() }}</p>
+          </div>
+          @if (estado.pareceSpa()) {
+            <ui-alert tipo="aviso" titulo="Esta página parece necesitar JavaScript para mostrarse.">
+              a11Lens no ejecuta los scripts de la página (por seguridad), así que audita el HTML
+              tal como llega. Si el contenido se arma con JavaScript, la auditoría verá una página
+              casi vacía. Para auditarla completa, pega el HTML ya renderizado (por ejemplo, desde
+              las herramientas del navegador: «Copiar outerHTML» del elemento &lt;html&gt;).
+            </ui-alert>
+          }
+          <ui-puntaje [puntaje]="estado.puntaje()!" [resumen]="estado.resumen()" />
+        </section>
+
+        <section class="panel no-imprimir" aria-labelledby="titulo-lente">
+          <h2 id="titulo-lente">Lente</h2>
+          <p class="ayuda">
+            La página tal como se ve, con los elementos con problemas resaltados. Haz clic en uno
+            para ver su problema, o usa «Ver en la lente» desde la lista.
+          </p>
+          <ui-lente
+            [html]="estado.html()"
+            [baseHref]="estado.baseHref()"
+            [selectores]="selectores()"
+            [seleccionado]="estado.seleccionado()"
+            (clic)="alClicEnLente($event)"
+          />
+        </section>
+
+        <section class="panel" aria-labelledby="titulo-problemas">
+          <h2 id="titulo-problemas">Problemas</h2>
+          <ui-lista-problemas
+            [problemas]="resultado.problemas"
+            [seleccionado]="estado.seleccionado()"
+            (seleccionar)="seleccionar($event)"
+          />
+        </section>
+
+        @if (resultado.problemas.length) {
+          <section class="panel" aria-labelledby="titulo-corregir">
+            <h2 id="titulo-corregir">Corregir con IA</h2>
+            <p class="ayuda no-imprimir">
+              La IA explica cada problema en palabras simples y propone una corrección. a11Lens la
+              aplica y vuelve a auditar: solo se muestran como solución las que de verdad lo
+              resuelven.
+            </p>
+            <ui-button
+              class="no-imprimir"
+              [cargando]="estado.corrigiendo()"
+              textoCargando="Corrigiendo y verificando…"
+              (click)="estado.corregir()"
+            >
+              <ui-icon nombre="chispa" />
+              Explicar y corregir
+            </ui-button>
+            <p class="progreso" role="status">{{ estado.progresoIA() }}</p>
+            @if (estado.errorIA(); as error) {
+              <ui-alert tipo="error">{{ error }}</ui-alert>
+            }
+            @if (estado.correcciones().length || estado.verificacionDocumento()) {
+              <ui-correcciones
+                [correcciones]="estado.correcciones()"
+                [verificacion]="estado.verificacionDocumento()"
+              />
+            }
+          </section>
+        }
+
+        @if (estado.documentoCorregido(); as corregido) {
+          <section class="panel" aria-labelledby="titulo-diff">
+            <h2 id="titulo-diff">Antes y después</h2>
+            <ui-diff-codigo [antes]="estado.html()" [despues]="corregido" />
+          </section>
+        }
+
+        <section class="panel no-imprimir" aria-labelledby="titulo-guardar">
+          <h2 id="titulo-guardar">Guardar y exportar</h2>
+          <div class="acciones">
+            <ui-button
+              [cargando]="estado.guardando()"
+              textoCargando="Guardando…"
+              [deshabilitado]="estado.guardadaId() !== null"
+              (click)="guardar()"
+            >
+              {{ estado.guardadaId() !== null ? 'Guardada' : 'Guardar en el historial' }}
+            </ui-button>
+            <ui-button variante="secundario" (click)="exportarMarkdown()"
+              >Reporte en Markdown</ui-button
+            >
+            <ui-button variante="secundario" (click)="exportarPdf()">Reporte en PDF</ui-button>
+            @if (estado.documentoCorregido()) {
+              <ui-button variante="secundario" (click)="descargarHtml()">HTML corregido</ui-button>
+            }
+          </div>
+          <p class="ayuda">El PDF se genera con «Guardar como PDF» del diálogo de impresión.</p>
+          @if (aviso(); as a) {
+            <ui-alert [tipo]="a.tipo">{{ a.mensaje }}</ui-alert>
+          }
+        </section>
+      }
 
       <!-- En móvil el margen es una franja compacta: la auditoría va al pie. -->
       <app-auditoria class="auditoria-movil" />
