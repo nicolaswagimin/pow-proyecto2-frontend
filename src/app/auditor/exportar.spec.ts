@@ -1,5 +1,5 @@
 import { Problema } from './modelo';
-import { nombreArchivo, reporteMarkdown } from './exportar';
+import { ESTADO_CORRECCION, nombreArchivo, reporteMarkdown } from './exportar';
 
 const problema: Problema = {
   regla: 'image-alt',
@@ -59,5 +59,9 @@ describe('nombreArchivo', () => {
       'a11lens-ejemplo-org-contacto-x-1.md',
     );
     expect(nombreArchivo('  ', 'html')).toBe('a11lens-pagina.html');
+  });
+
+  it('cada estado de corrección tiene su texto, incluido sin respuesta de la IA', () => {
+    expect(ESTADO_CORRECCION['sin-respuesta']).toBe('La IA no devolvió una corrección válida');
   });
 });
