@@ -146,6 +146,27 @@ describe('AuditoriaEstado', () => {
     expect(estado.corrigiendo()).toBe(false);
   });
 
+  it('si la IA falla, «Corregir más» vuelve a pedir los mismos elementos', async () => {
+    let fallar = true;
+    const { estado, ia } = preparar({
+      corregir: (_p: unknown, fragmentos: FragmentoParaIA[]) =>
+        fallar
+          ? throwError(
+              () => new HttpErrorResponse({ status: 502, error: { error: 'Gemini caído.' } }),
+            )
+          : of(corregirFalso(fragmentos)),
+    });
+    await estado.auditarPegado(HTML, 'x');
+    await estado.corregir();
+    expect(estado.errorIA()).toBe('Gemini caído.');
+    expect(estado.textoCorregir()).toBe('Corregir más (quedan 1 elemento)');
+    fallar = false;
+    await estado.corregir();
+    expect(enviadosEn(ia)).toHaveLength(2);
+    expect(enviadosEn(ia)[1]).toEqual(enviadosEn(ia)[0]);
+    expect(estado.correcciones().map((c) => c.estado)).toEqual(['resuelto']);
+  });
+
   it('un fragmento sin respuesta de la IA queda como «sin respuesta» y no se aplica', async () => {
     const { estado } = preparar({
       corregir: () => of({ fragmentos: [], sinRespuesta: ['f1'] }),
