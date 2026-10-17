@@ -17,11 +17,12 @@ Lo que da axe no alcanza:
 ## Decisión
 Opción 3.
 
-- **El corredor** (con `elementRef: true`) manda `ruta`, `etiqueta` y `resumen`. No cuenta los nodos que agregó a11Lens: `script`, `base`, `meta[http-equiv]` y `[data-a11lens]`.
+- **El corredor** (con `elementRef: true`) manda `ruta`, `etiqueta`, `resumen` y `huella`. No cuenta los nodos que agregó a11Lens: `script`, `base`, `meta[http-equiv]` y `[data-a11lens]`.
 - **`analizarFuente`** (`auditor/fragmentos.ts`) parsea con parse5:
   - usa `sourceCodeLocationInfo` y `scriptingEnabled: false`, igual que el `DOMParser` del saneador;
   - recorre la ruta sin contar lo que quita `sanear()`;
-  - comprueba que la etiqueta coincida, y si no coincide o el elemento no está escrito en la fuente (implícito), lo marca como no corregible.
+  - comprueba que la etiqueta y la **huella** (atributos ordenados, y cuántos hijos tienen el elemento y su padre) coincidan. Si no coinciden, o si el elemento no está escrito en la fuente (implícito), lo marca como no corregible.
+  - La huella existe porque el árbol del iframe no siempre es igual al del original. La revisión final encontró tres casos: en modo quirks `<p><table>` anida; un `</form>` mal anidado deja un `<form>` vacío solo en un árbol; y el `<select>` personalizado de Chrome conserva `<div>` que parse5 descarta. En todos, la ruta caía en otro elemento con la misma etiqueta.
 - **El fragmento** es:
   - el elemento completo, si mide ≤ 1500 caracteres, no contiene otro elemento con problemas y no es `html`, `head` ni `body`;
   - si no, su etiqueta de apertura;
@@ -37,4 +38,5 @@ Opción 3.
 - El diff solo muestra los fragmentos corregidos; el resto del documento queda byte a byte igual.
 - Hay que mantener en sincronía tres listas: lo que quita `sanear()`, lo que salta el corredor y lo que salta `fragmentos.ts`. Las pruebas de `fragmentos.spec.ts` y `corredor.spec.ts` cubren los casos con `script`, `noscript`, `iframe` y `meta refresh`.
 - No se corrigen con IA los elementos implícitos, los de shadow DOM o iframes, ni los de apertura mayor de 4000 caracteres. La interfaz dice cuántos son.
-- Si un saneado con varias pasadas (mXSS) cambiara la estructura, la etiqueta no coincidiría y el nodo quedaría como no corregible, nunca con un rango equivocado.
+- Si el árbol cambia (quirks, mXSS, formularios anidados), la huella no coincide y el nodo queda como no corregible. El riesgo que queda es el de dos elementos idénticos, con los mismos atributos y los mismos hijos que su padre; ahí corregir uno por el otro da el mismo texto.
+- Las correcciones de la IA son dato no confiable: no pueden agregar nada que el saneador quitaría ni, si son de apertura, otros elementos. Ver la [ADR 0007](0007-verificar-antes-de-mostrar.md).
