@@ -29,6 +29,9 @@ export class IaService {
   private readonly http = inject(HttpClient);
 
   corregir(html: string, problemas: ProblemaParaIA[]): Observable<RespuestaCorreccion> {
-    return this.http.post<RespuestaCorreccion>(`${environment.apiUrl}/ia/corregir`, { html, problemas });
+    return this.http.post<RespuestaCorreccion>(`${environment.apiUrl}/ia/corregir`, {
+      html,
+      problemas,
+    });
   }
 }
