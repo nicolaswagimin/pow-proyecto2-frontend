@@ -94,3 +94,19 @@ export function aProblemas(violaciones: ViolacionAxe[]): Problema[] {
     }))
     .sort((a, b) => GRAVEDADES.indexOf(a.gravedad) - GRAVEDADES.indexOf(b.gravedad));
 }
+
+const RAICES_SPA =
+  '#root, #app, #__next, #__nuxt, #svelte, app-root, [data-reactroot], [ng-version]';
+const MIN_TEXTO = 80;
+
+// ¿La página necesita JavaScript para mostrar su contenido? Body con muy poco texto y un
+// contenedor raíz típico de frameworks, o casi solo scripts. a11Lens no ejecuta esos scripts, así
+// que auditaría una página casi vacía: la interfaz lo avisa.
+export function pareceSpa(html: string): boolean {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const scripts = doc.querySelectorAll('script').length;
+  doc.querySelectorAll('script, style, noscript, template').forEach((el) => el.remove());
+  const texto = (doc.body?.textContent ?? '').replace(/\s+/g, ' ').trim();
+  if (texto.length >= MIN_TEXTO) return false;
+  return Boolean(doc.querySelector(RAICES_SPA)) || (scripts > 0 && texto.length < 20);
+}
