@@ -10,7 +10,7 @@ Tres formas de entrada, en pestañas (se cambian también con las flechas del te
 |---|---|---|
 | **Pegar HTML** | Un documento completo o un fragmento. Nombre de la página opcional. | 2 MB |
 | **Subir archivo** | Un `.html` o `.htm` del equipo. Se lee en el navegador, no se sube al servidor. | 2 MB |
-| **URL** | El backend descarga la página con protección contra SSRF (`POST /api/paginas/descargar`). | http/https, puertos 80/443, 8 s, 2 MB |
+| **URL** | El backend descarga la página con protección contra SSRF (`POST /api/paginas/descargar`). Una URL de más de 300 caracteres se guarda en el historial sin la consulta. | http/https, puertos 80/443, 8 s, 2 MB |
 
 axe-core corre **en el navegador**, dentro de un iframe aislado donde los scripts de la página nunca se ejecutan (ver [lente.md](lente.md) y [ADR 0006](decisiones/0006-axe-en-iframe-con-csp-y-nonce.md)). Por eso pegar HTML y subir un archivo funcionan aunque el backend esté apagado.
 
@@ -40,7 +40,7 @@ En la vista previa no se navega ni se envía nada: todos los clics y envíos se 
 
 ## 4. Corregir con IA
 
-El botón «Explicar y corregir» (sección Corregir con IA) manda el HTML y hasta 30 problemas a `POST /api/ia/corregir`. Gemini devuelve, por problema, una explicación en lenguaje simple y el fragmento corregido, más el documento completo corregido.
+El botón «Explicar y corregir» (sección Corregir con IA) manda el HTML y los problemas, hasta 30 elementos en total empezando por los más graves, a `POST /api/ia/corregir`. Gemini devuelve, por problema, una explicación en lenguaje simple y el fragmento corregido, más el documento completo corregido.
 
 **Nada se muestra como solución sin verificarlo** ([ADR 0007](decisiones/0007-verificar-antes-de-mostrar.md)). Cada corrección se aplica sola y se vuelve a auditar con axe:
 
@@ -49,11 +49,12 @@ El botón «Explicar y corregir» (sección Corregir con IA) manda el HTML y has
 | **Resuelto** | El par regla + selector desaparece, la regla afecta a menos elementos y no aparece ningún problema nuevo |
 | Resolvió pero introdujo otros | Se resolvió, pero aparecieron problemas que antes no estaban |
 | No resolvió | El problema sigue |
+| Quitó u ocultó el elemento | La corrección borra el elemento, lo cambia por otro o lo oculta (`hidden`, `aria-hidden`, `display:none`, `visibility:hidden`): axe deja de verlo, pero no está corregido |
 | No se pudo aplicar | El fragmento original no está en el HTML |
 
 Las verificadas aparecen primero, con su explicación y el código. Las demás van en «Sin solución verificada», con la explicación y el motivo; lo que propuso la IA queda dentro de un `<details>` cerrado («Ver lo que propuso la IA») y nunca se ofrece como solución.
 
-El documento completo también se vuelve a auditar: se muestran el puntaje antes → después y cuántos problemas se resolvieron, siguen y aparecieron.
+El documento completo también se vuelve a auditar: se muestran el puntaje antes → después y cuántos problemas se resolvieron, siguen y aparecieron. Si el documento trae problemas nuevos o baja el puntaje, un aviso lo dice en «Antes y después» y junto a la descarga del HTML corregido.
 
 **Cuota de Gemini.** La misma entrada no se vuelve a pedir: el frontend no repite la llamada si nada cambió, y el backend guarda las respuestas en caché. Si la cuota se agota, el mensaje lo dice claramente (`429`). Un progreso visible («Verificando la corrección 2 de 5…») acompaña la espera.
 
