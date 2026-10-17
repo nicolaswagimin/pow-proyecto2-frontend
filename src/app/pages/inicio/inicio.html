@@ -2,7 +2,7 @@
   <app-barra />
 
   <div class="hoja">
-    <main class="contenido" #contenido>
+    <main class="contenido">
       <section class="bienvenida">
         <h1>Hola, {{ primerNombre() }}</h1>
         <p class="bienvenida__texto">
@@ -24,6 +24,13 @@
           <ui-alert tipo="error">{{ error }}</ui-alert>
         }
       </section>
+
+      <!-- En móvil no hay columna: antes de auditar, las recomendaciones van aquí. -->
+      @if (!escritorio() && !estado.resultado()) {
+        <section class="panel no-imprimir" aria-labelledby="titulo-recomendaciones">
+          <ng-container *ngTemplateOutlet="recomendaciones" />
+        </section>
+      }
 
       @if (estado.resultado(); as resultado) {
         <section class="panel" aria-labelledby="titulo-resultado">
@@ -55,7 +62,11 @@
             [selectores]="selectores()"
             [seleccionado]="estado.seleccionado()"
             (clic)="alClicEnLente($event)"
+            (visibles)="visibles.set($event)"
           />
+          @if (!escritorio()) {
+            <ng-container *ngTemplateOutlet="recomendaciones" />
+          }
         </section>
 
         <section class="panel" aria-labelledby="titulo-problemas">
@@ -113,8 +124,8 @@
             <h2 id="titulo-diff">Antes y después</h2>
             @if (estado.documentoEmpeora()) {
               <ui-alert tipo="aviso" titulo="El documento corregido no está verificado del todo.">
-                La auditoría del documento completo encontró problemas nuevos o un puntaje más
-                bajo. Úsalo como borrador: revisa los cambios antes de aplicarlos.
+                La auditoría del documento completo encontró problemas nuevos o un puntaje más bajo.
+                Úsalo como borrador: revisa los cambios antes de aplicarlos.
               </ui-alert>
             }
             <ui-diff-codigo [antes]="estado.html()" [despues]="corregido" />
@@ -152,13 +163,25 @@
           }
         </section>
       }
-
-      <!-- En móvil el margen es una franja compacta: la auditoría va al pie. -->
-      <app-auditoria class="auditoria-movil" />
     </main>
 
-    <aside class="margen" aria-labelledby="titulo-anotaciones">
-      <app-margen [ambito]="contenido" />
-    </aside>
+    <!-- La columna derecha: recomendaciones en vivo de la página auditada (docs/decisiones/0011). -->
+    @if (escritorio()) {
+      <aside class="margen no-imprimir" aria-labelledby="titulo-recomendaciones">
+        <ng-container *ngTemplateOutlet="recomendaciones" />
+      </aside>
+    }
   </div>
 </div>
+
+<ng-template #recomendaciones>
+  <ui-recomendaciones
+    [estado]="estado.estado()"
+    [problemas]="estado.resultado()?.problemas ?? null"
+    [visibles]="visibles()"
+    [seleccionado]="estado.seleccionado()"
+    [correcciones]="estado.correcciones()"
+    (seleccionar)="alClicEnLente($event)"
+    (probar)="estado.auditarUrl($event)"
+  />
+</ng-template>

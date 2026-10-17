@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { Correcciones } from '../../auditor/componentes/correcciones/correcciones';
@@ -6,26 +14,25 @@ import { DiffCodigo } from '../../auditor/componentes/diff/diff-codigo';
 import { EntradaHtml } from '../../auditor/componentes/entrada/entrada-html';
 import { Lente } from '../../auditor/componentes/lente/lente';
 import { ListaProblemas } from '../../auditor/componentes/problemas/lista-problemas';
+import { Recomendaciones } from '../../auditor/componentes/recomendaciones/recomendaciones';
 import { PuntajeAuditoria } from '../../auditor/componentes/puntaje/puntaje';
 import { descargarTexto, nombreArchivo, reporteMarkdown } from '../../auditor/exportar';
 import { APP_NOMBRE } from '../../config';
 import { AuthService } from '../../core/auth.service';
-import { Auditoria } from '../../lente/auditoria';
-import { Margen } from '../../lente/margen';
 import { BarraApp } from '../../layouts/barra-app/barra-app';
 import { Alert } from '../../ui/alert/alert';
 import { Button } from '../../ui/button/button';
 import { Icon } from '../../ui/icon/icon';
 import { AuditoriaEstado } from './auditoria-estado';
 
-// /app: auditar HTML (pegado, archivo o URL), ver los problemas en la lente, corregirlos con la IA
-// verificando cada corrección, comparar antes y después, guardar y exportar.
+// /app: auditar HTML (pegado, archivo o URL), ver los problemas en la lente con sus recomendaciones
+// en vivo, corregirlos con la IA verificando cada corrección, comparar antes y después, guardar y
+// exportar.
 @Component({
   selector: 'app-inicio',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    Auditoria,
-    Margen,
+    NgTemplateOutlet,
     Alert,
     BarraApp,
     Button,
@@ -36,6 +43,7 @@ import { AuditoriaEstado } from './auditoria-estado';
     ListaProblemas,
     Correcciones,
     DiffCodigo,
+    Recomendaciones,
   ],
   providers: [AuditoriaEstado],
   templateUrl: './inicio.html',
@@ -55,9 +63,20 @@ export class Inicio {
     () => this.estado.resultado()?.problemas.flatMap((p) => p.nodos.map((n) => n.selector)) ?? [],
   );
   protected readonly aviso = signal<{ tipo: 'exito' | 'error'; mensaje: string } | null>(null);
+  // Los elementos con problemas a la vista en la vista previa (los avisa la lente al desplazarse).
+  protected readonly visibles = signal<string[]>([]);
+  // En escritorio las recomendaciones ocupan la columna derecha; en móvil van en el contenido.
+  protected readonly escritorio = signal(false);
 
   constructor() {
     inject(Title).setTitle(`Inicio · ${APP_NOMBRE}`);
+    if (typeof matchMedia === 'function') {
+      const consulta = matchMedia('(min-width: 960px)');
+      const actualizar = () => this.escritorio.set(consulta.matches);
+      actualizar();
+      consulta.addEventListener('change', actualizar);
+      inject(DestroyRef).onDestroy(() => consulta.removeEventListener('change', actualizar));
+    }
     this.auth.refrescarUsuario();
     // /app?auditoria=<id> abre una auditoría del historial.
     const id = Number(inject(ActivatedRoute).snapshot.queryParamMap.get('auditoria'));
@@ -68,7 +87,8 @@ export class Inicio {
     this.estado.seleccionado.set(selector);
   }
 
-  // Un clic en la lente selecciona el problema y lleva el foco a su lugar en la lista.
+  // Un clic en la lente (o en una recomendación) selecciona el problema y lleva el foco a su lugar
+  // en la lista.
   protected alClicEnLente(selector: string): void {
     this.estado.seleccionado.set(selector);
     queueMicrotask(() => {
