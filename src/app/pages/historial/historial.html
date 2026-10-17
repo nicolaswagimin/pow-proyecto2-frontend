@@ -1,0 +1,111 @@
+<div class="pagina">
+  <app-barra />
+
+  <main class="contenido">
+    <h1>Historial</h1>
+    <p class="intro">
+      Tus auditorías guardadas, agrupadas por página. La línea muestra cómo cambió el puntaje con
+      cada auditoría.
+    </p>
+
+    @if (error(); as e) {
+      <ui-alert tipo="error">
+        {{ e }}
+        <ui-button variante="secundario" tamano="compacto" (click)="cargar()">Reintentar</ui-button>
+      </ui-alert>
+    }
+
+    @if (cargando()) {
+      <p class="estado" role="status">Cargando tus auditorías…</p>
+    } @else {
+      <ul class="grupos">
+        @for (g of grupos(); track g.pagina) {
+          <li class="grupo">
+            <div class="grupo__cabecera">
+              <h2 class="grupo__pagina">{{ g.pagina }}</h2>
+              <p class="grupo__evolucion">
+                <span class="visually-hidden">Evolución del puntaje: </span>
+                {{ evolucion($any(g.auditorias).map((p) => p.puntaje)) }}
+                @if (g.cambio !== null) {
+                  <span
+                    class="cambio"
+                    [class.cambio--mejora]="g.cambio > 0"
+                    [class.cambio--empeora]="g.cambio < 0"
+                  >
+                    ({{ g.cambio > 0 ? '+' : '' }}{{ g.cambio }})
+                  </span>
+                }
+              </p>
+              <svg
+                class="linea"
+                [attr.viewBox]="'-4 -4 ' + (ANCHO + 8) + ' ' + (ALTO + 8)"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <polyline [attr.points]="puntos($any(g.auditorias).map((p) => p.puntaje))" />
+              </svg>
+            </div>
+            <ul class="auditorias">
+              @for (a of g.auditorias.slice().reverse(); track a.id) {
+                <li class="auditoria">
+                  <p class="auditoria__datos">
+                    <strong>{{ a.puntaje }}</strong> / 100
+                    @if (a.puntaje_corregido !== null) {
+                      · corregido: <strong>{{ a.puntaje_corregido }}</strong>
+                    }
+                    ·
+                    <time [attr.datetime]="a.creado_en">{{
+                      a.creado_en | date: 'dd/MM/yyyy HH:mm'
+                    }}</time>
+                  </p>
+                  @if (confirmando() === a.id) {
+                    <div
+                      class="acciones"
+                      role="group"
+                      [attr.aria-label]="
+                        'Confirmar eliminación de la auditoría del ' +
+                        (a.creado_en | date: 'dd/MM/yyyy HH:mm')
+                      "
+                    >
+                      <span class="confirmar">¿Eliminar esta auditoría?</span>
+                      <ui-button variante="peligro" tamano="compacto" (click)="eliminar(a.id)"
+                        >Sí, eliminar</ui-button
+                      >
+                      <ui-button
+                        variante="secundario"
+                        tamano="compacto"
+                        (click)="confirmando.set(null)"
+                        >Cancelar</ui-button
+                      >
+                    </div>
+                  } @else {
+                    <div class="acciones">
+                      <ui-button tamano="compacto" (click)="abrir(a.id)">Abrir</ui-button>
+                      <ui-button
+                        variante="secundario"
+                        tamano="compacto"
+                        [etiqueta]="
+                          'Eliminar la auditoría del ' + (a.creado_en | date: 'dd/MM/yyyy HH:mm')
+                        "
+                        (click)="confirmando.set(a.id)"
+                      >
+                        Eliminar
+                      </ui-button>
+                    </div>
+                  }
+                </li>
+              }
+            </ul>
+          </li>
+        } @empty {
+          @if (!error()) {
+            <li class="vacio">
+              Todavía no guardaste auditorías. Audita una página en
+              <a routerLink="/app">tu espacio de trabajo</a> y pulsa «Guardar en el historial».
+            </li>
+          }
+        }
+      </ul>
+    }
+  </main>
+</div>
