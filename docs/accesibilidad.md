@@ -48,6 +48,7 @@ a11Lens audita accesibilidad, así que la propia app tiene que ser ejemplar. Obj
 - **La columna de recomendaciones** es un `<aside aria-labelledby="titulo-recomendaciones">` fuera de `<main>` (en móvil, una `<section>` dentro del contenido).
   - Como las anotaciones, **no es `aria-live`**: cambia con cada scroll de la vista previa y hablaría sin parar.
   - Un contador en texto dice cuántos elementos hay a la vista del total.
+  - En escritorio la columna tiene su propio scroll, así que se puede enfocar (`tabindex="0"`, con anillo de foco) para recorrerla con el teclado también en Safari.
   - Cada recomendación es un botón con `aria-pressed` que selecciona el problema y lleva el foco a la lista.
   - La gravedad se dice con texto, además del borde de color.
 - **La insignia de autoauditoría** del pie es un botón con `aria-expanded` y `aria-controls` hacia su detalle, que está siempre en el DOM y se oculta con `hidden`.
