@@ -2,7 +2,33 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Los commits siguen Conventional Commits.
 
-## [Sin publicar] · 2026-10-17
+## [Sin publicar] · Corrección por fragmentos y columna de recomendaciones
+
+### Agregado
+- **Corrección con IA por fragmentos.** A Gemini solo van los elementos con problemas, con su contexto mínimo (`POST /api/ia/fragmentos`), nunca el documento. Sirve para páginas reales de cualquier tamaño.
+  - El corredor manda la ruta, la etiqueta y el resumen de cada nodo, y parse5 (bajo demanda) ubica cada elemento en el texto del HTML original.
+  - Lotes de 8 fragmentos y 12 000 caracteres, por gravedad y con deduplicación.
+  - Rondas de 3 lotes con progreso y «Corregir más (quedan N elementos)».
+  - Las correcciones se aplican como reemplazos de texto y se verifican por lote. El documento corregido incluye solo las verificadas.
+  - Estado nuevo: «La IA no devolvió una corrección válida». Aviso de los elementos que no se pueden corregir con IA.
+- **Columna de recomendaciones en vivo** (`ui-recomendaciones`): qué falla y qué hacer en los elementos a la vista de la vista previa, en el orden de la página. Antes de auditar muestra un estado vacío con dos ejemplos de un clic (la demo del W3C).
+- **La vista previa se ve como una ventana de navegador** con la dirección de la página.
+- **Insignia de autoauditoría** en el pie de `/app` («Esta app: 0 problemas WCAG 2.2 AA»), que al abrirse audita la app en vivo.
+- `app-auditoria`: entrada `auto` y salida `problemas`. Ya no entra en iframes.
+- Pruebas con una **página grande de ejemplo** generada (más de 300 KB y más de 150 problemas). En total, 191 pruebas.
+- Documentación: ADR 0010 y 0011; actualizados `funcionalidades.md`, `lente.md`, `accesibilidad.md` (29 de 29 auditorías sin violaciones), `componentes.md`, `arquitectura-frontend.md`, `reporte.md`, la ADR 0007 y las capturas.
+
+### Cambiado
+- El panel «Anotaciones» sale de `/app`; sigue en el acceso y en `/design`.
+- Una auditoría nueva descarta al instante la corrección en curso de la página anterior y deja de mostrar su progreso.
+
+### Eliminado
+- La corrección del documento completo (`IaService.corregir`, `verificarPorProblema`, `verificarDocumento`) y el límite de 30 elementos.
+
+### Corregido
+- Si la IA falla a mitad de ronda, esos elementos se vuelven a pedir con «Corregir más».
+
+## 2026-10-17 · Funcionalidad de auditoría
 
 La función propia de a11Lens: auditar HTML ajeno, explicarlo, corregirlo con IA y verificar cada corrección.
 
