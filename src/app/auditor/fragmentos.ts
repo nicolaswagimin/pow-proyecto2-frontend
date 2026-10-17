@@ -28,8 +28,13 @@ export interface FuenteHtml {
   readonly html: string;
   readonly idioma: string;
   readonly titulo: string;
-  ubicar(ruta: number[] | null | undefined, etiqueta: string | undefined): ElementoFuente | null;
+  ubicar(
+    ruta: number[] | null | undefined,
+    etiqueta: string | undefined,
+    huella?: string,
+  ): ElementoFuente | null;
   aperturaPadre(ruta: number[]): string;
+  huella(ruta: number[]): string | null;
   head(): ElementoFuente | null;
 }
 
@@ -55,11 +60,35 @@ function esElemento(n: T.ChildNode): n is T.Element {
   return 'tagName' in n;
 }
 
+const ATRIBUTOS_URL = ['href', 'src', 'action', 'formaction', 'xlink:href', 'data', 'poster'];
+
 function quitado(el: T.Element): boolean {
   return (
     QUITADOS.has(el.tagName) ||
-    (el.tagName === 'meta' && el.attrs.some((a) => a.name === 'http-equiv'))
+    (el.tagName === 'meta' && el.attrs.some((a) => a.name === 'http-equiv')) ||
+    // El corredor no cuenta nada con data-a11lens (lo trata como suyo).
+    el.attrs.some((a) => a.name === 'data-a11lens')
   );
+}
+
+// Los atributos que sanear() quita (aislar.ts): no están en el iframe, no van en la huella.
+function atributoQuitado(nombre: string, valor: string): boolean {
+  return (
+    nombre.startsWith('on') ||
+    nombre === 'srcdoc' ||
+    nombre.startsWith('data-a11lens') ||
+    (ATRIBUTOS_URL.includes(nombre) && /^javascript:/i.test(valor.replace(/[\u0000- ]/g, '')))
+  );
+}
+
+// La misma huella que calcula el corredor (corredor.js, huellaDe): si no coincide, la ruta llegó a
+// otro elemento (el árbol del iframe no es igual al del original, por ejemplo en modo quirks).
+function huellaDe(el: T.Element, padre: T.Element | null): string {
+  const atributos = el.attrs
+    .filter((a) => !atributoQuitado(a.name, a.value))
+    .map((a) => `${a.prefix ? `${a.prefix}:` : ''}${a.name}=${a.value.slice(0, 100)}`)
+    .sort();
+  return `${atributos.join('\n')}|${hijos(el).length}|${padre ? hijos(padre).length : -1}`;
 }
 
 function hijos(el: T.Element): T.Element[] {
@@ -110,10 +139,21 @@ export async function analizarFuente(html: string): Promise<FuenteHtml> {
     html,
     idioma: raiz.attrs.find((a) => a.name === 'lang')?.value.trim() ?? '',
     titulo: titulo ? textoDe(titulo).replace(/\s+/g, ' ').trim() : '',
-    ubicar(ruta, etiqueta) {
+    ubicar(ruta, etiqueta, huella) {
       if (!ruta) return null;
       const el = buscar(raiz, ruta);
-      return el && el.tagName === etiqueta ? aFuente(el) : null;
+      if (!el || el.tagName !== etiqueta) return null;
+      if (
+        huella !== undefined &&
+        huella !== huellaDe(el, ruta.length ? buscar(raiz, ruta.slice(0, -1)) : null)
+      ) {
+        return null;
+      }
+      return aFuente(el);
+    },
+    huella(ruta) {
+      const el = buscar(raiz, ruta);
+      return el ? huellaDe(el, ruta.length ? buscar(raiz, ruta.slice(0, -1)) : null) : null;
     },
     aperturaPadre(ruta) {
       const padre = ruta.length ? buscar(raiz, ruta.slice(0, -1)) : null;

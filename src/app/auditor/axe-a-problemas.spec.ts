@@ -17,8 +17,32 @@ describe('aProblemas', () => {
     expect(p.descripcion).toBe('Las imágenes deben tener texto alternativo.');
     expect(p.criterios).toEqual([{ id: '1.1.1', nombre: 'Contenido no textual', nivel: 'A' }]);
     expect(p.nodos).toEqual([
-      { selector: 'main > img', html: '<img src="a.png">', ruta: null, etiqueta: '', resumen: '' },
+      {
+        selector: 'main > img',
+        html: '<img src="a.png">',
+        ruta: null,
+        etiqueta: '',
+        resumen: '',
+        huella: undefined,
+      },
     ]);
+  });
+
+  it('descarta una ruta, etiqueta o huella con forma inválida (vienen del iframe)', () => {
+    const malos = [
+      { ruta: 'x', etiqueta: 7, huella: {} },
+      { ruta: [1, -1], etiqueta: 'img', huella: 'a' },
+      { ruta: [1.5], etiqueta: 'x'.repeat(65), huella: 'a' },
+      { ruta: Array(600).fill(0), etiqueta: 'img', huella: 'a' },
+    ];
+    for (const malo of malos) {
+      const [p] = aProblemas([violacion({ nodes: [{ target: ['img'], html: '', ...malo }] })]);
+      expect(p.nodos[0].ruta).toBeNull();
+    }
+    const [p] = aProblemas([
+      violacion({ nodes: [{ target: ['img'], html: '', ruta: [1], etiqueta: 'img', huella: 9 }] }),
+    ]);
+    expect(p.nodos[0]).toMatchObject({ ruta: [1], etiqueta: 'img', huella: undefined });
   });
 
   it('conserva la ruta, la etiqueta y el resumen que envía el corredor', () => {
@@ -28,9 +52,10 @@ describe('aProblemas', () => {
       ruta: [1, 0, 2],
       etiqueta: 'img',
       resumen: `Fix any of the following: ${'x'.repeat(600)}`,
+      huella: 'src=a.png|0|3',
     };
     const [p] = aProblemas([violacion({ nodes: [nodo] })]);
-    expect(p.nodos[0]).toMatchObject({ ruta: [1, 0, 2], etiqueta: 'img' });
+    expect(p.nodos[0]).toMatchObject({ ruta: [1, 0, 2], etiqueta: 'img', huella: 'src=a.png|0|3' });
     expect(p.nodos[0].resumen).toHaveLength(500);
   });
 

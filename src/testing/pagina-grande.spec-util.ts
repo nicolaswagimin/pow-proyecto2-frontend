@@ -63,6 +63,18 @@ function rutaDe(el: Element): number[] {
   return ruta;
 }
 
+// La huella como la calcula el corredor sobre el documento saneado (sin on*, srcdoc ni data-a11lens).
+function huellaDe(el: Element): string {
+  const atributos = [...el.attributes]
+    .filter(
+      (a) => !a.name.startsWith('on') && a.name !== 'srcdoc' && !a.name.startsWith('data-a11lens'),
+    )
+    .map((a) => `${a.name}=${a.value.slice(0, 100)}`)
+    .sort();
+  const hijos = (e: Element | null) => (e ? [...e.children].filter(cuenta).length : -1);
+  return `${atributos.join('\n')}|${hijos(el)}|${hijos(el.parentElement)}`;
+}
+
 function selectorDe(el: Element): string {
   const partes: string[] = [];
   for (let actual: Element | null = el; actual; actual = actual.parentElement) {
@@ -109,6 +121,7 @@ export function auditorFalso(html: string): ResultadoAuditoria {
       html: el.outerHTML.slice(0, 300),
       ruta: rutaDe(el),
       etiqueta: el.localName,
+      huella: huellaDe(el),
       resumen: regla === 'color-contrast' ? 'Element has insufficient color contrast of 2.32' : '',
     }));
     return nodos.length

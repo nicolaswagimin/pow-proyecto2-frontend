@@ -46,7 +46,7 @@ export function prepararPendientes(
     (a, b) => GRAVEDADES.indexOf(a.gravedad) - GRAVEDADES.indexOf(b.gravedad),
   );
   const ubicados = ordenados.flatMap((p) =>
-    p.nodos.map((n) => ({ p, n, el: fuente.ubicar(n.ruta, n.etiqueta) })),
+    p.nodos.map((n) => ({ p, n, el: fuente.ubicar(n.ruta, n.etiqueta, n.huella) })),
   );
   const rangos: Rango[] = ubicados.flatMap((u) => (u.el ? [u.el.elemento] : []));
 

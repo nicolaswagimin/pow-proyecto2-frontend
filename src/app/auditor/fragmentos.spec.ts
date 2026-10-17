@@ -64,6 +64,29 @@ describe('analizarFuente', () => {
     );
   });
 
+  it('la huella del elemento es la misma que calcula el corredor', async () => {
+    const f = await analizarFuente(
+      '<main><p>a</p><img class="foto" src="a.png" onerror="x()" alt=""><p>b</p></main>',
+    );
+    expect(f.huella([1, 0, 1])).toBe('alt=\nclass=foto\nsrc=a.png|0|3');
+  });
+
+  it('con la huella, una ruta que cae en otro elemento de la misma etiqueta no se ubica', async () => {
+    // En modo quirks (sin doctype) <p><table> anida; el iframe (con doctype) cierra el <p>. La ruta
+    // del #a en el iframe es [1, 0, 3], que en el original es el #c: misma etiqueta, otro elemento.
+    const quirks = await analizarFuente(
+      '<div><p>x<table><tr><td>t</td></tr></table></p><img id=a><img id=b><img id=c><img id=d></div>',
+    );
+    expect(quirks.ubicar([1, 0, 3], 'img')?.elemento).toBeDefined();
+    expect(quirks.ubicar([1, 0, 3], 'img', 'id=a|0|7')).toBeNull();
+    expect(texto(quirks, quirks.ubicar([1, 0, 3], 'img', 'id=c|0|5')?.elemento)).toBe('<img id=c>');
+  });
+
+  it('los elementos de la página con data-a11lens no cuentan (el corredor tampoco los cuenta)', async () => {
+    const f = await analizarFuente('<main><span data-a11lens="">x</span><img src="a.png"></main>');
+    expect(texto(f, f.ubicar([1, 0, 0], 'img')?.elemento)).toBe('<img src="a.png">');
+  });
+
   it('si la etiqueta no coincide, o no hay ruta, no se ubica', () => {
     expect(fuente.ubicar([1, 0, 0, 0], 'button')).toBeNull();
     expect(fuente.ubicar(null, 'img')).toBeNull();
@@ -142,7 +165,9 @@ describe('elegirFragmento', () => {
 
   it('document-title funciona aunque el <html> sea implícito', async () => {
     const implicito = await analizarFuente('<head><meta charset="utf-8"></head><p>x</p>');
-    expect(elegirFragmento(implicito, 'document-title', null, [])).toMatchObject({ texto: '<head>' });
+    expect(elegirFragmento(implicito, 'document-title', null, [])).toMatchObject({
+      texto: '<head>',
+    });
   });
 
   it('sin elemento ubicado (y no es document-title) no hay fragmento', () => {

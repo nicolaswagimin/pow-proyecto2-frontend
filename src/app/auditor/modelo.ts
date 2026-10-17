@@ -25,6 +25,7 @@ export interface NodoProblema {
   ruta?: number[] | null; // índices de hijos-elemento desde <html>; null si no se puede ubicar
   etiqueta?: string; // nombre del elemento ("img")
   resumen?: string; // failureSummary de axe (para contraste trae los colores)
+  huella?: string; // atributos e hijos del elemento: confirma que la ruta llegó al mismo (fragmentos.ts)
 }
 
 export interface Problema {

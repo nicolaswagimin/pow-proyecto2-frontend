@@ -48,6 +48,28 @@
     return ruta;
   }
 
+  function hijosPropios(el) {
+    var n = 0;
+    for (var h = el ? el.firstElementChild : null; h; h = h.nextElementSibling) if (!esDeA11Lens(h)) n++;
+    return n;
+  }
+
+  // Huella del elemento para comprobar que la ruta llegó al mismo en el HTML original: sus
+  // atributos ordenados (sin los que agrega a11Lens; los que quita el saneador ya no están),
+  // valores de hasta 100 caracteres, y cuántos hijos tienen él y su padre. Igual que huellaDe() en
+  // fragmentos.ts.
+  function huellaDe(el) {
+    var atributos = [];
+    for (var i = 0; i < el.attributes.length; i++) {
+      var a = el.attributes[i];
+      if (a.name.indexOf('data-a11lens') === 0) continue;
+      atributos.push(a.name + '=' + a.value.slice(0, 100));
+    }
+    atributos.sort();
+    var padre = el.parentElement;
+    return atributos.join('\n') + '|' + hijosPropios(el) + '|' + (padre ? hijosPropios(padre) : -1);
+  }
+
   function soloDatos(v) {
     return {
       id: v.id,
@@ -62,6 +84,7 @@
           html: n.html,
           ruta: el ? rutaDe(el) : null,
           etiqueta: el ? el.localName : '',
+          huella: el ? huellaDe(el) : '',
           resumen: String(n.failureSummary || '').slice(0, 500),
         };
       }),

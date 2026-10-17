@@ -53,6 +53,26 @@ describe('prepararPendientes', () => {
     expect(r.noCorregibles).toEqual(['image-alt|#sombra >> img']);
   });
 
+  it('un nodo cuya huella no coincide con el elemento de su ruta no se puede corregir', async () => {
+    const fuente = await analizarFuente(HTML);
+    const r = prepararPendientes(
+      fuente,
+      [
+        problema('image-alt', 'critico', [
+          {
+            selector: 'a > img',
+            ruta: [1, 0, 0, 0],
+            etiqueta: 'img',
+            huella: 'src=otro.png|0|1',
+          } as never,
+        ]),
+      ],
+      new Set(),
+    );
+    expect(r.pendientes).toEqual([]);
+    expect(r.noCorregibles).toEqual(['image-alt|a > img']);
+  });
+
   it('no repite lo que ya se intentó', async () => {
     const fuente = await analizarFuente(HTML);
     const problemas = [

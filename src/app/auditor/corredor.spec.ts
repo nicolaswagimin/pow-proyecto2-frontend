@@ -4,7 +4,9 @@
 interface Mensaje {
   tipo: string;
   sesion?: string;
-  violaciones?: { nodes: { ruta: number[] | null; etiqueta: string; resumen: string }[] }[];
+  violaciones?: {
+    nodes: { ruta: number[] | null; etiqueta: string; resumen: string; huella: string }[];
+  }[];
   selectores?: string[];
 }
 
@@ -109,6 +111,26 @@ describe('corredor', () => {
       resumen: 'Fix any of the following:\n  Element does not have an alt attribute',
     });
     expect(resultado.sesion).toBe('token');
+  });
+
+  it('la huella lleva los atributos ordenados, sin los que quita el saneador, y los hijos del elemento y de su padre', async () => {
+    const { enviados, recibir } = cargar(
+      '<main><p>a</p><img src="a.png" data-a11lens-marca="problema" class="foto" alt=""><p>b</p></main>',
+      (doc) => [
+        {
+          id: 'x',
+          impact: 'minor',
+          help: 'h',
+          helpUrl: 'u',
+          tags: [],
+          nodes: [{ target: ['img'], html: '', element: doc.querySelector('img') }],
+        },
+      ],
+    );
+    recibir({ tipo: 'auditar', id: 3 });
+    await esperar();
+    const nodo = enviados.find((m) => m.tipo === 'resultado')!.violaciones![0].nodes[0];
+    expect(nodo.huella).toBe('alt=\nclass=foto\nsrc=a.png|0|3');
   });
 
   it('en shadow DOM o sin elemento, la ruta es null', async () => {
