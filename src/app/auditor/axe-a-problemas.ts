@@ -27,7 +27,7 @@ const GRAVEDAD_DE: Record<string, Gravedad> = {
   minor: 'menor',
 };
 
-const DESCRIPCIONES: Record<string, string> = {
+export const DESCRIPCIONES: Record<string, string> = {
   'image-alt': 'Las imágenes deben tener texto alternativo.',
   'input-image-alt': 'Los botones de imagen deben tener texto alternativo.',
   'area-alt': 'Las zonas de un mapa de imagen deben tener texto alternativo.',
