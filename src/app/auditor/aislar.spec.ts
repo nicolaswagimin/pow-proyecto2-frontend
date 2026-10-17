@@ -49,6 +49,7 @@ describe('sanear', () => {
 describe('documentoAislado', () => {
   const opciones = {
     nonce: 'abc123',
+    sesion: 'tok3n',
     urlAxe: 'https://app.example/auditor/axe.min.js',
     urlCorredor: 'https://app.example/auditor/corredor.js',
   };
@@ -120,4 +121,35 @@ describe('esFragmento', () => {
     expect(esFragmento('<!DOCTYPE html>\n<HTML>')).toBe(false);
     expect(esFragmento('<main><p>x</p></main>')).toBe(true);
   });
+});
+
+describe('mXSS: el documento final, tal como lo parsea el iframe, no trae nada peligroso', () => {
+  const opciones = {
+    nonce: 'n0nce',
+    sesion: 'tok3n',
+    urlAxe: 'https://app.example/auditor/axe.min.js',
+    urlCorredor: 'https://app.example/auditor/corredor.js',
+  };
+  const cargas = [
+    '<form><math><mtext></form><form><mglyph><style></math><meta http-equiv=refresh content="0;url=https://malo.example/x.html">',
+    '<form><math><mtext></form><form><mglyph><style></math><img src onerror=alert(1)>',
+    '<svg></p><style><a id="</style><img src=1 onerror=alert(1)>">',
+    '<math><mtext><table><mglyph><style><img src=x onerror=alert(1)>',
+  ];
+  for (const carga of cargas) {
+    it(`neutraliza ${carga.slice(0, 50)}…`, () => {
+      const final = parsear(documentoAislado(carga, opciones));
+      const metas = [...final.querySelectorAll('meta[http-equiv]')];
+      expect(metas.map((m) => m.getAttribute('http-equiv'))).toEqual(['Content-Security-Policy']);
+      expect(final.querySelectorAll('base').length).toBe(0);
+      expect(
+        [...final.querySelectorAll('script')].every((s) => s.getAttribute('nonce') === 'n0nce'),
+      ).toBe(true);
+      expect(
+        [...final.querySelectorAll('*')].some((el) =>
+          [...el.attributes].some((a) => a.name.toLowerCase().startsWith('on')),
+        ),
+      ).toBe(false);
+    });
+  }
 });

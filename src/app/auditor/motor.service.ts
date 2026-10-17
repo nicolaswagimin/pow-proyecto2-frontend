@@ -13,6 +13,7 @@ const ESPERA_AUDITORIA_MS = 20_000;
 
 interface MensajeCorredor {
   tipo: 'listo' | 'resultado' | 'error' | 'clic';
+  sesion?: string;
   id?: number;
   violaciones?: ViolacionAxe[];
   aprobadas?: number;
@@ -20,7 +21,7 @@ interface MensajeCorredor {
   mensaje?: string;
 }
 
-function nonceNuevo(): string {
+function aleatorio(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(18));
   return btoa(String.fromCharCode(...bytes)).replace(
     /[+/=]/g,
@@ -37,12 +38,17 @@ export class SesionAislada {
   private siguienteId = 1;
   private readonly oyentes = new Set<(m: MensajeCorredor) => void>();
   private readonly alRecibir = (evento: MessageEvent) => {
-    // Solo cuentan los mensajes de ESTE iframe (el origen es opaco: se compara la ventana).
+    // Solo cuentan los mensajes de ESTE iframe (el origen es opaco: se compara la ventana) y de
+    // ESTA carga: si la página lograra navegar el iframe, la nueva no conoce el token.
     if (evento.source !== this.iframe.contentWindow || !evento.data?.tipo) return;
+    if (evento.data.sesion !== this.token) return;
     for (const oyente of this.oyentes) oyente(evento.data as MensajeCorredor);
   };
 
-  constructor(readonly iframe: HTMLIFrameElement) {
+  constructor(
+    readonly iframe: HTMLIFrameElement,
+    private readonly token: string,
+  ) {
     window.addEventListener('message', this.alRecibir);
   }
 
@@ -100,8 +106,21 @@ export class SesionAislada {
 export class MotorService {
   // Carga el HTML en el iframe dado (visible, para la lente) y espera a que el corredor esté listo.
   abrir(iframe: HTMLIFrameElement, html: string, baseHref?: string): Promise<SesionAislada> {
+    const token = aleatorio();
+    let documento: string;
+    try {
+      documento = documentoAislado(html, {
+        nonce: aleatorio(),
+        sesion: token,
+        urlAxe: urlAbsoluta('auditor/axe.min.js'),
+        urlCorredor: urlAbsoluta('auditor/corredor.js'),
+        baseHref,
+      });
+    } catch (err) {
+      return Promise.reject(err);
+    }
     iframe.setAttribute('sandbox', SANDBOX);
-    const sesion = new SesionAislada(iframe);
+    const sesion = new SesionAislada(iframe, token);
     const listo = new Promise<SesionAislada>((resolver, rechazar) => {
       const plazo = setTimeout(() => {
         dejar();
@@ -115,15 +134,7 @@ export class MotorService {
         resolver(sesion);
       });
     });
-    iframe.setAttribute(
-      'srcdoc',
-      documentoAislado(html, {
-        nonce: nonceNuevo(),
-        urlAxe: urlAbsoluta('auditor/axe.min.js'),
-        urlCorredor: urlAbsoluta('auditor/corredor.js'),
-        baseHref,
-      }),
-    );
+    iframe.setAttribute('srcdoc', documento);
     return listo;
   }
 

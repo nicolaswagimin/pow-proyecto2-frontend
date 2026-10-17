@@ -6,6 +6,8 @@
 
   var guion = document.currentScript;
   var esFragmento = guion && guion.dataset.fragmento === 'si';
+  // Token de esta carga: la app descarta los mensajes que no lo traen.
+  var sesion = guion ? guion.dataset.sesion : '';
   var ETIQUETAS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
   // En un fragmento (HTML pegado sin <html>) no tiene sentido exigir idioma, título ni regiones.
   var REGLAS_DE_DOCUMENTO = ['html-has-lang', 'html-lang-valid', 'document-title', 'landmark-one-main', 'page-has-heading-one', 'region', 'bypass'];
@@ -13,6 +15,7 @@
   var SELECTOR = 'data-a11lens-selector';
 
   function enviar(mensaje) {
+    mensaje.sesion = sesion;
     window.parent.postMessage(mensaje, '*');
   }
 

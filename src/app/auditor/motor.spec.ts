@@ -1,6 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import { MotorService, SesionAislada } from './motor.service';
 
+// El token de sesión que el corredor recibe en su <script data-sesion> (se lee del srcdoc).
+function tokenDe(iframe: HTMLIFrameElement): string | undefined {
+  return iframe.getAttribute('srcdoc')?.match(/data-sesion="([^"]+)"/)?.[1];
+}
+
 // jsdom no ejecuta los scripts del iframe: se simula el corredor respondiendo a los mensajes.
 function simularCorredor(
   iframe: HTMLIFrameElement,
@@ -9,7 +14,10 @@ function simularCorredor(
   const ventana = iframe.contentWindow!;
   const enviar = (datos: object) =>
     window.dispatchEvent(
-      new MessageEvent('message', { data: datos, source: ventana as unknown as Window }),
+      new MessageEvent('message', {
+        data: { sesion: tokenDe(iframe), ...datos },
+        source: ventana as unknown as Window,
+      }),
     );
   vi.spyOn(ventana, 'postMessage').mockImplementation(((m: { tipo: string; id?: number }) => {
     const respuesta = responder(m);
@@ -96,6 +104,22 @@ describe('MotorService', () => {
     await expect(auditando).rejects.toThrow(/tardó demasiado/);
   });
 
+  it('ignora mensajes de su propio iframe sin el token de la sesión (la página navegó)', async () => {
+    const { sesion, enviar } = await abrir(() => null);
+    const auditando = sesion.auditar(50);
+    enviar({ tipo: 'resultado', id: 1, violaciones: [], aprobadas: 99, sesion: 'falso' });
+    enviar({ tipo: 'resultado', id: 1, violaciones: [], aprobadas: 99, sesion: undefined });
+    await expect(auditando).rejects.toThrow(/tardó demasiado/);
+  });
+
+  it('cada sesión tiene un token distinto del nonce', async () => {
+    const { iframe } = await abrir();
+    const srcdoc = iframe.getAttribute('srcdoc')!;
+    const token = tokenDe(iframe);
+    expect(token).toMatch(/^[A-Za-z0-9_-]{20,}$/);
+    expect(srcdoc).not.toContain(`nonce-${token}`);
+  });
+
   it('avisa los clics en elementos de la vista previa', async () => {
     const { sesion, enviar } = await abrir();
     const clics: string[] = [];
@@ -116,7 +140,7 @@ describe('MotorService', () => {
       const p = original(iframe, html);
       window.dispatchEvent(
         new MessageEvent('message', {
-          data: { tipo: 'listo' },
+          data: { tipo: 'listo', sesion: tokenDe(iframe) },
           source: iframe.contentWindow as unknown as Window,
         }),
       );
