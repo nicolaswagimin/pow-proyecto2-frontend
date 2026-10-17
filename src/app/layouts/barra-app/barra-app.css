@@ -117,3 +117,10 @@
     padding: 0;
   }
 }
+
+/* El reporte en PDF (impresión) no lleva la barra de navegación. */
+@media print {
+  :host {
+    display: none;
+  }
+}

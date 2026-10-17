@@ -145,7 +145,6 @@ app-margen {
    Quedan el resultado, los problemas, las correcciones y el antes/después; se ocultan la barra,
    el margen, la entrada, la lente y los botones. */
 @media print {
-  .barra,
   .margen,
   .no-imprimir,
   .auditoria-movil,
