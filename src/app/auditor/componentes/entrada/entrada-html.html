@@ -1,0 +1,87 @@
+<div class="pestanas" role="tablist" aria-label="Cómo aportar el HTML">
+  @for (m of MODOS; track m.modo; let i = $index) {
+    <button
+      #pestana
+      type="button"
+      role="tab"
+      class="pestana"
+      [id]="'pestana-' + m.modo"
+      [attr.aria-selected]="modo() === m.modo"
+      [attr.aria-controls]="'panel-entrada'"
+      [tabindex]="modo() === m.modo ? 0 : -1"
+      (click)="elegir(m.modo)"
+      (keydown)="moverConTeclado($event, i)"
+    >
+      {{ m.etiqueta }}
+    </button>
+  }
+</div>
+
+<form
+  id="panel-entrada"
+  class="panel"
+  role="tabpanel"
+  [attr.aria-labelledby]="'pestana-' + modo()"
+  (submit)="enviar($event)"
+>
+  @switch (modo()) {
+    @case ('pegar') {
+      <label class="campo__label" for="entrada-html">HTML a auditar</label>
+      <textarea
+        id="entrada-html"
+        class="campo campo--codigo"
+        rows="10"
+        spellcheck="false"
+        autocapitalize="off"
+        aria-describedby="entrada-html-ayuda"
+        [value]="html()"
+        (input)="html.set($any($event.target).value)"
+      ></textarea>
+      <p id="entrada-html-ayuda" class="ayuda">
+        Una página completa o solo un fragmento. Sus scripts nunca se ejecutan.
+      </p>
+      <label class="campo__label" for="entrada-nombre">
+        Nombre de la página <span class="opcional">(opcional, para el historial)</span>
+      </label>
+      <input
+        id="entrada-nombre"
+        class="campo"
+        type="text"
+        maxlength="300"
+        [value]="pagina()"
+        (input)="pagina.set($any($event.target).value)"
+      />
+    }
+    @case ('archivo') {
+      <label class="campo__label" for="entrada-archivo">Archivo .html</label>
+      <input
+        id="entrada-archivo"
+        class="campo campo--archivo"
+        type="file"
+        accept=".html,.htm,text/html"
+        aria-describedby="entrada-archivo-ayuda"
+        (change)="alElegirArchivo($event)"
+      />
+      <p id="entrada-archivo-ayuda" class="ayuda">Hasta 2 MB. Sus scripts nunca se ejecutan.</p>
+    }
+    @case ('url') {
+      <label class="campo__label" for="entrada-url">Dirección de la página</label>
+      <input
+        id="entrada-url"
+        class="campo"
+        type="url"
+        inputmode="url"
+        autocomplete="url"
+        placeholder="https://"
+        aria-describedby="entrada-url-ayuda"
+        [value]="direccion()"
+        (input)="direccion.set($any($event.target).value)"
+      />
+      <p id="entrada-url-ayuda" class="ayuda">
+        Solo páginas públicas por http o https. Se audita el HTML tal como llega, sin ejecutar su
+        JavaScript.
+      </p>
+    }
+  }
+  <ui-button tipo="submit" [cargando]="cargando()" textoCargando="Auditando…">Auditar</ui-button>
+</form>
