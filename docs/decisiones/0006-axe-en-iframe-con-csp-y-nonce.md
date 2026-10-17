@@ -15,10 +15,10 @@ Se probaron dos caminos en Chrome:
 
 ## Decisión
 Camino B, con dos defensas independientes:
-1. `sanear()` quita elementos y atributos que ejecutan código, navegan o pisarían la CSP (incluidos `meta[http-equiv]` y `base` de la página).
+1. `sanear()` quita elementos y atributos que ejecutan código, navegan o pisarían la CSP (incluidos `meta[http-equiv]` y `base` de la página). Se repite hasta que el resultado no cambia, y el documento final se vuelve a revisar tal como lo parsea el iframe (mutation XSS).
 2. CSP en un `<meta>` al principio del `<head>`: `default-src 'none'; script-src 'nonce-X'` con un nonce aleatorio por carga. Aunque algo escapara al saneado, sin el nonce no corre.
 
-El sandbox es exactamente `allow-scripts`; una prueba lo fija. La app y el corredor se comunican por `postMessage` y cada lado comprueba que el mensaje venga de la ventana esperada ([lente.md](../lente.md)).
+El sandbox es exactamente `allow-scripts`; una prueba lo fija. La app y el corredor se comunican por `postMessage` y cada lado comprueba que el mensaje venga de la ventana esperada; la app exige además el token de esa carga, que una página que navegara el iframe no conoce ([lente.md](../lente.md)).
 
 ## Consecuencias
 - Se audita el render real sin servidor de navegadores y sin exponer la app.
