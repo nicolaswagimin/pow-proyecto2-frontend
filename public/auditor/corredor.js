@@ -78,7 +78,8 @@
     });
     selectores.forEach(function (selector) {
       var el = buscar(selector);
-      if (!el) return;
+      // El documento entero (html, head, body) no se contornea: no ayuda a ubicar nada.
+      if (!el || el === document.documentElement || el === document.head || el === document.body) return;
       el.setAttribute(MARCA, selector === seleccionado ? 'seleccionado' : 'problema');
       el.setAttribute(SELECTOR, selector);
     });
