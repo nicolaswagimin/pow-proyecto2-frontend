@@ -168,7 +168,10 @@
     <!-- La columna derecha: recomendaciones en vivo de la página auditada (docs/decisiones/0011). -->
     @if (escritorio()) {
       <aside class="margen no-imprimir" aria-labelledby="titulo-recomendaciones">
-        <ng-container *ngTemplateOutlet="recomendaciones" />
+        <!-- Se desplaza sola: tabindex para poder recorrerla con el teclado (Safari no lo hace). -->
+        <div class="columna" tabindex="0">
+          <ng-container *ngTemplateOutlet="recomendaciones" />
+        </div>
       </aside>
     }
   </div>

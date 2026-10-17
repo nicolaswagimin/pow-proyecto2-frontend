@@ -79,6 +79,8 @@ describe('/app (Inicio)', () => {
     const aside = raiz.querySelector('aside.margen')!;
     expect(aside.getAttribute('aria-labelledby')).toBe('titulo-recomendaciones');
     expect(aside.querySelector('ui-recomendaciones .encontrara')).not.toBeNull();
+    // La columna se desplaza sola (sticky con scroll): se puede enfocar para recorrerla con teclado.
+    expect(aside.querySelector('.columna')?.getAttribute('tabindex')).toBe('0');
   });
 
   it('un ejemplo del estado vacío audita esa URL', async () => {

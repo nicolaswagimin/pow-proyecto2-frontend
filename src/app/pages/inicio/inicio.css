@@ -41,11 +41,17 @@
     border-left: 2px solid var(--color-linea-margen);
   }
 
-  .margen ui-recomendaciones {
+  .columna {
     position: sticky;
     top: var(--space-6);
     max-height: calc(100dvh - 2 * var(--space-6));
     overflow-y: auto;
+    border-radius: var(--radius-control);
+  }
+
+  .columna:focus-visible {
+    outline: 2px solid transparent;
+    box-shadow: var(--anillo-foco);
   }
 }
 
