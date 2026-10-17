@@ -1,3 +1,89 @@
 :host {
-  display: block;
+  display: grid;
+  gap: var(--space-4);
+}
+
+/* ---------- Pestañas ---------- */
+.pestanas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  border-bottom: 2px solid var(--color-texto);
+}
+
+.pestana {
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-control) var(--radius-control) 0 0;
+  background: transparent;
+  color: var(--color-texto-suave);
+  font: inherit;
+  font-weight: var(--peso-fuerte);
+  cursor: pointer;
+}
+
+.pestana[aria-selected='true'] {
+  background: var(--color-marcador);
+  color: var(--color-marcador-texto);
+}
+
+.pestana:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: var(--anillo-foco);
+}
+
+/* ---------- Panel ---------- */
+.panel {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
+}
+
+.campo__label {
+  font-weight: var(--peso-fuerte);
+}
+
+.opcional {
+  font-weight: var(--peso-normal);
+  color: var(--color-texto-suave);
+}
+
+.campo {
+  width: 100%;
+  min-height: 48px;
+  padding: var(--space-3);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--color-superficie);
+  box-shadow: inset 0 0 0 2px var(--color-borde);
+  color: var(--color-texto);
+  font: inherit;
+}
+
+.campo:hover {
+  box-shadow: inset 0 0 0 2px var(--color-texto);
+}
+
+.campo:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: var(--anillo-foco);
+}
+
+.campo--codigo {
+  min-height: 12rem;
+  resize: vertical;
+  font-family: var(--font-codigo);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.campo--archivo {
+  padding: var(--space-2);
+}
+
+.ayuda {
+  margin-bottom: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-texto-suave);
 }
