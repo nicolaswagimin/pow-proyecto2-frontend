@@ -19,7 +19,15 @@ import { PaginasService } from '../../services/paginas.service';
 export type EstadoPagina = 'vacio' | 'auditando' | 'listo' | 'error';
 
 export const MAX_HTML = 2_000_000;
-const MAX_PROBLEMAS_IA = 30;
+// Total de elementos (regla + selector) que se mandan a la IA: es lo que limita su respuesta.
+const MAX_NODOS_IA = 30;
+const MAX_PAGINA = 300;
+
+// El nombre de una página por URL: la URL entera, o sin la consulta si no cabe en el historial.
+function nombreDeUrl(url: string): string {
+  if (url.length <= MAX_PAGINA) return url;
+  return url.replace(/[?#].*$/, '').slice(0, MAX_PAGINA);
+}
 
 // Estado y lógica de /app: entrada, auditoría, corrección con IA, verificación y guardado.
 // Se provee en el componente de la página.
@@ -59,6 +67,8 @@ export class AuditoriaEstado {
 
   // Clave de la última corrección pedida: la misma entrada no se vuelve a pedir.
   private ultimaClaveIA: string | null = null;
+  // Sube con cada auditoría: una corrección que termina después pertenece a otra página.
+  private generacion = 0;
 
   async auditarPegado(html: string, pagina: string): Promise<void> {
     if (!html.trim()) return this.fallar('Pega algo de HTML para auditar.');
@@ -80,7 +90,7 @@ export class AuditoriaEstado {
     this.error.set(null);
     try {
       const { html, urlFinal } = await firstValueFrom(this.paginas.descargar(url.trim()));
-      await this.auditar(html, 'url', urlFinal, urlFinal);
+      await this.auditar(html, 'url', nombreDeUrl(urlFinal), urlFinal);
     } catch (err) {
       this.fallar(mapearError(err).mensaje);
     }
@@ -94,6 +104,7 @@ export class AuditoriaEstado {
   ): Promise<void> {
     this.estado.set('auditando');
     this.error.set(null);
+    this.generacion++;
     this.limpiarCorreccion();
     this.html.set(html);
     this.origen.set(origen);
@@ -123,11 +134,15 @@ export class AuditoriaEstado {
   }
 
   private problemasParaIA(): ProblemaParaIA[] {
-    return (this.resultado()?.problemas ?? []).slice(0, MAX_PROBLEMAS_IA).map((p: Problema) => ({
-      regla: p.regla,
-      ayuda: p.descripcion,
-      nodos: p.nodos,
-    }));
+    let quedan = MAX_NODOS_IA;
+    const enviados: ProblemaParaIA[] = [];
+    for (const p of (this.resultado()?.problemas ?? []) as Problema[]) {
+      if (quedan <= 0) break;
+      const nodos = p.nodos.slice(0, quedan);
+      quedan -= nodos.length;
+      enviados.push({ regla: p.regla, ayuda: p.descripcion, nodos });
+    }
+    return enviados;
   }
 
   // Pide a la IA la explicación y la corrección, y verifica cada una volviendo a auditar.
@@ -135,7 +150,11 @@ export class AuditoriaEstado {
     const resultado = this.resultado();
     if (!resultado || !resultado.problemas.length || this.corrigiendo()) return;
     const problemas = this.problemasParaIA();
-    const clave = JSON.stringify([this.html(), problemas]);
+    const html = this.html();
+    const baseHref = this.baseHref();
+    const generacion = this.generacion;
+    const vigente = () => generacion === this.generacion;
+    const clave = JSON.stringify([html, problemas]);
     if (clave === this.ultimaClaveIA && this.documentoCorregido()) return;
 
     this.corrigiendo.set(true);
@@ -143,22 +162,25 @@ export class AuditoriaEstado {
     this.progresoIA.set('Pidiendo la explicación y la corrección a la IA…');
     try {
       const respuesta: RespuestaCorreccion = await firstValueFrom(
-        this.ia.corregir(this.html(), problemas),
+        this.ia.corregir(html, problemas),
       );
+      if (!vigente()) return;
       this.ultimaClaveIA = clave;
-      const auditar = (html: string) => this.motor.auditarHtml(html, this.baseHref());
+      const auditar = (h: string) => this.motor.auditarHtml(h, baseHref);
       const verificadas: CorreccionVerificada[] = [];
       for (const [i, c] of respuesta.problemas.entries()) {
         this.progresoIA.set(`Verificando la corrección ${i + 1} de ${respuesta.problemas.length}…`);
-        verificadas.push(await verificarPorProblema(this.html(), resultado, c, auditar));
+        verificadas.push(await verificarPorProblema(html, resultado, c, auditar));
+        if (!vigente()) return;
       }
       this.progresoIA.set('Verificando el documento corregido completo…');
+      const documento = await verificarDocumento(resultado, respuesta.documento, auditar);
+      if (!vigente()) return;
       this.correcciones.set(verificadas);
-      this.verificacionDocumento.set(
-        await verificarDocumento(resultado, respuesta.documento, auditar),
-      );
+      this.verificacionDocumento.set(documento);
       this.documentoCorregido.set(respuesta.documento);
     } catch (err) {
+      if (!vigente()) return;
       this.errorIA.set(
         err instanceof HttpErrorResponse
           ? mapearError(err).mensaje

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpErrorResponse } from '@angular/common/http';
-import { of, throwError } from 'rxjs';
+import { Observable, Subject, of, throwError } from 'rxjs';
 import { MotorService } from '../../auditor/motor.service';
 import { Problema, ResultadoAuditoria } from '../../auditor/modelo';
 import { AuditoriasService } from '../../services/auditorias.service';
@@ -35,11 +35,12 @@ const respuestaIA = {
 
 function preparar({
   auditar = async (html: string) => (html.includes('alt=') ? limpio : conProblema),
-  corregir = () => of(respuestaIA),
+  corregir = (): Observable<typeof respuestaIA> => of(respuestaIA),
+  urlFinal = 'https://ejemplo.org/',
 } = {}) {
   const motor = { auditarHtml: vi.fn(auditar) };
   const ia = { corregir: vi.fn(corregir) };
-  const paginas = { descargar: vi.fn(() => of({ html: HTML, urlFinal: 'https://ejemplo.org/' })) };
+  const paginas = { descargar: vi.fn(() => of({ html: HTML, urlFinal })) };
   const auditorias = { guardar: vi.fn(() => of({ id: 7 })), obtener: vi.fn() };
   TestBed.configureTestingModule({
     providers: [
@@ -150,5 +151,48 @@ describe('AuditoriaEstado', () => {
       }),
     );
     expect(estado.guardadaId()).toBe(7);
+  });
+
+  it('una corrección que termina después de una auditoría nueva se descarta', async () => {
+    const respuesta = new Subject<typeof respuestaIA>();
+    const { estado } = preparar({ corregir: () => respuesta });
+    await estado.auditarPegado(HTML, 'A');
+    const corrigiendo = estado.corregir();
+    await estado.auditarPegado('<main><img src="b.png"></main>', 'B');
+    respuesta.next(respuestaIA);
+    respuesta.complete();
+    await corrigiendo;
+    expect(estado.pagina()).toBe('B');
+    expect(estado.documentoCorregido()).toBeNull();
+    expect(estado.correcciones()).toEqual([]);
+    expect(estado.verificacionDocumento()).toBeNull();
+    expect(estado.corrigiendo()).toBe(false);
+  });
+
+  it('a la IA se mandan como máximo 30 elementos en total', async () => {
+    const nodos = (n: number, tag: string) =>
+      Array.from({ length: n }, (_, i) => ({ selector: `${tag}:nth-child(${i + 1})`, html: `<${tag}>` }));
+    const muchos: ResultadoAuditoria = {
+      problemas: [
+        { ...imgAlt, nodos: nodos(12, 'img') },
+        { ...imgAlt, regla: 'color-contrast', gravedad: 'serio', nodos: nodos(25, 'p') },
+      ],
+      reglasAprobadas: 3,
+      fecha: '',
+    };
+    const { estado, ia } = preparar({ auditar: async () => muchos });
+    await estado.auditarPegado(HTML, 'x');
+    await estado.corregir();
+    const enviados = (ia.corregir.mock.calls[0] as unknown[])[1] as { nodos: unknown[] }[];
+    expect(enviados.reduce((t, p) => t + p.nodos.length, 0)).toBe(30);
+    expect(enviados.map((p) => p.nodos.length)).toEqual([12, 18]);
+  });
+
+  it('una URL de más de 300 caracteres se guarda sin la consulta', async () => {
+    const larga = 'https://ejemplo.org/buscar?q=' + 'a'.repeat(400) + '#arriba';
+    const { estado } = preparar({ urlFinal: larga });
+    await estado.auditarUrl(larga);
+    expect(estado.pagina()).toBe('https://ejemplo.org/buscar');
+    expect(estado.baseHref()).toBe(larga);
   });
 });
