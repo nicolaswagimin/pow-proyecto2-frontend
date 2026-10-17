@@ -70,20 +70,31 @@
           <section class="panel" aria-labelledby="titulo-corregir">
             <h2 id="titulo-corregir">Corregir con IA</h2>
             <p class="ayuda no-imprimir">
-              La IA explica cada problema en palabras simples y propone una corrección. a11Lens la
-              aplica y vuelve a auditar: solo se muestran como solución las que de verdad lo
-              resuelven.
+              La IA explica cada problema en palabras simples y propone una corrección. Solo recibe
+              los elementos con problemas, de a lotes y empezando por los más graves. a11Lens aplica
+              cada corrección en su lugar y vuelve a auditar: solo se muestran como solución las que
+              de verdad lo resuelven.
             </p>
-            <ui-button
-              class="no-imprimir"
-              [cargando]="estado.corrigiendo()"
-              textoCargando="Corrigiendo y verificando…"
-              (click)="estado.corregir()"
-            >
-              <ui-icon nombre="chispa" />
-              Explicar y corregir
-            </ui-button>
+            @if (estado.textoCorregir(); as texto) {
+              <ui-button
+                class="no-imprimir"
+                [cargando]="estado.corrigiendo()"
+                textoCargando="Corrigiendo y verificando…"
+                (click)="estado.corregir()"
+              >
+                <ui-icon nombre="chispa" />
+                {{ texto }}
+              </ui-button>
+            }
             <p class="progreso" role="status">{{ estado.progresoIA() }}</p>
+            @if (estado.noCorregibles(); as n) {
+              <p class="ayuda">
+                {{ n === 1 ? 'Un elemento no se puede' : n + ' elementos no se pueden' }} corregir
+                con IA: no están escritos en el HTML original (los agrega el navegador), están
+                dentro de otro marco o su código es demasiado largo. Revísalos en la lista de
+                problemas.
+              </p>
+            }
             @if (estado.errorIA(); as error) {
               <ui-alert tipo="error">{{ error }}</ui-alert>
             }

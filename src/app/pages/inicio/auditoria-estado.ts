@@ -63,6 +63,13 @@ export class AuditoriaEstado {
   // pueden (no están escritos en el HTML original o su fragmento es demasiado largo).
   readonly quedan = signal<number | null>(null);
   readonly noCorregibles = signal(0);
+  // Texto del botón de la IA; null cuando ya no queda nada que corregir.
+  readonly textoCorregir = computed(() => {
+    const n = this.quedan();
+    if (n === null) return 'Explicar y corregir';
+    if (n === 0) return null;
+    return `Corregir más (quedan ${n} ${n === 1 ? 'elemento' : 'elementos'})`;
+  });
 
   readonly guardando = signal(false);
   readonly guardadaId = signal<number | null>(null);

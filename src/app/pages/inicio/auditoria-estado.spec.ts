@@ -221,6 +221,35 @@ describe('AuditoriaEstado', () => {
     expect(estado.corrigiendo()).toBe(false);
   });
 
+  it('el botón pasa de «Explicar y corregir» a «Corregir más» y desaparece al terminar', async () => {
+    const { estado } = preparar();
+    await estado.auditarPegado(paginaGrande(100), 'Tienda');
+    expect(estado.textoCorregir()).toBe('Explicar y corregir');
+    await estado.corregir();
+    expect(estado.textoCorregir()).toBe(`Corregir más (quedan ${estado.quedan()} elementos)`);
+    while ((estado.quedan() ?? 0) > 0) await estado.corregir();
+    expect(estado.textoCorregir()).toBeNull();
+  });
+
+  it('cuenta los elementos que no se pueden corregir con IA', async () => {
+    const sinRuta = async (html: string) => {
+      const r = auditorFalso(html);
+      return {
+        ...r,
+        problemas: r.problemas.map((p) => ({
+          ...p,
+          nodos: p.nodos.map((n) => ({ ...n, ruta: null })),
+        })),
+      };
+    };
+    const { estado, ia } = preparar({ auditar: sinRuta });
+    await estado.auditarPegado(HTML, 'x');
+    await estado.corregir();
+    expect(ia.corregirFragmentos).not.toHaveBeenCalled();
+    expect(estado.noCorregibles()).toBe(1);
+    expect(estado.textoCorregir()).toBeNull();
+  });
+
   describe('página grande de ejemplo', () => {
     const grande = paginaGrande(400);
 
