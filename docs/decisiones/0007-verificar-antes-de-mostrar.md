@@ -11,9 +11,11 @@ Cada corrección se aplica sola sobre el HTML original y se vuelve a auditar con
 2. esa regla afecta a menos elementos que antes (un cambio de selector no cuenta), y
 3. no aparece ningún problema nuevo.
 
-Si no, queda como «no resolvió», «resolvió pero introdujo otros» o «no se pudo aplicar» (el fragmento no está en el HTML). Esas van aparte, en «Sin solución verificada», y su código queda dentro de un `<details>` cerrado. En el reporte Markdown, el código solo aparece para las resueltas.
+Además, la corrección **no puede quitar ni ocultar el elemento**: si el mismo tipo de elemento desaparece del fragmento o queda con `hidden`, `aria-hidden="true"`, `display:none` o `visibility:hidden` (y el original no lo estaba), axe deja de verlo pero no está corregido.
 
-El documento completo corregido también se re-audita, y se muestra su puntaje real.
+Si no, queda como «no resolvió», «resolvió pero introdujo otros», «quitó u ocultó el elemento» o «no se pudo aplicar» (el fragmento no está en el HTML). Esas van aparte, en «Sin solución verificada», y su código queda dentro de un `<details>` cerrado. En el reporte Markdown, el código solo aparece para las resueltas.
+
+El documento completo corregido también se re-audita, y se muestra su puntaje real; si trae problemas nuevos o baja el puntaje, se avisa antes de ofrecer el diff y la descarga.
 
 ## Consecuencias
 - Lo que la app llama solución está comprobado con la misma herramienta que encontró el problema.
