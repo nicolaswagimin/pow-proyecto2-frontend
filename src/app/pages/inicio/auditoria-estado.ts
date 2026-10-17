@@ -121,4 +121,52 @@ export class AuditoriaEstado {
     this.documentoCorregido.set(null);
     this.errorIA.set(null);
   }
+
+  private problemasParaIA(): ProblemaParaIA[] {
+    return (this.resultado()?.problemas ?? []).slice(0, MAX_PROBLEMAS_IA).map((p: Problema) => ({
+      regla: p.regla,
+      ayuda: p.descripcion,
+      nodos: p.nodos,
+    }));
+  }
+
+  // Pide a la IA la explicación y la corrección, y verifica cada una volviendo a auditar.
+  async corregir(): Promise<void> {
+    const resultado = this.resultado();
+    if (!resultado || !resultado.problemas.length || this.corrigiendo()) return;
+    const problemas = this.problemasParaIA();
+    const clave = JSON.stringify([this.html(), problemas]);
+    if (clave === this.ultimaClaveIA && this.documentoCorregido()) return;
+
+    this.corrigiendo.set(true);
+    this.errorIA.set(null);
+    this.progresoIA.set('Pidiendo la explicación y la corrección a la IA…');
+    try {
+      const respuesta: RespuestaCorreccion = await firstValueFrom(
+        this.ia.corregir(this.html(), problemas),
+      );
+      this.ultimaClaveIA = clave;
+      const auditar = (html: string) => this.motor.auditarHtml(html, this.baseHref());
+      const verificadas: CorreccionVerificada[] = [];
+      for (const [i, c] of respuesta.problemas.entries()) {
+        this.progresoIA.set(`Verificando la corrección ${i + 1} de ${respuesta.problemas.length}…`);
+        verificadas.push(await verificarPorProblema(this.html(), resultado, c, auditar));
+      }
+      this.progresoIA.set('Verificando el documento corregido completo…');
+      this.correcciones.set(verificadas);
+      this.verificacionDocumento.set(
+        await verificarDocumento(resultado, respuesta.documento, auditar),
+      );
+      this.documentoCorregido.set(respuesta.documento);
+    } catch (err) {
+      this.errorIA.set(
+        err instanceof HttpErrorResponse
+          ? mapearError(err).mensaje
+          : 'No se pudo verificar la corrección.',
+      );
+    } finally {
+      this.corrigiendo.set(false);
+      this.progresoIA.set('');
+    }
+  }
 }
