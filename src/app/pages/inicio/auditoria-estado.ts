@@ -64,6 +64,12 @@ export class AuditoriaEstado {
     return r ? calcularPuntaje(r.problemas) : null;
   });
   readonly resumen = computed(() => resumir(this.resultado()?.problemas ?? []));
+  // El documento completo de la IA introdujo problemas o bajó el puntaje: se avisa antes de
+  // ofrecerlo (el diff y la descarga muestran el documento entero, no solo lo verificado).
+  readonly documentoEmpeora = computed(() => {
+    const doc = this.verificacionDocumento();
+    return !!doc && (doc.comparacion.nuevos.length > 0 || doc.puntajeDespues < doc.puntajeAntes);
+  });
 
   // Clave de la última corrección pedida: la misma entrada no se vuelve a pedir.
   private ultimaClaveIA: string | null = null;

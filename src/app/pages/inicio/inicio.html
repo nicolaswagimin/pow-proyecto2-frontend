@@ -99,6 +99,12 @@
         @if (estado.documentoCorregido(); as corregido) {
           <section class="panel" aria-labelledby="titulo-diff">
             <h2 id="titulo-diff">Antes y después</h2>
+            @if (estado.documentoEmpeora()) {
+              <ui-alert tipo="aviso" titulo="El documento corregido no está verificado del todo.">
+                La auditoría del documento completo encontró problemas nuevos o un puntaje más
+                bajo. Úsalo como borrador: revisa los cambios antes de aplicarlos.
+              </ui-alert>
+            }
             <ui-diff-codigo [antes]="estado.html()" [despues]="corregido" />
           </section>
         }
@@ -123,6 +129,12 @@
             }
           </div>
           <p class="ayuda">El PDF se genera con «Guardar como PDF» del diálogo de impresión.</p>
+          @if (estado.documentoEmpeora()) {
+            <p class="ayuda">
+              El HTML corregido tiene problemas nuevos o un puntaje más bajo: revísalo antes de
+              usarlo.
+            </p>
+          }
           @if (aviso(); as a) {
             <ui-alert [tipo]="a.tipo">{{ a.mensaje }}</ui-alert>
           }

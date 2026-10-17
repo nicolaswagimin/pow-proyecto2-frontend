@@ -195,4 +195,23 @@ describe('AuditoriaEstado', () => {
     expect(estado.pagina()).toBe('https://ejemplo.org/buscar');
     expect(estado.baseHref()).toBe(larga);
   });
+
+  it('avisa si el documento corregido tiene problemas nuevos o baja el puntaje', async () => {
+    const otro: Problema = { ...imgAlt, regla: 'button-name', nodos: [{ selector: 'button', html: '' }] };
+    const { estado } = preparar({
+      auditar: async (html: string) =>
+        html.includes('alt=') ? { ...limpio, problemas: [otro] } : conProblema,
+    });
+    await estado.auditarPegado(HTML, 'x');
+    expect(estado.documentoEmpeora()).toBe(false);
+    await estado.corregir();
+    expect(estado.documentoEmpeora()).toBe(true);
+  });
+
+  it('sin problemas nuevos ni baja de puntaje, no avisa', async () => {
+    const { estado } = preparar();
+    await estado.auditarPegado(HTML, 'x');
+    await estado.corregir();
+    expect(estado.documentoEmpeora()).toBe(false);
+  });
 });
