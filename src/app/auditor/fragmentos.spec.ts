@@ -30,6 +30,14 @@ describe('analizarFuente', () => {
     fuente = await analizarFuente(PAGINA);
   });
 
+  it('recorta el título a 300 caracteres y el idioma a 35 (los límites del servidor)', async () => {
+    const larga = await analizarFuente(
+      `<html lang="${'es-'.repeat(20)}"><head><title>${'Oferta '.repeat(80)}</title></head></html>`,
+    );
+    expect(larga.titulo.length).toBe(300);
+    expect(larga.idioma.length).toBe(35);
+  });
+
   it('lee el idioma y el título de la página', () => {
     expect(fuente.idioma).toBe('es');
     expect(fuente.titulo).toBe('Tienda de prueba');

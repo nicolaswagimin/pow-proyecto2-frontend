@@ -54,6 +54,8 @@ const QUITADOS = new Set([
 // Un fragmento completo como mucho de este tamaño; si no, va solo la etiqueta de apertura.
 export const MAX_ELEMENTO = 1500;
 const MAX_PADRE = 300;
+const MAX_TITULO = 300;
+const MAX_IDIOMA = 35;
 const SOLO_APERTURA = new Set(['html', 'head', 'body']);
 
 function esElemento(n: T.ChildNode): n is T.Element {
@@ -137,8 +139,9 @@ export async function analizarFuente(html: string): Promise<FuenteHtml> {
 
   return {
     html,
-    idioma: raiz.attrs.find((a) => a.name === 'lang')?.value.trim() ?? '',
-    titulo: titulo ? textoDe(titulo).replace(/\s+/g, ' ').trim() : '',
+    // Recortados a los límites del servidor: un título largo (común en SEO) no debe impedir corregir.
+    idioma: (raiz.attrs.find((a) => a.name === 'lang')?.value.trim() ?? '').slice(0, MAX_IDIOMA),
+    titulo: titulo ? textoDe(titulo).replace(/\s+/g, ' ').trim().slice(0, MAX_TITULO) : '',
     ubicar(ruta, etiqueta, huella) {
       if (!ruta) return null;
       const el = buscar(raiz, ruta);
