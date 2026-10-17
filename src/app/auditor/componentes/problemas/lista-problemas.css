@@ -1,3 +1,105 @@
 :host {
-  display: block;
+  display: grid;
+  gap: var(--space-6);
+}
+
+.grupo {
+  display: grid;
+  gap: var(--space-3);
+}
+
+/* La gravedad se lee en el título; el borde de color es un refuerzo. */
+.grupo__titulo {
+  padding-left: var(--space-3);
+  border-left: 6px solid var(--color-borde);
+  font-size: var(--text-lg);
+}
+
+.grupo[data-gravedad='critico'] .grupo__titulo {
+  border-left-color: var(--color-error);
+}
+
+.grupo[data-gravedad='serio'] .grupo__titulo {
+  border-left-color: var(--color-aviso);
+}
+
+.problemas,
+.nodos {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.problema {
+  display: grid;
+  gap: var(--space-2);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-regla);
+}
+
+.problema__descripcion {
+  font-weight: var(--peso-fuerte);
+}
+
+.problema__datos,
+.nodo__ubicacion {
+  font-size: var(--text-sm);
+  color: var(--color-texto-suave);
+}
+
+.problema__datos a {
+  color: var(--color-enlace);
+}
+
+code {
+  font-family: var(--font-codigo);
+}
+
+.nodo {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
+}
+
+.nodo__html {
+  width: 100%;
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  overflow-x: auto;
+  border-radius: var(--radius-control);
+  background: var(--color-fondo);
+  font-size: var(--text-sm);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.ver {
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--color-borde);
+  color: var(--color-texto);
+  font: inherit;
+  font-weight: var(--peso-fuerte);
+  cursor: pointer;
+}
+
+.ver[aria-pressed='true'] {
+  background: var(--color-marcador);
+  box-shadow: inset 0 0 0 2px var(--color-texto);
+  color: var(--color-marcador-texto);
+}
+
+.ver:focus-visible,
+.problema__datos a:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: var(--anillo-foco);
+}
+
+.vacio {
+  color: var(--color-texto-suave);
 }
