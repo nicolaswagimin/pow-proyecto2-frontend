@@ -69,10 +69,11 @@ A la IA **no** va el documento: van solo los fragmentos de los elementos con pro
 2. **Lotes por gravedad.** Los críticos y serios van primero. Cada lote lleva hasta 8 fragmentos únicos y 12 000 caracteres, con contexto mínimo: la apertura del padre, el detalle de axe, y el idioma y título de la página. Los elementos idénticos se envían una vez, y dos problemas del mismo elemento van en lotes distintos.
 3. **Pedir.** `POST /api/ia/fragmentos` devuelve, por fragmento, una explicación en lenguaje simple y el fragmento corregido, validados con Zod. El backend guarda cada fragmento en caché.
 4. **Aplicar y verificar.** Cada corrección se aplica **como reemplazo de texto** en su lugar exacto, así que el resto del documento queda byte a byte igual. Después se audita con axe (ver la tabla).
-5. **Rondas.** Un clic procesa hasta 3 lotes con el progreso visible («Lote 2 de 3: verificando las correcciones con axe…»). Después, el botón pasa a **«Corregir más (quedan N elementos)»** y desaparece cuando no queda nada. Si la IA falla, esos elementos se vuelven a pedir en la siguiente ronda.
+5. **Solo la auditoría original.** Se corrigen los elementos de la auditoría original. Si una corrección cambia los selectores de otros elementos, esos no se vuelven a pedir con otro nombre.
+6. **Rondas.** Un clic procesa hasta 3 lotes con el progreso visible («Lote 2 de 3: verificando las correcciones con axe…»). Después, el botón pasa a **«Corregir más (quedan N elementos)»** y desaparece cuando no queda nada. Si la IA o la verificación fallan, esos elementos se vuelven a pedir en la siguiente ronda. Solo se corrige con una auditoría terminada de la página que está en pantalla.
 
 Algunos elementos no se pueden corregir con IA y la sección lo avisa con su número:
-- no están escritos en el HTML (el navegador los agrega, como un `<html>` implícito);
+- no están escritos en el HTML (el navegador los agrega, como un `<html>` implícito), o el árbol del iframe no coincide con el del original en ese punto (la huella no coincide);
 - están en shadow DOM o en otro marco;
 - su apertura pasa de 4000 caracteres.
 
@@ -86,6 +87,7 @@ Algunos elementos no se pueden corregir con IA y la sección lo avisa con su nú
 | Quitó u ocultó el elemento | La corrección borra el elemento, lo cambia por otro o lo oculta (`hidden`, `aria-hidden`, `display:none`, `visibility:hidden`): axe deja de verlo, pero no está corregido |
 | No se pudo aplicar | El fragmento no está en el HTML |
 | La IA no devolvió una corrección válida | El fragmento quedó en `sinRespuesta` tras el reintento del servidor |
+| Descartada: agregaba código ejecutable u otros elementos | La corrección traía algo que el saneador quitaría (`<script>`, marcos, `on*`, `javascript:`, meta refresh), así que axe nunca lo vería. O era una corrección de apertura que agregaba elementos (salvo el `<title>` de `document-title`). No se aplica |
 
 Las verificadas aparecen primero, con su explicación y el código. Las demás van en «Sin solución verificada», con la explicación y el motivo; lo que propuso la IA queda dentro de un `<details>` cerrado («Ver lo que propuso la IA») y nunca se ofrece como solución.
 
