@@ -1,5 +1,5 @@
 import { Problema, ResultadoAuditoria } from './modelo';
-import { compararAuditorias, quitaUOculta, verificarLote } from './verificar';
+import { cambioNoPermitido, compararAuditorias, quitaUOculta, verificarLote } from './verificar';
 
 const problema = (regla: string, selectores: string[]): Problema => ({
   regla,
@@ -60,6 +60,61 @@ describe('quitaUOculta: quitar u ocultar el elemento no es corregirlo', () => {
 
   it('una apertura corregida con el mismo elemento es válida', () => {
     expect(quitaUOculta('<a href="/">', '<a href="/" aria-label="Inicio">')).toBe(false);
+  });
+});
+
+describe('cambioNoPermitido: una corrección no puede agregar código que se ejecuta ni otros elementos', () => {
+  const img = { regla: 'image-alt', original: '<img src="a.png">', tipo: 'elemento' as const };
+  for (const corregido of [
+    '<img src="a.png" alt="Logo"><script src="https://malo.example/x.js"></script>',
+    '<img src="a.png" alt="Logo" onerror="robar()">',
+    '<img src="a.png" alt="Logo"><iframe srcdoc="<p>x</p>"></iframe>',
+    '<a href="javascript:robar()"><img src="a.png" alt="Logo"></a>',
+    '<img src="a.png" alt="Logo"><meta http-equiv="refresh" content="0;url=https://malo.example">',
+  ]) {
+    it(`rechaza «${corregido.slice(0, 60)}»`, () => {
+      expect(cambioNoPermitido({ ...img, corregido })).toBe(true);
+    });
+  }
+
+  it('acepta una corrección que solo agrega atributos inofensivos', () => {
+    expect(cambioNoPermitido({ ...img, corregido: '<img src="a.png" alt="Logo">' })).toBe(false);
+  });
+
+  it('lo peligroso que ya estaba en el original no cuenta como agregado', () => {
+    const original = '<button onclick="comprar()"></button>';
+    expect(
+      cambioNoPermitido({
+        regla: 'button-name',
+        original,
+        tipo: 'elemento',
+        corregido: '<button onclick="comprar()">Comprar</button>',
+      }),
+    ).toBe(false);
+  });
+
+  it('una apertura corregida debe seguir siendo solo esa apertura', () => {
+    const a = { regla: 'link-name', original: '<a href="/">', tipo: 'apertura' as const };
+    expect(cambioNoPermitido({ ...a, corregido: '<a href="/" aria-label="Inicio">' })).toBe(false);
+    expect(
+      cambioNoPermitido({
+        ...a,
+        corregido: '<a href="/" aria-label="Inicio"><span>Compra ya</span>',
+      }),
+    ).toBe(true);
+    expect(cambioNoPermitido({ ...a, corregido: '<div><a href="/">' })).toBe(true);
+  });
+
+  it('en document-title, la apertura de <head> puede agregar solo un <title>', () => {
+    const head = { regla: 'document-title', original: '<head>', tipo: 'apertura' as const };
+    expect(cambioNoPermitido({ ...head, corregido: '<head><title>Tienda</title>' })).toBe(false);
+    expect(
+      cambioNoPermitido({
+        ...head,
+        corregido:
+          '<head><title>Tienda</title><link rel="stylesheet" href="https://malo.example/x.css">',
+      }),
+    ).toBe(true);
   });
 });
 
@@ -154,6 +209,19 @@ describe('verificarLote', () => {
     const { auditar, auditados } = auditorDe({});
     const r = await verificarLote(base, [quita], auditar);
     expect(r.verificadas[0].estado).toBe('quita-elemento');
+    expect(auditados).toEqual([]);
+    expect(r.base).toBe(base);
+  });
+
+  it('una corrección que agrega un script no se aplica: queda como cambio no permitido', async () => {
+    const mala = candidata(
+      '#a',
+      '<img src="a.png">',
+      '<img src="a.png" alt="A"><script src="https://malo.example/x.js"></script>',
+    );
+    const { auditar, auditados } = auditorDe({});
+    const r = await verificarLote(base, [mala], auditar);
+    expect(r.verificadas[0].estado).toBe('cambio-no-permitido');
     expect(auditados).toEqual([]);
     expect(r.base).toBe(base);
   });

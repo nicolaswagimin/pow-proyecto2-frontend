@@ -11,6 +11,7 @@ export const ESTADO_CORRECCION: Record<EstadoCorreccion, string> = {
   'quita-elemento': 'Quitó u ocultó el elemento en lugar de corregirlo',
   'no-aplicable': 'No se pudo aplicar (el fragmento no está en el HTML)',
   'sin-respuesta': 'La IA no devolvió una corrección válida',
+  'cambio-no-permitido': 'Descartada: agregaba código ejecutable u otros elementos',
 };
 
 export interface DatosReporte {

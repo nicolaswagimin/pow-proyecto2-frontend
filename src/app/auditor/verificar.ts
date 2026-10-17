@@ -1,4 +1,5 @@
-import { Rango } from './fragmentos';
+import { ELEMENTOS_PELIGROSOS, atributoPeligroso } from './aislar';
+import { Fragmento, Rango } from './fragmentos';
 import { ResultadoAuditoria } from './modelo';
 import { aplicarReemplazos } from './reemplazos';
 
@@ -11,7 +12,8 @@ export type EstadoCorreccion =
   | 'introdujo-problemas'
   | 'quita-elemento'
   | 'no-aplicable'
-  | 'sin-respuesta';
+  | 'sin-respuesta'
+  | 'cambio-no-permitido';
 
 // Lo que propone la IA para un elemento: el fragmento original y su corrección.
 export interface CorreccionProblema {
@@ -99,7 +101,46 @@ export interface VerificacionDocumento {
 // ---------- Verificación por lote (corrección por fragmentos) ----------
 
 // Una corrección de la IA con el rango de su fragmento en el documento base.
-export interface Candidata extends CorreccionProblema, Rango {}
+export interface Candidata extends CorreccionProblema, Rango {
+  tipo?: Fragmento['tipo'];
+}
+
+function elementosDe(html: string): Element[] {
+  const plantilla = document.createElement('template');
+  plantilla.innerHTML = html;
+  return [...plantilla.content.querySelectorAll('*')];
+}
+
+function peligrosos(html: string): number {
+  return elementosDe(html).reduce(
+    (total, el) =>
+      total +
+      (el.matches(ELEMENTOS_PELIGROSOS) ? 1 : 0) +
+      [...el.attributes].filter(atributoPeligroso).length,
+    0,
+  );
+}
+
+// Lo que propone la IA es dato no confiable (también llega de la caché compartida): no puede
+// agregar nada que el saneador quitaría (scripts, marcos, on*, javascript:, meta refresh). El iframe
+// audita la versión saneada, así que axe nunca lo vería y la corrección pasaría como verificada.
+// Una corrección de apertura debe seguir siendo esa apertura, sin elementos nuevos; en
+// document-title, la de <head> puede agregar solo un <title>.
+export function cambioNoPermitido(
+  c: Pick<Candidata, 'regla' | 'original' | 'corregido' | 'tipo'>,
+): boolean {
+  if (peligrosos(c.corregido) > peligrosos(c.original)) return true;
+  if (c.tipo !== 'apertura') return false;
+  const etiqueta = c.original.match(/^<([a-zA-Z][\w:-]*)/)?.[1].toLowerCase();
+  if (!etiqueta || !new RegExp(`^<${etiqueta}(?=[\\s/>])`, 'i').test(c.corregido.trim()))
+    return true;
+  const elementos = elementosDe(c.corregido);
+  const nuevos = elementos.filter((el, i) => i > 0 || el.localName !== etiqueta);
+  if (c.regla === 'document-title') {
+    return nuevos.length > 1 || nuevos.some((el) => el.localName !== 'title');
+  }
+  return nuevos.length > 0;
+}
 
 // El documento sobre el que se corrige y su auditoría.
 export interface Base {
@@ -133,8 +174,10 @@ export async function verificarLote(
 ): Promise<{ verificadas: CorreccionVerificada[]; base: Base }> {
   const estados = new Map<Candidata, { estado: EstadoCorreccion; nuevos: string[] }>();
   const aplicables = candidatas.filter((c) => {
-    if (!quitaUOculta(c.original, c.corregido)) return true;
-    estados.set(c, { estado: 'quita-elemento', nuevos: [] });
+    if (cambioNoPermitido(c)) estados.set(c, { estado: 'cambio-no-permitido', nuevos: [] });
+    else if (quitaUOculta(c.original, c.corregido))
+      estados.set(c, { estado: 'quita-elemento', nuevos: [] });
+    else return true;
     return false;
   });
   const auditadas = new Map<string, ResultadoAuditoria>();
@@ -174,7 +217,7 @@ export async function verificarLote(
   }
   return {
     verificadas: candidatas.map((c) => {
-      const { inicio: _i, fin: _f, ...correccion } = c;
+      const { inicio: _i, fin: _f, tipo: _t, ...correccion } = c;
       return { ...correccion, ...estados.get(c)! };
     }),
     base: nueva,

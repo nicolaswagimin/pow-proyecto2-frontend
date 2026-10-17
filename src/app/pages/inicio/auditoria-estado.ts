@@ -218,6 +218,7 @@ export class AuditoriaEstado {
             corregido: r.corregido,
             inicio: p.fragmento.inicio,
             fin: p.fragmento.fin,
+            tipo: p.fragmento.tipo,
           })),
         );
         const sinRespuesta: CorreccionVerificada[] = respuesta.sinRespuesta.flatMap((id) =>

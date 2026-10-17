@@ -15,7 +15,7 @@ export const CSP_AISLADA = (nonce: string) =>
     'media-src https: data:',
   ].join('; ');
 
-const ELEMENTOS_PELIGROSOS =
+export const ELEMENTOS_PELIGROSOS =
   'script, noscript, iframe, frame, frameset, object, embed, applet, base, meta[http-equiv]';
 const ATRIBUTOS_URL = ['href', 'src', 'action', 'formaction', 'xlink:href', 'data', 'poster'];
 
@@ -28,7 +28,7 @@ export function esFragmento(html: string): boolean {
   return !/<html[\s>]/i.test(html);
 }
 
-function atributoPeligroso(atributo: Attr): boolean {
+export function atributoPeligroso(atributo: Attr): boolean {
   const nombre = atributo.name.toLowerCase();
   return (
     nombre.startsWith('on') ||
