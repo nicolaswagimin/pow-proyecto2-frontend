@@ -20,7 +20,7 @@ a11Lens audita accesibilidad, así que la propia app tiene que ser ejemplar. Obj
 - El botón de mostrar contraseña tiene `aria-label` y `aria-pressed`, y no saca el foco del campo.
 - Bloq Mayús y la fortaleza de la contraseña se anuncian con `aria-live`.
 
-### Las anotaciones
+### Las anotaciones (acceso y `/design`)
 - El margen es un `<aside>` con su título (`aria-labelledby`), fuera de `<main>`.
 - **No es una región `aria-live`.** Quien usa lector de pantalla ya escucha el campo al enfocarlo; anunciar además la anotación duplicaría todo. La ficha se puede leer navegando al margen.
 - El interruptor usa `role="switch"` con `aria-checked`. Su nombre accesible ("Mostrar anotaciones") empieza por el texto visible (WCAG 2.5.3) y la elección se recuerda.
@@ -44,7 +44,15 @@ a11Lens audita accesibilidad, así que la propia app tiene que ser ejemplar. Obj
 - Las pestañas de entrada siguen el patrón de ARIA (`tablist`, `tab`, `tabpanel`, `aria-selected`) y se recorren con las flechas, Inicio y Fin.
 - La gravedad se dice con texto («Crítico», «Serio»…), además del color; el diff marca las líneas con − y + además del fondo.
 - **Todo lo de la lente se puede hacer desde la lista.** «Ver en la lente» lleva `aria-pressed`; un clic en la vista previa devuelve el foco al botón del problema en la lista. El iframe tiene título («Vista previa aislada de la página auditada»). El iframe oculto que verifica correcciones es `aria-hidden` y `tabindex="-1"`.
-- La corrección con IA anuncia su progreso en una región `role="status"` («Verificando la corrección 2 de 5…») y el botón queda en estado de carga con texto visible.
+- La corrección con IA anuncia su progreso en una región `role="status"` («Lote 2 de 3: verificando las correcciones con axe…») y el botón queda en estado de carga con texto visible. Al terminar la ronda, el botón dice cuántos elementos quedan («Corregir más (quedan 13 elementos)»).
+- **La columna de recomendaciones** es un `<aside aria-labelledby="titulo-recomendaciones">` fuera de `<main>` (en móvil, una `<section>` dentro del contenido).
+  - Como las anotaciones, **no es `aria-live`**: cambia con cada scroll de la vista previa y hablaría sin parar.
+  - Un contador en texto dice cuántos elementos hay a la vista del total.
+  - Cada recomendación es un botón con `aria-pressed` que selecciona el problema y lleva el foco a la lista.
+  - La gravedad se dice con texto, además del borde de color.
+- **La insignia de autoauditoría** del pie es un botón con `aria-expanded` y `aria-controls` hacia su detalle, que está siempre en el DOM y se oculta con `hidden`.
+  - El resultado se dice con texto («0 problemas»), y el ícono es decorativo.
+  - La autoauditoría corre con `iframes: false`: la vista previa es la página auditada, no a11Lens.
 - En el historial, la línea de evolución es decorativa (`aria-hidden`): los puntajes y su cambio están en texto. Borrar pide confirmación en línea, sin diálogo modal.
 - «¿Cómo se calcula?» es un `<details>` nativo.
 
@@ -52,6 +60,25 @@ a11Lens audita accesibilidad, así que la propia app tiene que ser ejemplar. Obj
 - Objetivos de 44 × 44 px o más (WCAG 2.5.8 pide 24 × 24, y la ficha lo mide en cada control).
 
 ## Verificación
+
+### 2026-10-17 · Corrección por fragmentos y columna de recomendaciones
+
+axe-core 4.14 (reglas `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa` y `wcag22aa`) con Playwright sobre Chrome, en 1440 y 390 px, claro y oscuro: **29 de 29 auditorías con 0 violaciones**.
+
+| Vista | Claro 1440 px | Claro 390 px | Oscuro 1440 px | Oscuro 390 px |
+|---|---|---|---|---|
+| `/login` | 0 violaciones | 0 | 0 | 0 |
+| `/registro` | 0 | 0 | 0 | 0 |
+| `/design` | 0 | 0 | 0 | 0 |
+| `/app` vacío (estado vacío de recomendaciones) | 0 | 0 | 0 | 0 |
+| `/app` con la insignia abierta | 0 | 0 | 0 | 0 |
+| `/app` con resultado, lente y recomendaciones | 0 | 0 | 0 | 0 |
+| `/app` con correcciones de la IA (Gemini real) | 0 | — | — | — |
+| `/historial` | 0 | 0 | 0 | 0 |
+
+Además, en las cuatro combinaciones:
+- la autoauditoría en vivo de la insignia dio «0 problemas»;
+- al desplazarse por la vista previa, el contador de la columna pasó a mostrar elementos a la vista.
 
 ### 2026-10-17 · Funcionalidad de auditoría
 
