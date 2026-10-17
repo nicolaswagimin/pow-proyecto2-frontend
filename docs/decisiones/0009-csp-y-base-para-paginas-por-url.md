@@ -25,5 +25,5 @@ Para las páginas por URL se agrega `<base href="URL final">` (después de las r
 ## Consecuencias
 - El contraste se calcula con los estilos reales de la página.
 - `'unsafe-inline'` en estilos permite CSS arbitrario de la página, pero solo dentro del iframe; CSS no ejecuta código y el sandbox impide navegar o enviar formularios.
-- La vista previa hace peticiones a los servidores de la página desde el navegador de la persona (como al visitarla). Las peticiones salen con origen `null` y sin cookies del sitio.
+- La vista previa hace peticiones a los servidores de la página desde el navegador de la persona (como al visitarla). Salen desde un documento con origen opaco, como peticiones de terceros: la app no puede leer sus respuestas.
 - Recursos `http:` no cargan (contenido mixto); las páginas que dependan de ellos se verán sin esos estilos.
