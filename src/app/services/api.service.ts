@@ -9,19 +9,6 @@ export interface Estado {
   ia: boolean;
 }
 
-export interface Item {
-  id: number;
-  titulo: string;
-  descripcion: string;
-  creado_en: string;
-  usuario_id: number;
-}
-
-export interface NuevoItem {
-  titulo: string;
-  descripcion?: string;
-}
-
 // El token de sesión lo agrega el interceptor (core/auth.interceptor.ts).
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -30,18 +17,6 @@ export class ApiService {
 
   estado(): Observable<Estado> {
     return this.http.get<Estado>(`${this.url}/health`);
-  }
-
-  listar(): Observable<Item[]> {
-    return this.http.get<Item[]>(`${this.url}/items`);
-  }
-
-  crear(item: NuevoItem): Observable<Item> {
-    return this.http.post<Item>(`${this.url}/items`, item);
-  }
-
-  eliminar(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.url}/items/${id}`);
   }
 
   preguntarIA(pregunta: string): Observable<{ respuesta: string }> {

@@ -95,57 +95,6 @@
         }
       </section>
 
-      <!-- 2. Registros -->
-      <section class="panel" aria-labelledby="titulo-registros">
-        <h2 id="titulo-registros">Tus registros</h2>
-
-        <form class="formulario" [formGroup]="formItem" (ngSubmit)="crear()">
-          <ui-text-field formControlName="titulo" label="Título" [maxlength]="200" />
-          <ui-text-field formControlName="descripcion" label="Descripción" multilinea opcional />
-          <ui-button
-            tipo="submit"
-            [cargando]="guardando()"
-            textoCargando="Guardando…"
-            [deshabilitado]="formItem.invalid"
-          >
-            <ui-icon nombre="mas" />
-            Crear
-          </ui-button>
-        </form>
-
-        @if (errorItems()) {
-          <ui-alert tipo="error">{{ errorItems() }}</ui-alert>
-        }
-
-        <ul class="lista" aria-live="polite">
-          @for (item of items(); track item.id) {
-            <li class="lista__item" animate.enter="item-entra" animate.leave="item-sale">
-              <div class="lista__texto">
-                <h3>{{ item.titulo }}</h3>
-                @if (item.descripcion) {
-                  <p>{{ item.descripcion }}</p>
-                }
-                <small>{{ item.creado_en | date: 'short' }}</small>
-              </div>
-              <ui-button
-                variante="peligro"
-                tamano="compacto"
-                [etiqueta]="'Eliminar ' + item.titulo"
-                (click)="eliminar(item)"
-              >
-                <ui-icon nombre="papelera" />
-              </ui-button>
-            </li>
-          } @empty {
-            @if (!cargandoItems()) {
-              <li class="vacio">
-                Todavía no tienes registros. Crea el primero con el formulario de arriba.
-              </li>
-            }
-          }
-        </ul>
-      </section>
-
       <!-- 3. IA -->
       <section class="panel" aria-labelledby="titulo-ia">
         <h2 id="titulo-ia"><ui-icon nombre="chispa" class="titulo-icono" /> Pregúntale a la IA</h2>
