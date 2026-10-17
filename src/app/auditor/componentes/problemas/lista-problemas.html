@@ -25,7 +25,7 @@
           </p>
           <ul class="nodos">
             @for (n of p.nodos; track n.selector) {
-              <li class="nodo">
+              <li class="nodo" [attr.data-selector]="n.selector">
                 <p class="nodo__ubicacion">
                   Ubicación: <code>{{ n.selector }}</code>
                 </p>
