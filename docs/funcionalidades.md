@@ -40,7 +40,7 @@ En la vista previa no se navega ni se envía nada: todos los clics y envíos se 
 
 ## 4. Corregir con IA
 
-«Corregir con IA» manda el HTML y hasta 30 problemas a `POST /api/ia/corregir`. Gemini devuelve, por problema, una explicación en lenguaje simple y el fragmento corregido, más el documento completo corregido.
+El botón «Explicar y corregir» (sección Corregir con IA) manda el HTML y hasta 30 problemas a `POST /api/ia/corregir`. Gemini devuelve, por problema, una explicación en lenguaje simple y el fragmento corregido, más el documento completo corregido.
 
 **Nada se muestra como solución sin verificarlo** ([ADR 0007](decisiones/0007-verificar-antes-de-mostrar.md)). Cada corrección se aplica sola y se vuelve a auditar con axe:
 
