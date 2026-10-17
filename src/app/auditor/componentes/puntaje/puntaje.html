@@ -1,0 +1,29 @@
+<div class="cifra">
+  <p class="cifra__numero">
+    <span class="visually-hidden">{{ titulo() }}:</span>
+    <span class="numero" [attr.data-nivel]="calificacion()">{{ puntaje() }}</span>
+    <span class="de">de 100</span>
+  </p>
+  <p class="cifra__calificacion">{{ calificacion() }}</p>
+</div>
+
+<div class="barra" aria-hidden="true">
+  <span class="barra__relleno" [style.width.%]="puntaje()"></span>
+</div>
+
+<ul class="conteo" aria-label="Reglas incumplidas por gravedad">
+  @for (c of conteo(); track c.gravedad) {
+    <li class="conteo__item" [attr.data-gravedad]="c.gravedad">{{ c.texto }}</li>
+  }
+</ul>
+
+<details class="formula">
+  <summary>¿Cómo se calcula?</summary>
+  <p>
+    Se parte de 100. Por cada regla de WCAG que la página no cumple se resta su gravedad: crítico
+    {{ PESOS.critico }}, serio {{ PESOS.serio }}, moderado {{ PESOS.moderado }} y menor
+    {{ PESOS.menor }}. Si la regla afecta a varios elementos, se resta 1 más por cada uno después
+    del primero, con un máximo {{ MAX_EXTRA }} extra por regla. El puntaje nunca baja de 0.
+  </p>
+  <p>Los problemas los detecta axe-core con las reglas de WCAG 2.2 niveles A y AA.</p>
+</details>
