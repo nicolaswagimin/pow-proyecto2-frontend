@@ -1,7 +1,5 @@
-import { CorreccionProblema } from '../services/ia.service';
 import { Rango } from './fragmentos';
 import { ResultadoAuditoria } from './modelo';
-import { calcularPuntaje } from './puntaje';
 import { aplicarReemplazos } from './reemplazos';
 
 // Verificación de las correcciones: se aplican y se vuelve a auditar con axe. Una corrección que
@@ -14,6 +12,15 @@ export type EstadoCorreccion =
   | 'quita-elemento'
   | 'no-aplicable'
   | 'sin-respuesta';
+
+// Lo que propone la IA para un elemento: el fragmento original y su corrección.
+export interface CorreccionProblema {
+  regla: string;
+  selector: string;
+  explicacion: string;
+  original: string;
+  corregido: string;
+}
 
 export interface CorreccionVerificada extends CorreccionProblema {
   estado: EstadoCorreccion;
@@ -36,16 +43,6 @@ function claves(r: ResultadoAuditoria): Set<string> {
 
 function nodosDe(r: ResultadoAuditoria, regla: string): number {
   return r.problemas.find((p) => p.regla === regla)?.nodos.length ?? 0;
-}
-
-// Reemplaza la primera aparición exacta del fragmento; null si no está (no se puede aplicar).
-export function aplicarCorreccion(
-  html: string,
-  original: string,
-  corregido: string,
-): string | null {
-  const i = html.indexOf(original);
-  return i === -1 ? null : html.slice(0, i) + corregido + html.slice(i + original.length);
 }
 
 function oculto(el: Element): boolean {
@@ -92,51 +89,11 @@ export function compararAuditorias(
   };
 }
 
-// Resuelto solo si el par regla+selector desaparece Y la regla afecta a menos elementos que antes
-// (si la corrección cambió el selector pero el problema sigue, no cuenta como resuelto).
-export async function verificarPorProblema(
-  htmlOriginal: string,
-  auditoriaOriginal: ResultadoAuditoria,
-  correccion: CorreccionProblema,
-  auditar: Auditar,
-): Promise<CorreccionVerificada> {
-  const corregido = aplicarCorreccion(htmlOriginal, correccion.original, correccion.corregido);
-  if (corregido === null) return { ...correccion, estado: 'no-aplicable', nuevos: [] };
-  if (quitaUOculta(correccion.original, correccion.corregido))
-    return { ...correccion, estado: 'quita-elemento', nuevos: [] };
-
-  const despues = await auditar(corregido);
-  const { nuevos } = compararAuditorias(auditoriaOriginal, despues);
-  const sigue =
-    claves(despues).has(clave(correccion.regla, correccion.selector)) ||
-    nodosDe(despues, correccion.regla) >= nodosDe(auditoriaOriginal, correccion.regla);
-  const estado: EstadoCorreccion = sigue
-    ? 'no-resolvio'
-    : nuevos.length
-      ? 'introdujo-problemas'
-      : 'resuelto';
-  return { ...correccion, estado, nuevos };
-}
-
 export interface VerificacionDocumento {
   auditoria: ResultadoAuditoria;
   comparacion: Comparacion;
   puntajeAntes: number;
   puntajeDespues: number;
-}
-
-export async function verificarDocumento(
-  auditoriaOriginal: ResultadoAuditoria,
-  documento: string,
-  auditar: Auditar,
-): Promise<VerificacionDocumento> {
-  const auditoria = await auditar(documento);
-  return {
-    auditoria,
-    comparacion: compararAuditorias(auditoriaOriginal, auditoria),
-    puntajeAntes: calcularPuntaje(auditoriaOriginal.problemas),
-    puntajeDespues: calcularPuntaje(auditoria.problemas),
-  };
 }
 
 // ---------- Verificación por lote (corrección por fragmentos) ----------

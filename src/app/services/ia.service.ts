@@ -4,26 +4,6 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import type { FragmentoParaIA } from '../auditor/lotes';
 
-export interface ProblemaParaIA {
-  regla: string;
-  ayuda: string;
-  nodos: { selector: string; html: string }[];
-}
-
-export interface CorreccionProblema {
-  regla: string;
-  selector: string;
-  explicacion: string;
-  original: string;
-  corregido: string;
-}
-
-export interface RespuestaCorreccion {
-  problemas: CorreccionProblema[];
-  documento: string;
-  desdeCache: boolean;
-}
-
 export interface PaginaParaIA {
   idioma: string;
   titulo: string;
@@ -54,13 +34,6 @@ export class IaService {
     return this.http.post<RespuestaFragmentos>(`${environment.apiUrl}/ia/fragmentos`, {
       pagina,
       fragmentos,
-    });
-  }
-
-  corregir(html: string, problemas: ProblemaParaIA[]): Observable<RespuestaCorreccion> {
-    return this.http.post<RespuestaCorreccion>(`${environment.apiUrl}/ia/corregir`, {
-      html,
-      problemas,
     });
   }
 }
