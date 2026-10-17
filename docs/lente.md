@@ -52,8 +52,13 @@ Para corregir por fragmentos, la app necesita la posición exacta de cada elemen
 - `ruta`: los índices de hijos-elemento desde `<html>` hasta el elemento. No cuenta los nodos que agregó a11Lens: `script`, `base`, `meta[http-equiv]` y `[data-a11lens]`. Como el saneador quitó todos los de la página, los que quedan son nuestros. Es `null` en shadow DOM o en otro documento.
 - `etiqueta`: el nombre del elemento, para comprobar que la ruta llegó al correcto.
 - `resumen`: el `failureSummary` de axe (hasta 500 caracteres), que para contraste trae los colores y la razón.
+- `huella`: los atributos del elemento ordenados (sin los `data-a11lens*`, con valores de hasta 100 caracteres), más cuántos hijos tienen él y su padre.
 
-La app recorre la misma ruta en un árbol de **parse5** del HTML original (`auditor/fragmentos.ts`), con las posiciones de origen y `scriptingEnabled: false` como `DOMParser`. Al recorrerla salta lo mismo que quita `sanear()`. Si la etiqueta no coincide o el elemento no está escrito en la fuente, el nodo queda como no corregible. Ver la [ADR 0010](decisiones/0010-ubicar-fragmentos-con-parse5.md).
+  El árbol del iframe no siempre es igual al del original. Pasa en modo quirks (una página sin doctype, o un fragmento: el iframe siempre agrega `<!DOCTYPE html>`), con `<form>` mal anidados y con `<select>` personalizados. En esos casos la ruta podría caer en otro elemento con la misma etiqueta. Si la huella no coincide, el nodo no se corrige con IA.
+
+La app trata todo esto como dato no confiable. Si la ruta no es una lista de hasta 512 enteros no negativos, si la etiqueta no es un texto de hasta 64 caracteres o si la huella no es un texto, el nodo queda sin ubicar.
+
+La app recorre la misma ruta en un árbol de **parse5** del HTML original (`auditor/fragmentos.ts`), con las posiciones de origen y `scriptingEnabled: false` como `DOMParser`. Al recorrerla salta lo mismo que quita `sanear()`, y también los elementos con `data-a11lens`, como el corredor. Si la etiqueta o la huella no coinciden o el elemento no está escrito en la fuente, el nodo queda como no corregible. Ver la [ADR 0010](decisiones/0010-ubicar-fragmentos-con-parse5.md).
 
 ## Dos usos del motor
 
