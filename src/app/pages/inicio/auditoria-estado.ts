@@ -196,8 +196,6 @@ export class AuditoriaEstado {
         const etiqueta = `Lote ${i + 1} de ${Math.max(lotes, i + 1)}`;
 
         const lote = armarLote(pendientes);
-        for (const ps of lote.ubicaciones.values())
-          for (const p of ps) this.intentados.add(p.clave);
         this.progresoIA.set(`${etiqueta}: pidiendo la explicación y la corrección a la IA…`);
         const respuesta = await firstValueFrom(
           this.ia.corregirFragmentos(
@@ -206,6 +204,10 @@ export class AuditoriaEstado {
           ),
         );
         if (!vigente()) return;
+        // Solo cuenta como intentado lo que la IA respondió: si la petición falla, «Corregir más»
+        // vuelve a pedirlo.
+        for (const ps of lote.ubicaciones.values())
+          for (const p of ps) this.intentados.add(p.clave);
 
         const candidatas: Candidata[] = respuesta.fragmentos.flatMap((r) =>
           (lote.ubicaciones.get(r.id) ?? []).map((p) => ({
