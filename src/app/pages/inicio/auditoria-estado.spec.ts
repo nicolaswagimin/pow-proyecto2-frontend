@@ -2,44 +2,27 @@ import { TestBed } from '@angular/core/testing';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, Subject, of, throwError } from 'rxjs';
 import { MotorService } from '../../auditor/motor.service';
-import { Problema, ResultadoAuditoria } from '../../auditor/modelo';
+import type { FragmentoParaIA } from '../../auditor/lotes';
 import { AuditoriasService } from '../../services/auditorias.service';
-import { IaService } from '../../services/ia.service';
+import { IaService, RespuestaFragmentos } from '../../services/ia.service';
+import {
+  auditorFalso,
+  corregirFalso,
+  paginaGrande,
+} from '../../../testing/pagina-grande.spec-util';
 import { PaginasService } from '../../services/paginas.service';
 import { AuditoriaEstado } from './auditoria-estado';
 
-const imgAlt: Problema = {
-  regla: 'image-alt',
-  gravedad: 'critico',
-  descripcion: 'Las imágenes deben tener texto alternativo.',
-  ayudaUrl: '',
-  criterios: [],
-  nodos: [{ selector: 'img', html: '<img src="a.png">' }],
-};
-const conProblema: ResultadoAuditoria = { problemas: [imgAlt], reglasAprobadas: 9, fecha: '' };
-const limpio: ResultadoAuditoria = { problemas: [], reglasAprobadas: 10, fecha: '' };
 const HTML = '<main><img src="a.png"></main>';
-const respuestaIA = {
-  problemas: [
-    {
-      regla: 'image-alt',
-      selector: 'img',
-      explicacion: 'Falta el texto alternativo.',
-      original: '<img src="a.png">',
-      corregido: '<img src="a.png" alt="Logo">',
-    },
-  ],
-  documento: '<main><img src="a.png" alt="Logo"></main>',
-  desdeCache: false,
-};
 
 function preparar({
-  auditar = async (html: string) => (html.includes('alt=') ? limpio : conProblema),
-  corregir = (): Observable<typeof respuestaIA> => of(respuestaIA),
+  auditar = async (html: string) => auditorFalso(html),
+  corregir = (_p: unknown, fragmentos: FragmentoParaIA[]): Observable<RespuestaFragmentos> =>
+    of(corregirFalso(fragmentos)),
   urlFinal = 'https://ejemplo.org/',
 } = {}) {
   const motor = { auditarHtml: vi.fn(auditar) };
-  const ia = { corregir: vi.fn(corregir) };
+  const ia = { corregirFragmentos: vi.fn(corregir) };
   const paginas = { descargar: vi.fn(() => of({ html: HTML, urlFinal })) };
   const auditorias = { guardar: vi.fn(() => of({ id: 7 })), obtener: vi.fn() };
   TestBed.configureTestingModule({
@@ -53,6 +36,9 @@ function preparar({
   });
   return { estado: TestBed.inject(AuditoriaEstado), motor, ia, paginas, auditorias };
 }
+
+const enviadosEn = (ia: { corregirFragmentos: { mock: { calls: unknown[][] } } }) =>
+  ia.corregirFragmentos.mock.calls.map((c) => c[1] as FragmentoParaIA[]);
 
 describe('AuditoriaEstado', () => {
   it('audita HTML pegado y calcula el puntaje', async () => {
@@ -104,20 +90,43 @@ describe('AuditoriaEstado', () => {
     expect(estado.pareceSpa()).toBe(true);
   });
 
-  it('corrige con la IA y verifica cada corrección y el documento', async () => {
-    const { estado } = preparar();
-    await estado.auditarPegado(HTML, 'x');
-    await estado.corregir();
-    expect(estado.correcciones()[0].estado).toBe('resuelto');
-    expect(estado.verificacionDocumento()?.puntajeDespues).toBe(100);
+  it('una URL de más de 300 caracteres se guarda sin la consulta', async () => {
+    const larga = 'https://ejemplo.org/buscar?q=' + 'a'.repeat(400) + '#arriba';
+    const { estado } = preparar({ urlFinal: larga });
+    await estado.auditarUrl(larga);
+    expect(estado.pagina()).toBe('https://ejemplo.org/buscar');
+    expect(estado.baseHref()).toBe(larga);
   });
 
-  it('la misma entrada no vuelve a pedir la corrección', async () => {
+  it('corrige con la IA por fragmentos y verifica el documento', async () => {
+    const { estado, ia } = preparar();
+    await estado.auditarPegado(HTML, 'x');
+    await estado.corregir();
+    expect(enviadosEn(ia)).toEqual([
+      [
+        {
+          id: 'f1',
+          regla: 'image-alt',
+          ayuda: 'Las imágenes deben tener texto alternativo.',
+          html: '<img src="a.png">',
+          padre: '<main>',
+          resumen: '',
+        },
+      ],
+    ]);
+    expect(ia.corregirFragmentos.mock.calls[0][0]).toEqual({ idioma: '', titulo: '' });
+    expect(estado.correcciones().map((c) => c.estado)).toEqual(['resuelto']);
+    expect(estado.documentoCorregido()).toBe('<main><img alt="Producto" src="a.png"></main>');
+    expect(estado.verificacionDocumento()?.puntajeDespues).toBe(100);
+    expect(estado.quedan()).toBe(0);
+  });
+
+  it('lo que ya se intentó no se vuelve a pedir', async () => {
     const { estado, ia } = preparar();
     await estado.auditarPegado(HTML, 'x');
     await estado.corregir();
     await estado.corregir();
-    expect(ia.corregir).toHaveBeenCalledTimes(1);
+    expect(ia.corregirFragmentos).toHaveBeenCalledTimes(1);
   });
 
   it('error 429 de la IA: mensaje claro', async () => {
@@ -134,9 +143,46 @@ describe('AuditoriaEstado', () => {
     await estado.auditarPegado(HTML, 'x');
     await estado.corregir();
     expect(estado.errorIA()).toBe('La IA está saturada en este momento.');
+    expect(estado.corrigiendo()).toBe(false);
   });
 
-  it('guardar envía puntajes antes y después', async () => {
+  it('un fragmento sin respuesta de la IA queda como «sin respuesta» y no se aplica', async () => {
+    const { estado } = preparar({
+      corregir: () => of({ fragmentos: [], sinRespuesta: ['f1'] }),
+    });
+    await estado.auditarPegado(HTML, 'x');
+    await estado.corregir();
+    expect(estado.correcciones()).toEqual([
+      expect.objectContaining({
+        regla: 'image-alt',
+        estado: 'sin-respuesta',
+        original: '<img src="a.png">',
+      }),
+    ]);
+    expect(estado.documentoCorregido()).toBeNull();
+  });
+
+  it('una corrección que introduce problemas no entra al documento', async () => {
+    const { estado } = preparar({
+      corregir: (_p: unknown, fragmentos: FragmentoParaIA[]) =>
+        of({
+          fragmentos: fragmentos.map((f) => ({
+            id: f.id,
+            explicacion: 'x',
+            corregido: '<img alt="Logo" src="a.png"><button></button>',
+            desdeCache: false,
+          })),
+          sinRespuesta: [],
+        }),
+    });
+    await estado.auditarPegado(HTML, 'x');
+    await estado.corregir();
+    expect(estado.correcciones()[0].estado).toBe('introdujo-problemas');
+    expect(estado.documentoCorregido()).toBeNull();
+    expect(estado.documentoEmpeora()).toBe(false);
+  });
+
+  it('guardar envía el documento corregido y los puntajes antes y después', async () => {
     const { estado, auditorias } = preparar();
     await estado.auditarPegado(HTML, 'Mi página');
     await estado.corregir();
@@ -147,19 +193,25 @@ describe('AuditoriaEstado', () => {
         origen: 'pegado',
         puntaje: 85,
         puntajeCorregido: 100,
-        htmlCorregido: respuestaIA.documento,
+        htmlCorregido: '<main><img alt="Producto" src="a.png"></main>',
       }),
     );
     expect(estado.guardadaId()).toBe(7);
   });
 
   it('una corrección que termina después de una auditoría nueva se descarta', async () => {
-    const respuesta = new Subject<typeof respuestaIA>();
+    const respuesta = new Subject<RespuestaFragmentos>();
     const { estado } = preparar({ corregir: () => respuesta });
     await estado.auditarPegado(HTML, 'A');
     const corrigiendo = estado.corregir();
+    await vi.waitFor(() => expect(estado.progresoIA()).toMatch(/pidiendo/));
     await estado.auditarPegado('<main><img src="b.png"></main>', 'B');
-    respuesta.next(respuestaIA);
+    respuesta.next({
+      fragmentos: [
+        { id: 'f1', explicacion: 'x', corregido: '<img alt="A" src="a.png">', desdeCache: false },
+      ],
+      sinRespuesta: [],
+    });
     respuesta.complete();
     await corrigiendo;
     expect(estado.pagina()).toBe('B');
@@ -169,49 +221,68 @@ describe('AuditoriaEstado', () => {
     expect(estado.corrigiendo()).toBe(false);
   });
 
-  it('a la IA se mandan como máximo 30 elementos en total', async () => {
-    const nodos = (n: number, tag: string) =>
-      Array.from({ length: n }, (_, i) => ({ selector: `${tag}:nth-child(${i + 1})`, html: `<${tag}>` }));
-    const muchos: ResultadoAuditoria = {
-      problemas: [
-        { ...imgAlt, nodos: nodos(12, 'img') },
-        { ...imgAlt, regla: 'color-contrast', gravedad: 'serio', nodos: nodos(25, 'p') },
-      ],
-      reglasAprobadas: 3,
-      fecha: '',
-    };
-    const { estado, ia } = preparar({ auditar: async () => muchos });
-    await estado.auditarPegado(HTML, 'x');
-    await estado.corregir();
-    const enviados = (ia.corregir.mock.calls[0] as unknown[])[1] as { nodos: unknown[] }[];
-    expect(enviados.reduce((t, p) => t + p.nodos.length, 0)).toBe(30);
-    expect(enviados.map((p) => p.nodos.length)).toEqual([12, 18]);
-  });
+  describe('página grande de ejemplo', () => {
+    const grande = paginaGrande(400);
 
-  it('una URL de más de 300 caracteres se guarda sin la consulta', async () => {
-    const larga = 'https://ejemplo.org/buscar?q=' + 'a'.repeat(400) + '#arriba';
-    const { estado } = preparar({ urlFinal: larga });
-    await estado.auditarUrl(larga);
-    expect(estado.pagina()).toBe('https://ejemplo.org/buscar');
-    expect(estado.baseHref()).toBe(larga);
-  });
-
-  it('avisa si el documento corregido tiene problemas nuevos o baja el puntaje', async () => {
-    const otro: Problema = { ...imgAlt, regla: 'button-name', nodos: [{ selector: 'button', html: '' }] };
-    const { estado } = preparar({
-      auditar: async (html: string) =>
-        html.includes('alt=') ? { ...limpio, problemas: [otro] } : conProblema,
+    it('la página pesa más de 300 KB y tiene más de 60 problemas', () => {
+      expect(grande.length).toBeGreaterThan(300_000);
+      const nodos = auditorFalso(grande).problemas.reduce((t, p) => t + p.nodos.length, 0);
+      expect(nodos).toBeGreaterThan(60);
     });
-    await estado.auditarPegado(HTML, 'x');
-    expect(estado.documentoEmpeora()).toBe(false);
-    await estado.corregir();
-    expect(estado.documentoEmpeora()).toBe(true);
-  });
 
-  it('sin problemas nuevos ni baja de puntaje, no avisa', async () => {
-    const { estado } = preparar();
-    await estado.auditarPegado(HTML, 'x');
-    await estado.corregir();
-    expect(estado.documentoEmpeora()).toBe(false);
+    it('una ronda: 3 lotes de hasta 8 fragmentos, los críticos primero, sin mandar el documento', async () => {
+      const { estado, ia } = preparar();
+      await estado.auditarPegado(grande, 'Tienda');
+      const total = estado.resultado()!.problemas.reduce((t, p) => t + p.nodos.length, 0);
+      await estado.corregir();
+
+      const lotes = enviadosEn(ia);
+      expect(lotes).toHaveLength(3);
+      for (const lote of lotes) {
+        expect(lote.length).toBeLessThanOrEqual(8);
+        for (const f of lote) expect(f.html.length).toBeLessThan(200);
+      }
+      expect(lotes[0].every((f) => f.regla === 'image-alt' || f.regla === 'button-name')).toBe(
+        true,
+      );
+      expect(ia.corregirFragmentos.mock.calls[0][0]).toEqual({
+        idioma: 'es',
+        titulo: 'Tienda de ejemplo',
+      });
+
+      expect(estado.correcciones()).toHaveLength(24);
+      expect(estado.correcciones().every((c) => c.estado === 'resuelto')).toBe(true);
+      expect(estado.quedan()).toBe(total - 24);
+      expect(estado.progresoIA()).toBe('');
+    });
+
+    it('el documento corregido solo difiere en los fragmentos corregidos', async () => {
+      const { estado } = preparar();
+      await estado.auditarPegado(grande, 'Tienda');
+      await estado.corregir();
+      const corregido = estado.documentoCorregido()!;
+      expect(corregido).not.toBe(grande);
+      expect(
+        corregido.replaceAll(' alt="Producto"', '').replaceAll(' aria-label="Comprar"', ''),
+      ).toBe(grande);
+    });
+
+    it('«Corregir más» sigue con los siguientes hasta terminar', async () => {
+      const { estado, ia } = preparar();
+      await estado.auditarPegado(grande, 'Tienda');
+      await estado.corregir();
+      const primera = new Set(
+        enviadosEn(ia)
+          .flat()
+          .map((f) => f.html + f.padre),
+      );
+      await estado.corregir();
+      const segunda = enviadosEn(ia).slice(3).flat();
+      expect(segunda).toHaveLength(24);
+      expect(segunda.some((f) => primera.has(f.html + f.padre))).toBe(false);
+      while ((estado.quedan() ?? 0) > 0) await estado.corregir();
+      expect(estado.verificacionDocumento()?.puntajeDespues).toBe(100);
+      expect(auditorFalso(estado.documentoCorregido()!).problemas).toEqual([]);
+    });
   });
 });

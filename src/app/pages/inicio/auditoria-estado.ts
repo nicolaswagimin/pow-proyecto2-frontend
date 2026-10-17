@@ -2,25 +2,29 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { pareceSpa } from '../../auditor/axe-a-problemas';
-import { Problema, ResultadoAuditoria } from '../../auditor/modelo';
+import { analizarFuente } from '../../auditor/fragmentos';
+import { armarLote, prepararPendientes } from '../../auditor/lotes';
+import { ResultadoAuditoria } from '../../auditor/modelo';
 import { MotorService } from '../../auditor/motor.service';
 import { calcularPuntaje, resumir } from '../../auditor/puntaje';
 import {
+  Base,
+  Candidata,
   CorreccionVerificada,
   VerificacionDocumento,
-  verificarDocumento,
-  verificarPorProblema,
+  compararAuditorias,
+  verificarLote,
 } from '../../auditor/verificar';
 import { mapearError } from '../../core/errores';
 import { AuditoriasService, Origen } from '../../services/auditorias.service';
-import { IaService, ProblemaParaIA, RespuestaCorreccion } from '../../services/ia.service';
+import { IaService } from '../../services/ia.service';
 import { PaginasService } from '../../services/paginas.service';
 
 export type EstadoPagina = 'vacio' | 'auditando' | 'listo' | 'error';
 
 export const MAX_HTML = 2_000_000;
-// Total de elementos (regla + selector) que se mandan a la IA: es lo que limita su respuesta.
-const MAX_NODOS_IA = 30;
+// Lotes que procesa un clic en «Explicar y corregir» o «Corregir más» (cuida la cuota de Gemini).
+export const LOTES_POR_RONDA = 3;
 const MAX_PAGINA = 300;
 
 // El nombre de una página por URL: la URL entera, o sin la consulta si no cabe en el historial.
@@ -55,6 +59,10 @@ export class AuditoriaEstado {
   readonly correcciones = signal<CorreccionVerificada[]>([]);
   readonly verificacionDocumento = signal<VerificacionDocumento | null>(null);
   readonly documentoCorregido = signal<string | null>(null);
+  // Elementos que aún se pueden corregir con IA (null hasta la primera ronda) y los que no se
+  // pueden (no están escritos en el HTML original o su fragmento es demasiado largo).
+  readonly quedan = signal<number | null>(null);
+  readonly noCorregibles = signal(0);
 
   readonly guardando = signal(false);
   readonly guardadaId = signal<number | null>(null);
@@ -71,8 +79,10 @@ export class AuditoriaEstado {
     return !!doc && (doc.comparacion.nuevos.length > 0 || doc.puntajeDespues < doc.puntajeAntes);
   });
 
-  // Clave de la última corrección pedida: la misma entrada no se vuelve a pedir.
-  private ultimaClaveIA: string | null = null;
+  // El documento acumulado (original + correcciones verificadas) y su auditoría.
+  private base: Base | null = null;
+  // regla|selector ya enviados a la IA: no se vuelven a pedir.
+  private readonly intentados = new Set<string>();
   // Sube con cada auditoría: una corrección que termina después pertenece a otra página.
   private generacion = 0;
 
@@ -133,58 +143,101 @@ export class AuditoriaEstado {
   }
 
   private limpiarCorreccion(): void {
+    // Una corrección en curso de la página anterior se descarta (generacion) y deja de mostrarse.
+    this.corrigiendo.set(false);
+    this.progresoIA.set('');
+    this.base = null;
+    this.intentados.clear();
+    this.quedan.set(null);
+    this.noCorregibles.set(0);
     this.correcciones.set([]);
     this.verificacionDocumento.set(null);
     this.documentoCorregido.set(null);
     this.errorIA.set(null);
   }
 
-  private problemasParaIA(): ProblemaParaIA[] {
-    let quedan = MAX_NODOS_IA;
-    const enviados: ProblemaParaIA[] = [];
-    for (const p of (this.resultado()?.problemas ?? []) as Problema[]) {
-      if (quedan <= 0) break;
-      const nodos = p.nodos.slice(0, quedan);
-      quedan -= nodos.length;
-      enviados.push({ regla: p.regla, ayuda: p.descripcion, nodos });
-    }
-    return enviados;
-  }
-
-  // Pide a la IA la explicación y la corrección, y verifica cada una volviendo a auditar.
+  // Una ronda de corrección por fragmentos (docs/ia.md del backend): hasta 3 lotes, de mayor a menor
+  // gravedad. Cada lote se ubica sobre el documento acumulado, se pide a la IA, se aplica como
+  // reemplazos de texto y se verifica con axe; solo lo resuelto entra al documento.
   async corregir(): Promise<void> {
     const resultado = this.resultado();
-    if (!resultado || !resultado.problemas.length || this.corrigiendo()) return;
-    const problemas = this.problemasParaIA();
-    const html = this.html();
+    if (!resultado || !resultado.problemas.length || this.corrigiendo() || this.quedan() === 0) {
+      return;
+    }
     const baseHref = this.baseHref();
     const generacion = this.generacion;
     const vigente = () => generacion === this.generacion;
-    const clave = JSON.stringify([html, problemas]);
-    if (clave === this.ultimaClaveIA && this.documentoCorregido()) return;
+    const auditar = (h: string) => this.motor.auditarHtml(h, baseHref);
+    let base = this.base ?? { html: this.html(), auditoria: resultado };
 
     this.corrigiendo.set(true);
     this.errorIA.set(null);
-    this.progresoIA.set('Pidiendo la explicación y la corrección a la IA…');
     try {
-      const respuesta: RespuestaCorreccion = await firstValueFrom(
-        this.ia.corregir(html, problemas),
-      );
-      if (!vigente()) return;
-      this.ultimaClaveIA = clave;
-      const auditar = (h: string) => this.motor.auditarHtml(h, baseHref);
-      const verificadas: CorreccionVerificada[] = [];
-      for (const [i, c] of respuesta.problemas.entries()) {
-        this.progresoIA.set(`Verificando la corrección ${i + 1} de ${respuesta.problemas.length}…`);
-        verificadas.push(await verificarPorProblema(html, resultado, c, auditar));
+      let lotes = 0;
+      for (let i = 0; i < LOTES_POR_RONDA; i++) {
+        const fuente = await analizarFuente(base.html);
         if (!vigente()) return;
+        const { pendientes, noCorregibles } = prepararPendientes(
+          fuente,
+          base.auditoria.problemas,
+          this.intentados,
+        );
+        this.quedan.set(pendientes.length);
+        this.noCorregibles.set(noCorregibles.length);
+        if (!pendientes.length) break;
+        lotes ||= Math.min(LOTES_POR_RONDA, Math.ceil(pendientes.length / 8));
+        const etiqueta = `Lote ${i + 1} de ${Math.max(lotes, i + 1)}`;
+
+        const lote = armarLote(pendientes);
+        for (const ps of lote.ubicaciones.values())
+          for (const p of ps) this.intentados.add(p.clave);
+        this.progresoIA.set(`${etiqueta}: pidiendo la explicación y la corrección a la IA…`);
+        const respuesta = await firstValueFrom(
+          this.ia.corregirFragmentos(
+            { idioma: fuente.idioma, titulo: fuente.titulo },
+            lote.fragmentos,
+          ),
+        );
+        if (!vigente()) return;
+
+        const candidatas: Candidata[] = respuesta.fragmentos.flatMap((r) =>
+          (lote.ubicaciones.get(r.id) ?? []).map((p) => ({
+            regla: p.regla,
+            selector: p.selector,
+            explicacion: r.explicacion,
+            original: p.fragmento.texto,
+            corregido: r.corregido,
+            inicio: p.fragmento.inicio,
+            fin: p.fragmento.fin,
+          })),
+        );
+        const sinRespuesta: CorreccionVerificada[] = respuesta.sinRespuesta.flatMap((id) =>
+          (lote.ubicaciones.get(id) ?? []).map((p) => ({
+            regla: p.regla,
+            selector: p.selector,
+            explicacion: '',
+            original: p.fragmento.texto,
+            corregido: '',
+            estado: 'sin-respuesta' as const,
+            nuevos: [],
+          })),
+        );
+
+        this.progresoIA.set(`${etiqueta}: verificando las correcciones con axe…`);
+        const verificado = await verificarLote(base, candidatas, auditar);
+        if (!vigente()) return;
+        base = verificado.base;
+        this.base = base;
+        this.correcciones.update((cs) => [...cs, ...verificado.verificadas, ...sinRespuesta]);
+        this.publicarDocumento(resultado, base);
       }
-      this.progresoIA.set('Verificando el documento corregido completo…');
-      const documento = await verificarDocumento(resultado, respuesta.documento, auditar);
-      if (!vigente()) return;
-      this.correcciones.set(verificadas);
-      this.verificacionDocumento.set(documento);
-      this.documentoCorregido.set(respuesta.documento);
+      if (vigente() && this.quedan()) {
+        const fuente = await analizarFuente(base.html);
+        if (vigente()) {
+          const r = prepararPendientes(fuente, base.auditoria.problemas, this.intentados);
+          this.quedan.set(r.pendientes.length);
+        }
+      }
     } catch (err) {
       if (!vigente()) return;
       this.errorIA.set(
@@ -193,9 +246,23 @@ export class AuditoriaEstado {
           : 'No se pudo verificar la corrección.',
       );
     } finally {
-      this.corrigiendo.set(false);
-      this.progresoIA.set('');
+      if (vigente()) {
+        this.corrigiendo.set(false);
+        this.progresoIA.set('');
+      }
     }
+  }
+
+  // El documento corregido es el acumulado; se compara con la auditoría original sin volver a
+  // auditar (la auditoría de la base ya está hecha).
+  private publicarDocumento(original: ResultadoAuditoria, base: Base): void {
+    this.documentoCorregido.set(base.html !== this.html() ? base.html : null);
+    this.verificacionDocumento.set({
+      auditoria: base.auditoria,
+      comparacion: compararAuditorias(original, base.auditoria),
+      puntajeAntes: calcularPuntaje(original.problemas),
+      puntajeDespues: calcularPuntaje(base.auditoria.problemas),
+    });
   }
 
   async guardar(): Promise<string | null> {
