@@ -1,3 +1,18 @@
 :host {
-  display: block;
+  display: grid;
+  gap: var(--space-2);
+}
+
+/* El papel de la página auditada sobre la hoja: borde de regla y fondo blanco propio de la página. */
+.marco {
+  width: 100%;
+  height: clamp(320px, 60vh, 640px);
+  border: 2px solid var(--color-texto);
+  border-radius: var(--radius-control);
+  background: #ffffff;
+}
+
+.error {
+  color: var(--color-error);
+  font-weight: var(--peso-fuerte);
 }
