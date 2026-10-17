@@ -85,3 +85,23 @@ export function reporteMarkdown(d: DatosReporte): string {
   }
   return lineas.join('\n');
 }
+
+export function nombreArchivo(pagina: string, extension: 'md' | 'html'): string {
+  const base = pagina
+    .replace(/^https?:\/\//, '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+  return `a11lens-${base || 'pagina'}.${extension}`;
+}
+
+export function descargarTexto(texto: string, nombre: string, tipo: string): void {
+  const url = URL.createObjectURL(new Blob([texto], { type: tipo }));
+  const enlace = document.createElement('a');
+  enlace.href = url;
+  enlace.download = nombre;
+  enlace.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
