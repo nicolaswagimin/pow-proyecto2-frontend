@@ -47,6 +47,11 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "axe.min.js",
+                "input": "node_modules/axe-core",
+                "output": "auditor"
               }
             ],
             "styles": [
