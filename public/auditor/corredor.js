@@ -45,12 +45,76 @@
         enviar({ tipo: 'error', id: id, mensaje: String(e && e.message) });
       });
   }
-  // Agregado más abajo: resaltar, enfocar y clics.
-  window.__a11lens = { auditar: auditar, enviar: enviar, MARCA: MARCA, SELECTOR: SELECTOR };
+  // ---------- Lente ----------
+  // Los resaltados son un atributo + un <style> propio (data-a11lens), no elementos nuevos: así
+  // no alteran el layout de la página.
+  function estilos() {
+    if (document.querySelector('style[data-a11lens]')) return;
+    var estilo = document.createElement('style');
+    estilo.setAttribute('data-a11lens', '');
+    estilo.setAttribute('nonce', guion ? guion.nonce : '');
+    estilo.textContent =
+      '[' + MARCA + ']{outline:3px solid #ffe14d!important;outline-offset:2px!important;' +
+      'box-shadow:0 0 0 5px #15161e!important;cursor:pointer!important}' +
+      '[' + MARCA + '="seleccionado"]{outline:5px solid #ffe14d!important;' +
+      'box-shadow:0 0 0 9px #b42318!important}';
+    document.head.appendChild(estilo);
+  }
+
+  function buscar(selector) {
+    if (!selector || selector.indexOf(' >> ') !== -1) return null; // dentro de iframes o shadow DOM
+    try {
+      return document.querySelector(selector);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function resaltar(selectores, seleccionado) {
+    estilos();
+    document.querySelectorAll('[' + MARCA + ']').forEach(function (el) {
+      el.removeAttribute(MARCA);
+      el.removeAttribute(SELECTOR);
+    });
+    selectores.forEach(function (selector) {
+      var el = buscar(selector);
+      if (!el) return;
+      el.setAttribute(MARCA, selector === seleccionado ? 'seleccionado' : 'problema');
+      el.setAttribute(SELECTOR, selector);
+    });
+  }
+
+  function enfocar(selector) {
+    var el = buscar(selector);
+    if (!el) return;
+    document.querySelectorAll('[' + MARCA + '="seleccionado"]').forEach(function (otro) {
+      otro.setAttribute(MARCA, 'problema');
+    });
+    el.setAttribute(MARCA, 'seleccionado');
+    el.scrollIntoView({ block: 'center', inline: 'nearest' });
+  }
+
+  // La vista previa no navega ni envía nada: cualquier clic se detiene. Si es sobre un elemento
+  // con problemas, se avisa a la app para seleccionar su problema.
+  document.addEventListener(
+    'click',
+    function (evento) {
+      evento.preventDefault();
+      var marcado = evento.target.closest && evento.target.closest('[' + SELECTOR + ']');
+      if (marcado) enviar({ tipo: 'clic', selector: marcado.getAttribute(SELECTOR) });
+    },
+    true,
+  );
+  document.addEventListener('submit', function (evento) {
+    evento.preventDefault();
+  }, true);
 
   window.addEventListener('message', function (evento) {
     if (evento.source !== window.parent || !evento.data) return;
-    if (evento.data.tipo === 'auditar') auditar(evento.data.id);
+    var m = evento.data;
+    if (m.tipo === 'auditar') auditar(m.id);
+    else if (m.tipo === 'resaltar') resaltar(m.selectores || [], m.seleccionado);
+    else if (m.tipo === 'enfocar') enfocar(m.selector);
   });
 
   enviar({ tipo: 'listo' });
