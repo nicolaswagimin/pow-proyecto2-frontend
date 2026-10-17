@@ -140,6 +140,15 @@ describe('elegirFragmento', () => {
     });
   });
 
+  it('document-title funciona aunque el <html> sea implícito', async () => {
+    const implicito = await analizarFuente('<head><meta charset="utf-8"></head><p>x</p>');
+    expect(elegirFragmento(implicito, 'document-title', null, [])).toMatchObject({ texto: '<head>' });
+  });
+
+  it('sin elemento ubicado (y no es document-title) no hay fragmento', () => {
+    expect(elegirFragmento(fuente, 'image-alt', null, [])).toBeNull();
+  });
+
   it('document-title sin <head> escrito no tiene fragmento', async () => {
     const sinHead = await analizarFuente('<html lang="es"><body></body></html>');
     expect(elegirFragmento(sinHead, 'document-title', sinHead.ubicar([], 'html')!, [])).toBeNull();

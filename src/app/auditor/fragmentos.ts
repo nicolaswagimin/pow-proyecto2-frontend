@@ -135,13 +135,14 @@ const contiene = (afuera: Rango, adentro: Rango) =>
 export function elegirFragmento(
   fuente: FuenteHtml,
   regla: string,
-  el: ElementoFuente,
+  el: ElementoFuente | null,
   otros: Rango[],
 ): Fragmento | null {
   if (regla === 'document-title') {
     const head = fuente.head();
     return head ? fragmento(fuente, head.apertura, 'apertura') : null;
   }
+  if (!el) return null;
   const completo =
     !SOLO_APERTURA.has(el.etiqueta) &&
     el.elemento.fin - el.elemento.inicio <= MAX_ELEMENTO &&
