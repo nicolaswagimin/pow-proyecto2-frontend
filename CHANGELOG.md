@@ -18,7 +18,9 @@ La función propia de a11Lens: auditar HTML ajeno, explicarlo, corregirlo con IA
 - **`/historial`**: auditorías agrupadas por página con la evolución del puntaje; abrir y borrar.
 - `BarraApp`: la barra de `/app`, extraída sin cambios visuales y con el enlace a Historial.
 - Mensajes para `413` (HTML demasiado grande) y `503` (IA no disponible).
-- 105 pruebas con Vitest y jsdom (`npm test`).
+- Defensas del motor aislado contra mutation XSS (saneado hasta punto fijo y revisión del documento final) y token por carga en cada mensaje del corredor.
+- Una corrección que quita u oculta el elemento no cuenta como verificada; aviso cuando el documento corregido trae problemas nuevos o baja el puntaje.
+- 125 pruebas con Vitest y jsdom (`npm test`).
 - Documentación: `funcionalidades.md`, `lente.md`, `reporte.md` y las decisiones 0006 a 0009; actualizados `accesibilidad.md` (24 de 24 vistas sin violaciones) y `arquitectura-frontend.md`.
 
 ### Cambiado
