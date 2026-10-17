@@ -217,10 +217,6 @@ export class AuditoriaEstado {
           ),
         );
         if (!vigente()) return;
-        // Solo cuenta como intentado lo que la IA respondió: si la petición falla, «Corregir más»
-        // vuelve a pedirlo.
-        for (const ps of lote.ubicaciones.values())
-          for (const p of ps) this.intentados.add(p.clave);
 
         const candidatas: Candidata[] = respuesta.fragmentos.flatMap((r) =>
           (lote.ubicaciones.get(r.id) ?? []).map((p) => ({
@@ -249,6 +245,10 @@ export class AuditoriaEstado {
         this.progresoIA.set(`${etiqueta}: verificando las correcciones con axe…`);
         const verificado = await verificarLote(base, candidatas, auditar);
         if (!vigente()) return;
+        // Solo cuenta como intentado lo que la IA respondió y se verificó: si la petición o la
+        // verificación fallan, «Corregir más» vuelve a pedirlo.
+        for (const ps of lote.ubicaciones.values())
+          for (const p of ps) this.intentados.add(p.clave);
         base = verificado.base;
         this.base = base;
         this.correcciones.update((cs) => [...cs, ...verificado.verificadas, ...sinRespuesta]);

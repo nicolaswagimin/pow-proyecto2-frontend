@@ -167,6 +167,22 @@ describe('AuditoriaEstado', () => {
     expect(estado.correcciones().map((c) => c.estado)).toEqual(['resuelto']);
   });
 
+  it('si falla la verificación con axe, «Corregir más» vuelve a pedir esos elementos', async () => {
+    let auditorias = 0;
+    const { estado, ia } = preparar({
+      auditar: async (html: string) => {
+        if (++auditorias === 2) throw new Error('La auditoría tardó demasiado.');
+        return auditorFalso(html);
+      },
+    });
+    await estado.auditarPegado(HTML, 'x');
+    await estado.corregir();
+    expect(estado.errorIA()).toBe('No se pudo verificar la corrección.');
+    await estado.corregir();
+    expect(enviadosEn(ia)).toHaveLength(2);
+    expect(estado.correcciones().map((c) => c.estado)).toEqual(['resuelto']);
+  });
+
   it('un fragmento sin respuesta de la IA queda como «sin respuesta» y no se aplica', async () => {
     const { estado } = preparar({
       corregir: () => of({ fragmentos: [], sinRespuesta: ['f1'] }),
