@@ -135,6 +135,10 @@
   function observar(marcados) {
     if (observador) observador.disconnect();
     visibles = new Set();
+    // En el orden de la página (llegan en el de las reglas): la columna se lee de arriba abajo.
+    marcados.sort(function (a, b) {
+      return a.el.compareDocumentPosition(b.el) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
+    });
     orden = marcados.map(function (m) {
       return m.selector;
     });

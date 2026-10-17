@@ -133,7 +133,8 @@ describe('corredor', () => {
       '<main><img id="a" src="a"><img id="b" src="b"></main>',
       () => [],
     );
-    recibir({ tipo: 'resaltar', selectores: ['#a', '#b'], seleccionado: null });
+    // Los selectores llegan en el orden de las reglas; los visibles van en el orden de la página.
+    recibir({ tipo: 'resaltar', selectores: ['#b', '#a'], seleccionado: null });
     expect(observados.map((el) => el.id)).toEqual(['a', 'b']);
     avisar!([
       { target: document.getElementById('a')!, isIntersecting: true },
@@ -144,5 +145,8 @@ describe('corredor', () => {
       selectores: ['#a'],
       sesion: 'token',
     });
+    avisar!([{ target: document.getElementById('b')!, isIntersecting: true }]);
+    await new Promise((r) => requestAnimationFrame(r));
+    expect(enviados.filter((m) => m.tipo === 'visibles').at(-1)!.selectores).toEqual(['#a', '#b']);
   });
 });
