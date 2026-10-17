@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  afterNextRender,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { Button } from '../ui/button/button';
 
 interface Problema {
@@ -94,8 +101,18 @@ const IMPACTOS: Record<string, string> = {
 })
 export class Auditoria {
   readonly textoBoton = input('Auditar esta página');
+  // Audita apenas aparece (la insignia del pie de /app); por defecto espera al botón.
+  readonly auto = input(false);
   // Avisa al terminar: el texto del botón cambió y quien lo anota debe releerlo.
   readonly termino = output<void>();
+  // Cuántos problemas encontró (no se emite si el auditor no cargó).
+  readonly problemas = output<number>();
+
+  constructor() {
+    afterNextRender(() => {
+      if (this.auto()) void this.auditar();
+    });
+  }
 
   protected readonly auditando = signal(false);
   protected readonly resultado = signal<Resultado | null>(null);
@@ -105,7 +122,10 @@ export class Auditoria {
     this.auditando.set(true);
     try {
       const { default: axe } = await import('axe-core');
+      // iframes: false. La vista previa de /app es un iframe con su propio axe: sus problemas son
+      // de la página auditada, no de a11Lens.
       const r = await axe.run(document, {
+        iframes: false,
         runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
       });
       this.resultado.set({
@@ -119,6 +139,7 @@ export class Auditoria {
           enlace: v.helpUrl,
         })),
       });
+      this.problemas.emit(r.violations.length);
     } catch {
       this.resultado.set({
         tipo: 'error',
