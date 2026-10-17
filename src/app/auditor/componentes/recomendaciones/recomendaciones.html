@@ -1,0 +1,80 @@
+<h2 class="titulo" id="titulo-recomendaciones">Recomendaciones</h2>
+
+@if (problemas() === null) {
+  @if (estado() === 'auditando') {
+    <p class="pista">Auditando la página…</p>
+  } @else {
+    <p class="intro">
+      Audita una página y aquí verás, mientras recorres la vista previa, qué falla en cada elemento
+      y cómo arreglarlo.
+    </p>
+    <h3 class="subtitulo">Qué va a encontrar a11Lens</h3>
+    <ul class="encontrara">
+      <li>Imágenes sin texto alternativo.</li>
+      <li>Texto con poco contraste con su fondo.</li>
+      <li>Campos de formulario sin etiqueta.</li>
+      <li>Enlaces y botones sin un nombre que se pueda leer.</li>
+      <li>Estructura: encabezados, regiones, idioma y título de la página.</li>
+    </ul>
+    <p class="pista">Con las reglas de WCAG 2.2 A y AA de axe-core.</p>
+    <h3 class="subtitulo">Prueba con un ejemplo</h3>
+    <ul class="ejemplos">
+      @for (e of EJEMPLOS; track e.url) {
+        <li>
+          <button type="button" class="ejemplo" (click)="probar.emit(e.url)">
+            <span class="ejemplo__nombre">{{ e.nombre }}</span>
+            <span class="ejemplo__url">{{ e.url }}</span>
+          </button>
+        </li>
+      }
+    </ul>
+  }
+} @else if (total() === 0) {
+  <p class="limpio">axe no encontró problemas: no hay nada que recomendar.</p>
+} @else {
+  <p class="contador">
+    {{ aLaVista().length }} a la vista de {{ total() }}
+    {{ total() === 1 ? 'elemento' : 'elementos' }} con problemas
+  </p>
+  @if (aLaVista().length) {
+    <ol class="lista a-la-vista">
+      @for (r of aLaVista(); track r.regla + r.selector) {
+        <ng-container *ngTemplateOutlet="item; context: { $implicit: r }" />
+      }
+    </ol>
+  } @else {
+    <p class="pista a-la-vista-vacio">
+      Desplázate por la vista previa: aquí aparecen los elementos con problemas que estén a la
+      vista.
+    </p>
+  }
+  @if (deTodaLaPagina().length) {
+    <h3 class="subtitulo">En toda la página</h3>
+    <ol class="lista toda-la-pagina">
+      @for (r of deTodaLaPagina(); track r.regla + r.selector) {
+        <ng-container *ngTemplateOutlet="item; context: { $implicit: r }" />
+      }
+    </ol>
+  }
+}
+
+<ng-template #item let-r>
+  <li class="recomendacion" [attr.data-gravedad]="r.gravedad">
+    <button
+      type="button"
+      class="recomendacion__boton"
+      [attr.aria-pressed]="seleccionado() === r.selector"
+      (click)="seleccionar.emit(r.selector)"
+    >
+      <span class="recomendacion__gravedad">{{ r.nombreGravedad }}</span>
+      <span class="recomendacion__descripcion">{{ r.descripcion }}</span>
+    </button>
+    <p class="recomendacion__que-hacer">{{ r.queHacer }}</p>
+    @if (r.ia) {
+      <p class="recomendacion__ia">{{ r.ia }}</p>
+    }
+    <p class="recomendacion__ubicacion">
+      <code>{{ r.selector }}</code>
+    </p>
+  </li>
+</ng-template>

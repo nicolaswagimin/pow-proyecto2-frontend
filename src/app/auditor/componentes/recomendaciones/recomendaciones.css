@@ -1,0 +1,139 @@
+:host {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+}
+
+.titulo {
+  font-size: var(--text-lg);
+}
+
+.subtitulo {
+  margin-top: var(--space-2);
+  font-size: var(--text-base);
+}
+
+.intro,
+.pista,
+.contador,
+.limpio {
+  font-size: var(--text-sm);
+}
+
+.pista,
+.contador {
+  color: var(--color-texto-suave);
+}
+
+.limpio {
+  color: var(--color-exito);
+  font-weight: var(--peso-fuerte);
+}
+
+.encontrara {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding-left: var(--space-5);
+  font-size: var(--text-sm);
+}
+
+.ejemplos,
+.lista {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Botones de ejemplo y de recomendación: mismo trazo que «Ver en la lente» de la lista. */
+.ejemplo,
+.recomendacion__boton {
+  display: grid;
+  gap: var(--space-1);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--color-borde);
+  color: var(--color-texto);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ejemplo__nombre,
+.recomendacion__descripcion {
+  font-weight: var(--peso-fuerte);
+}
+
+.ejemplo__url {
+  color: var(--color-texto-suave);
+  font-family: var(--font-codigo);
+  font-size: var(--text-xs);
+  overflow-wrap: anywhere;
+}
+
+.ejemplo:focus-visible,
+.recomendacion__boton:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: var(--anillo-foco);
+}
+
+@media (hover: hover) {
+  .ejemplo:hover,
+  .recomendacion__boton:hover {
+    box-shadow: inset 0 0 0 2px var(--color-texto);
+  }
+}
+
+.recomendacion__boton[aria-pressed='true'] {
+  background: var(--color-marcador);
+  box-shadow: inset 0 0 0 2px var(--color-texto);
+  color: var(--color-marcador-texto);
+}
+
+.recomendacion {
+  display: grid;
+  gap: var(--space-2);
+  padding-left: var(--space-3);
+  border-left: 6px solid var(--color-borde);
+}
+
+/* La gravedad se lee en el texto; el borde de color es un refuerzo (como en la lista). */
+.recomendacion[data-gravedad='critico'] {
+  border-left-color: var(--color-error);
+}
+
+.recomendacion[data-gravedad='serio'] {
+  border-left-color: var(--color-aviso);
+}
+
+.recomendacion__gravedad {
+  font-size: var(--text-xs);
+  font-weight: var(--peso-fuerte);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.recomendacion__que-hacer,
+.recomendacion__ia,
+.recomendacion__ubicacion {
+  font-size: var(--text-sm);
+}
+
+.recomendacion__ia {
+  color: var(--color-texto-suave);
+}
+
+.recomendacion__ubicacion {
+  color: var(--color-texto-suave);
+  overflow-wrap: anywhere;
+}
+
+code {
+  font-family: var(--font-codigo);
+}
