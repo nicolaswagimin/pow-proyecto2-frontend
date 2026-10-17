@@ -169,4 +169,45 @@ export class AuditoriaEstado {
       this.progresoIA.set('');
     }
   }
+
+  async guardar(): Promise<string | null> {
+    const resultado = this.resultado();
+    const puntaje = this.puntaje();
+    if (!resultado || puntaje === null || this.guardando()) return null;
+    this.guardando.set(true);
+    try {
+      const doc = this.verificacionDocumento();
+      const guardada = await firstValueFrom(
+        this.auditorias.guardar({
+          pagina: this.pagina(),
+          origen: this.origen(),
+          html: this.html(),
+          puntaje,
+          resumen: this.resumen(),
+          problemas: resultado.problemas,
+          htmlCorregido: this.documentoCorregido(),
+          puntajeCorregido: doc ? doc.puntajeDespues : null,
+        }),
+      );
+      this.guardadaId.set(guardada.id);
+      return null;
+    } catch (err) {
+      return mapearError(err).mensaje;
+    } finally {
+      this.guardando.set(false);
+    }
+  }
+
+  // Abre una auditoría del historial y la vuelve a auditar (la lente necesita los resultados vivos).
+  async cargar(id: number): Promise<void> {
+    this.estado.set('auditando');
+    try {
+      const a = await firstValueFrom(this.auditorias.obtener(id));
+      const baseHref = a.origen === 'url' ? a.pagina : undefined;
+      await this.auditar(a.html, a.origen, a.pagina, baseHref);
+      this.guardadaId.set(a.id);
+    } catch (err) {
+      this.fallar(mapearError(err).mensaje);
+    }
+  }
 }
